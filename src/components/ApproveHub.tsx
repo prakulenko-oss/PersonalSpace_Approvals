@@ -868,6 +868,7 @@ export const ApproveHub: React.FC = () => {
   const [attachmentsLoading, setAttachmentsLoading] = useState(false);
   const [attachmentsLoaded, setAttachmentsLoaded] = useState(false);
   const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const [liveRegionMessage, setLiveRegionMessage] = useState('');
 
   // Toast notifications
@@ -923,11 +924,22 @@ export const ApproveHub: React.FC = () => {
     showToast('Затверджено', `Документ ${task.number} успішно затверджено`, 'success');
   }, [currentTask, showToast]);
 
+  const handleOpenRejectModal = useCallback(() => {
+    setShowRejectModal(true);
+    setRejectReason('');
+  }, []);
+
+  const handleCloseRejectModal = useCallback(() => {
+    setShowRejectModal(false);
+    setRejectReason('');
+  }, []);
+
   const handleRejectConfirm = useCallback(() => {
     if (currentTask && rejectReason.trim()) {
       setTasks(prev => prev.filter(t => t.id !== currentTask.id));
       setCurrentTask(null);
       setRejectReason('');
+      setShowRejectModal(false);
       showToast('Відхилено', `Документ ${currentTask.number} відхилено`, 'warning');
     }
   }, [currentTask, rejectReason, showToast]);
@@ -1523,52 +1535,6 @@ export const ApproveHub: React.FC = () => {
                   </section>
                 )}
 
-                {/* Rejection reason (for actionable) */}
-                {isActionable(currentTask.type) && (
-                  <section aria-labelledby="reject-reason-heading" style={{ marginBottom: spacing.lg }}>
-                    <div id="reject-reason-heading" className={styles.detailSectionTitle}>
-                      Причина відхилення {!rejectReason.trim() && <span style={{ color: '#e53e3e' }}>*</span>}
-                    </div>
-                    <Textarea
-                      placeholder="Опишіть детально причину відхилення документа. Наприклад: 'Документ не містить необхідних підписів' або 'Потрібні додаткові роз'яснення по пункту 3.2'"
-                      value={rejectReason}
-                      onChange={(_e, data) => {
-                        const newValue = data.value;
-                        if (newValue.length <= 500) {
-                          setRejectReason(newValue);
-                        }
-                      }}
-                      style={{
-                        width: '100%',
-                        minHeight: '100px',
-                        borderColor: !rejectReason.trim() ? '#e53e3e' : rejectReason.length > 500 ? '#e53e3e' : undefined,
-                      }}
-                      aria-label="Причина відхилення документа"
-                      aria-required="true"
-                      aria-invalid={!rejectReason.trim() || rejectReason.length > 500}
-                      aria-describedby="reject-reason-hint reject-reason-counter"
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs }}>
-                      {!rejectReason.trim() ? (
-                        <div id="reject-reason-hint" style={{ fontSize: '12px', color: '#e53e3e' }}>
-                          * Обов'язкове поле для відхилення документа
-                        </div>
-                      ) : (
-                        <div id="reject-reason-hint" style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
-                          Вкажіть конкретну та зрозумілу причину відхилення
-                        </div>
-                      )}
-                      <div 
-                        id="reject-reason-counter"
-                        className={`${styles.characterCounter} ${rejectReason.length > 500 ? styles.characterCounterError : ''}`}
-                        aria-live="polite"
-                      >
-                        {rejectReason.length}/500
-                      </div>
-                    </div>
-                  </section>
-                )}
-
                 {/* View-only warning */}
                 {!isActionable(currentTask.type) && (
                   <div className={styles.detailInfoWarning} role="alert">
@@ -1596,32 +1562,26 @@ export const ApproveHub: React.FC = () => {
                       fontWeight: 600,
                       transition: `all ${motion.fast} ${motion.easeOut}`,
                     }}
-                    aria-label="Затвердити документ (клавіша A)"
+                    aria-label="Затвердити документ"
                   >
                     Затвердити
                   </Button>
                   <Button
                     icon={<X size={20} aria-hidden="true" />}
-                    onClick={handleRejectConfirm}
-                    disabled={!rejectReason.trim() || rejectReason.length > 500}
+                    onClick={handleOpenRejectModal}
                     className={styles.btnActive}
                     onMouseEnter={() => setHoveredBtn('detail-reject')}
                     onMouseLeave={() => setHoveredBtn(null)}
                     style={{
-                      backgroundColor: (!rejectReason.trim() || rejectReason.length > 500) ? '#f5f5f5' : (hoveredBtn === 'detail-reject' ? '#fee2e2' : 'transparent'),
-                      color: (!rejectReason.trim() || rejectReason.length > 500) ? '#999' : '#e53e3e',
-                      border: `1px solid ${(!rejectReason.trim() || rejectReason.length > 500) ? '#ccc' : '#e53e3e'}`,
+                      backgroundColor: hoveredBtn === 'detail-reject' ? '#fee2e2' : 'transparent',
+                      color: '#e53e3e',
+                      border: '1px solid #e53e3e',
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
                       transition: `all ${motion.fast} ${motion.easeOut}`,
-                      cursor: (!rejectReason.trim() || rejectReason.length > 500) ? 'not-allowed' : 'pointer',
                     }}
-                    aria-label={
-                      rejectReason.length > 500 
-                        ? "Причина відхилення перевищує ліміт 500 символів" 
-                        : (rejectReason.trim() ? "Відхилити документ (клавіша R)" : "Введіть причину відхилення")
-                    }
+                    aria-label="Відхилити документ"
                   >
                     Відхилити
                   </Button>
@@ -1714,6 +1674,131 @@ export const ApproveHub: React.FC = () => {
                 aria-label={`Підтвердити затвердження ${selectedTasks.length} документів`}
               >
                 Затвердити всі ({selectedTasks.length})
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && currentTask && (
+        <div 
+          className={styles.modalOverlay}
+          onClick={handleCloseRejectModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reject-modal-title"
+        >
+          <div 
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={handleCloseRejectModal}
+              style={{
+                position: 'absolute',
+                top: spacing.lg,
+                right: spacing.lg,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: spacing.xs,
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              aria-label="Закрити"
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#FEE2E2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <AlertCircle size={24} style={{ color: '#DC2626' }} />
+              </div>
+              <div>
+                <div id="reject-modal-title" className={styles.modalHeader} style={{ marginBottom: spacing.xs }}>
+                  Відхилення документа
+                </div>
+                <div style={{ fontSize: '14px', color: tokens.colorNeutralForeground2 }}>
+                  {currentTask.type} {currentTask.number}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: spacing.lg }}>
+              <div style={{ 
+                fontSize: '13px', 
+                fontWeight: 600, 
+                color: tokens.colorNeutralForeground2,
+                marginBottom: spacing.sm,
+                textTransform: 'uppercase',
+                letterSpacing: '0.3px'
+              }}>
+                Причина відхилення <span style={{ color: '#e53e3e' }}>*</span>
+              </div>
+              <Textarea
+                placeholder="Опишіть причину відхилення документа..."
+                value={rejectReason}
+                onChange={(_e, data) => {
+                  if (data.value.length <= 500) {
+                    setRejectReason(data.value);
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  minHeight: '120px',
+                }}
+                aria-label="Причина відхилення документа"
+                aria-required="true"
+              />
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginTop: spacing.xs 
+              }}>
+                <div style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
+                  Вкажіть конкретну причину для автора документа
+                </div>
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: rejectReason.length > 450 ? '#e53e3e' : tokens.colorNeutralForeground3 
+                }}>
+                  {rejectReason.length}/500
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <Button
+                appearance="secondary"
+                onClick={handleCloseRejectModal}
+                style={{ borderRadius: '8px' }}
+              >
+                Скасувати
+              </Button>
+              <Button
+                onClick={handleRejectConfirm}
+                disabled={!rejectReason.trim()}
+                style={{ 
+                  backgroundColor: !rejectReason.trim() ? '#f5f5f5' : '#DC2626',
+                  color: !rejectReason.trim() ? '#999' : 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: !rejectReason.trim() ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Відхилити документ
               </Button>
             </div>
           </div>
