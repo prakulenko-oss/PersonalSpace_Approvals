@@ -27,7 +27,6 @@ import {
   Shield,
   CreditCard,
   Users,
-  CheckCircle2,
   BarChart3,
   Paperclip,
   Download,
@@ -531,10 +530,7 @@ const useStyles = makeStyles({
     ':hover': {
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       transform: 'translateY(-2px)',
-      borderTopColor: tokens.colorBrandStroke1,
-      borderRightColor: tokens.colorBrandStroke1,
-      borderBottomColor: tokens.colorBrandStroke1,
-      borderLeftColor: tokens.colorBrandStroke1,
+      border: `1px solid ${tokens.colorBrandStroke1}`,
     },
     ':focus-visible': {
       outline: `2px solid ${tokens.colorBrandBackground}`,
@@ -1302,7 +1298,7 @@ export const ApproveHub: React.FC = () => {
             placeholder="Пошук... (натисніть /)"
             style={{ width: '240px' }}
             value={searchQuery}
-            onChange={(e, data) => setSearchQuery(data.value)}
+            onChange={(_e, data) => setSearchQuery(data.value)}
             aria-label="Пошук документів"
           />
         </div>
@@ -1312,7 +1308,7 @@ export const ApproveHub: React.FC = () => {
             <Checkbox
               label="Вибрати всі"
               checked={isAllSelected}
-              onChange={(e, data) => handleSelectAll(!!data.checked)}
+              onChange={(_e, data) => handleSelectAll(!!data.checked)}
               aria-label={`Вибрати всі документи для затвердження (${actionableTasks.length})`}
             />
           </div>
@@ -1666,7 +1662,7 @@ export const ApproveHub: React.FC = () => {
                     <Textarea
                       placeholder="Опишіть детально причину відхилення документа. Наприклад: 'Документ не містить необхідних підписів' або 'Потрібні додаткові роз'яснення по пункту 3.2'"
                       value={rejectReason}
-                      onChange={(e, data) => {
+                      onChange={(_e, data) => {
                         const newValue = data.value;
                         if (newValue.length <= 500) {
                           setRejectReason(newValue);
