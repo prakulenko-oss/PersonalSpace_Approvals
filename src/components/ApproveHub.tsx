@@ -1048,28 +1048,10 @@ export const ApproveHub: React.FC = () => {
           }}>
             <span style={{ fontSize: '20px' }}>✓</span>
           </div>
-          <span className={styles.sidebarTitle}>Manager Workspace</span>
+          <span className={styles.sidebarTitle}>ApproveHub</span>
         </div>
 
         <nav className={styles.sidebarNav} aria-label="Список систем">
-          {/* HR Operations - Active */}
-          <div style={{
-            padding: `${spacing.sm} ${spacing.md}`,
-            backgroundColor: 'rgba(124, 58, 237, 0.08)',
-            borderLeft: '3px solid #7C3AED',
-            marginBottom: spacing.md,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: spacing.sm,
-            color: '#7C3AED',
-            fontWeight: 600,
-            fontSize: '14px'
-          }}>
-            <Users size={18} />
-            <span>HR operations</span>
-          </div>
-
           <div className={styles.navLabel} id="systems-label">Системи затвердження</div>
           <ul role="listbox" aria-labelledby="systems-label" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {systems.map(sys => (
