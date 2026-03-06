@@ -87,52 +87,6 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // MICROSOFT 365 TOP HEADER
-  // ============================================
-  msHeader: {
-    height: '48px',
-    backgroundColor: '#0078d4',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    padding: `0 ${spacing.lg}`,
-    gap: spacing.lg,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-  },
-  msBrand: {
-    fontSize: '15px',
-    fontWeight: 600,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  msSearch: {
-    flex: 1,
-    maxWidth: '400px',
-  },
-  breadcrumbs: {
-    height: '44px',
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: 'flex',
-    alignItems: 'center',
-    padding: `0 ${spacing.lg}`,
-    gap: spacing.xs,
-    fontSize: '13px',
-  },
-  breadcrumbItem: {
-    color: tokens.colorNeutralForeground2,
-    textDecoration: 'none',
-    ':hover': {
-      color: tokens.colorBrandForeground1,
-      textDecoration: 'underline',
-    },
-  },
-  breadcrumbSeparator: {
-    color: tokens.colorNeutralForeground3,
-  },
-
-  // ============================================
   // APP LAYOUT - Responsive
   // ============================================
   app: {
@@ -327,28 +281,6 @@ const useStyles = makeStyles({
   statsValueGreen: {
     fontWeight: 600,
     color: tokens.colorPaletteGreenForeground1,
-  },
-  sidebarUser: {
-    padding: spacing.md,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  userCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: `${spacing.sm} ${spacing.md}`,
-    backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: spacing.sm,
-    '@media (max-width: 768px)': {
-      justifyContent: 'center',
-      padding: spacing.sm,
-    },
-  },
-  userInfo: {
-    overflow: 'hidden',
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
   },
 
   // ============================================
@@ -1101,38 +1033,6 @@ export const ApproveHub: React.FC = () => {
     <div lang="uk" className={styles.app} role="application" aria-label="ApproveHub - Центр затверджень">
       <Toaster toasterId={toasterId} position="top-end" />
 
-      {/* MICROSOFT 365 TOP HEADER */}
-      <div className={styles.msHeader}>
-        <div className={styles.msBrand}>Microsoft 365</div>
-        <div className={styles.msSearch}>
-          <Input 
-            placeholder="Search this site"
-            contentBefore={<Search size={16} />}
-            style={{ width: '100%' }}
-          />
-        </div>
-      </div>
-
-      {/* BREADCRUMBS */}
-      <div className={styles.breadcrumbs}>
-        <button 
-          style={{ 
-            background: 'none', 
-            border: 'none', 
-            padding: spacing.sm,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center'
-          }}
-          aria-label="Відкрити меню"
-        >
-          <LayoutGrid size={20} />
-        </button>
-        <span className={styles.breadcrumbItem}>Main</span>
-        <span className={styles.breadcrumbSeparator}>›</span>
-        <span className={styles.breadcrumbItem}>ApproveHub</span>
-      </div>
-
       <div className={styles.appBody}>
       {/* SIDEBAR */}
       <aside className={styles.sidebar} role="navigation" aria-label="Навігація по системах">
@@ -1234,18 +1134,6 @@ export const ApproveHub: React.FC = () => {
           <div className={styles.statsRow}>
             <span>Затверджено сьогодні</span>
             <span className={styles.statsValueGreen}>8</span>
-          </div>
-        </div>
-
-        <div className={styles.sidebarUser}>
-          <div className={styles.userCard}>
-            <Avatar name="Микола Адмін" size={32} color="brand" aria-hidden="true" />
-            <div className={styles.userInfo}>
-              <Text weight="semibold" size={200}>Микола Адмін</Text>
-              <Text size={100} style={{ color: tokens.colorNeutralForeground3, display: 'block' }}>
-                ID: 3001638794
-              </Text>
-            </div>
           </div>
         </div>
       </aside>
