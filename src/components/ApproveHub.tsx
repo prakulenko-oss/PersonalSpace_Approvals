@@ -271,8 +271,7 @@ const useStyles = makeStyles({
     fontWeight: 600,
     padding: `3px ${spacing.sm}`,
     borderRadius: '12px',
-    background:
-      'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
+    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
     color: '#7C3AED',
     border: '1px solid rgba(124, 58, 237, 0.2)',
     '@media (max-width: 768px)': {
@@ -288,8 +287,7 @@ const useStyles = makeStyles({
     },
   },
   navBadgeUrgent: {
-    background:
-      'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
+    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
     color: '#DC2626',
     border: '1px solid rgba(239, 68, 68, 0.3)',
   },
@@ -533,7 +531,10 @@ const useStyles = makeStyles({
     ':hover': {
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
       transform: 'translateY(-2px)',
-      borderColor: tokens.colorBrandStroke1,
+      borderTopColor: tokens.colorBrandStroke1,
+      borderRightColor: tokens.colorBrandStroke1,
+      borderBottomColor: tokens.colorBrandStroke1,
+      borderLeftColor: tokens.colorBrandStroke1,
     },
     ':focus-visible': {
       outline: `2px solid ${tokens.colorBrandBackground}`,
@@ -544,8 +545,7 @@ const useStyles = makeStyles({
     },
   },
   taskCardSelected: {
-    borderColor: tokens.colorBrandBackground,
-    borderWidth: '2px',
+    border: `2px solid ${tokens.colorBrandBackground}`,
     backgroundColor: tokens.colorBrandBackground2,
     boxShadow: elevation.shadow8,
   },
@@ -581,8 +581,7 @@ const useStyles = makeStyles({
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
     color: '#7C3AED',
-    background:
-      'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
+    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
     border: '1px solid rgba(124, 58, 237, 0.2)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
@@ -906,138 +905,20 @@ interface SystemItem {
 // DATA
 // ============================================
 const systems: SystemItem[] = [
-  {
-    id: 'erp',
-    name: 'ERP Система',
-    icon: (
-      <Database size={20} style={{ color: '#7C3AED' }} aria-hidden="true" />
-    ),
-    count: 5,
-    urgent: true,
-  },
-  {
-    id: 'docflow',
-    name: 'Документообіг',
-    icon: (
-      <FileText size={20} style={{ color: '#2563EB' }} aria-hidden="true" />
-    ),
-    count: 12,
-    urgent: false,
-  },
-  {
-    id: 'bpms',
-    name: 'BPMS',
-    icon: (
-      <LayoutGrid size={20} style={{ color: '#0891B2' }} aria-hidden="true" />
-    ),
-    count: 3,
-    urgent: false,
-  },
-  {
-    id: 'access',
-    name: 'Контроль доступу',
-    icon: <Shield size={20} style={{ color: '#10B981' }} aria-hidden="true" />,
-    count: 7,
-    urgent: true,
-  },
-  {
-    id: 'finance',
-    name: 'Фінанси',
-    icon: (
-      <CreditCard size={20} style={{ color: '#F59E0B' }} aria-hidden="true" />
-    ),
-    count: 2,
-    urgent: false,
-  },
-  {
-    id: 'hr',
-    name: 'Відпустки та кадри',
-    icon: <Users size={20} style={{ color: '#EC4899' }} aria-hidden="true" />,
-    count: 4,
-    urgent: false,
-  },
+  { id: 'erp', name: 'ERP Система', icon: <Database size={20} style={{ color: '#7C3AED' }} aria-hidden="true" />, count: 5, urgent: true },
+  { id: 'docflow', name: 'Документообіг', icon: <FileText size={20} style={{ color: '#2563EB' }} aria-hidden="true" />, count: 12, urgent: false },
+  { id: 'bpms', name: 'BPMS', icon: <LayoutGrid size={20} style={{ color: '#0891B2' }} aria-hidden="true" />, count: 3, urgent: false },
+  { id: 'access', name: 'Контроль доступу', icon: <Shield size={20} style={{ color: '#10B981' }} aria-hidden="true" />, count: 7, urgent: true },
+  { id: 'finance', name: 'Фінанси', icon: <CreditCard size={20} style={{ color: '#F59E0B' }} aria-hidden="true" />, count: 2, urgent: false },
+  { id: 'hr', name: 'Відпустки та кадри', icon: <Users size={20} style={{ color: '#EC4899' }} aria-hidden="true" />, count: 4, urgent: false },
 ];
 
 const initialTasks: Task[] = [
-  {
-    id: 1,
-    type: 'Візування',
-    number: '№12345',
-    date: '06.02.2026',
-    urgent: true,
-    docType: 'Службова записка',
-    contractor: 'ТОВ "Альфа-Трейд"',
-    summary:
-      'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.',
-    preparedBy: 'Оболоник А.С.',
-    preparedByDept: 'Відділ управління операційними системами',
-    createdBy: 'Іваненко М.В.',
-    createdByDept: 'Канцелярія',
-    attachments: [
-      { name: 'Договір_постачання.pdf', size: '2.4 MB' },
-      { name: 'Специфікація.xlsx', size: '156 KB' },
-    ],
-  },
-  {
-    id: 2,
-    type: 'Підписання',
-    number: '№987-Н',
-    date: '10.02.2026',
-    urgent: false,
-    docType: 'Наказ',
-    contractor: '—',
-    summary: 'Відрядження до м. Одеса для проведення аудиту філії.',
-    preparedBy: 'Коваленко І.П.',
-    preparedByDept: 'Відділ кадрів',
-    createdBy: 'Коваленко І.П.',
-    createdByDept: 'Відділ кадрів',
-    attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }],
-  },
-  {
-    id: 3,
-    type: 'По руху',
-    number: '№0042',
-    date: '11.02.2026',
-    urgent: false,
-    docType: 'Заявка',
-    contractor: 'Adobe Inc.',
-    summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.',
-    preparedBy: 'Сидоренко О.М.',
-    preparedByDept: 'IT департамент',
-    createdBy: 'Сидоренко О.М.',
-    createdByDept: 'IT департамент',
-    attachments: [],
-  },
-  {
-    id: 4,
-    type: 'Розгляд',
-    number: '№0098',
-    date: '12.02.2026',
-    urgent: false,
-    docType: 'Договір',
-    contractor: 'ПП "ТехноПостач"',
-    summary: 'Розгляд договору з постачальником обладнання.',
-    preparedBy: 'Петренко В.І.',
-    preparedByDept: 'Юридичний відділ',
-    createdBy: 'Бондаренко К.Л.',
-    createdByDept: 'Юридичний відділ',
-    attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }],
-  },
-  {
-    id: 5,
-    type: 'Візування',
-    number: '№0156',
-    date: '08.02.2026',
-    urgent: true,
-    docType: 'Бюджет',
-    contractor: '—',
-    summary: 'Бюджет на Q2 2026 — затвердження видатків.',
-    preparedBy: 'Мельник О.П.',
-    preparedByDept: 'Фінансовий відділ',
-    createdBy: 'Ткаченко Р.С.',
-    createdByDept: 'Фінансовий відділ',
-    attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }],
-  },
+  { id: 1, type: 'Візування', number: '№12345', date: '06.02.2026', urgent: true, docType: 'Службова записка', contractor: 'ТОВ "Альфа-Трейд"', summary: 'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.', preparedBy: 'Оболоник А.С.', preparedByDept: 'Відділ управління операційними системами', createdBy: 'Іваненко М.В.', createdByDept: 'Канцелярія', attachments: [{ name: 'Договір_постачання.pdf', size: '2.4 MB' }, { name: 'Специфікація.xlsx', size: '156 KB' }] },
+  { id: 2, type: 'Підписання', number: '№987-Н', date: '10.02.2026', urgent: false, docType: 'Наказ', contractor: '—', summary: 'Відрядження до м. Одеса для проведення аудиту філії.', preparedBy: 'Коваленко І.П.', preparedByDept: 'Відділ кадрів', createdBy: 'Коваленко І.П.', createdByDept: 'Відділ кадрів', attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }] },
+  { id: 3, type: 'По руху', number: '№0042', date: '11.02.2026', urgent: false, docType: 'Заявка', contractor: 'Adobe Inc.', summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.', preparedBy: 'Сидоренко О.М.', preparedByDept: 'IT департамент', createdBy: 'Сидоренко О.М.', createdByDept: 'IT департамент', attachments: [] },
+  { id: 4, type: 'Розгляд', number: '№0098', date: '12.02.2026', urgent: false, docType: 'Договір', contractor: 'ПП "ТехноПостач"', summary: 'Розгляд договору з постачальником обладнання.', preparedBy: 'Петренко В.І.', preparedByDept: 'Юридичний відділ', createdBy: 'Бондаренко К.Л.', createdByDept: 'Юридичний відділ', attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }] },
+  { id: 5, type: 'Візування', number: '№0156', date: '08.02.2026', urgent: true, docType: 'Бюджет', contractor: '—', summary: 'Бюджет на Q2 2026 — затвердження видатків.', preparedBy: 'Мельник О.П.', preparedByDept: 'Фінансовий відділ', createdBy: 'Ткаченко Р.С.', createdByDept: 'Фінансовий відділ', attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }] },
 ];
 
 // ============================================
@@ -1062,21 +943,18 @@ export const ApproveHub: React.FC = () => {
   const [liveRegionMessage, setLiveRegionMessage] = useState('');
 
   // Toast notifications
-  const showToast = useCallback(
-    (title: string, body: string, intent: ToastIntent = 'success') => {
-      dispatchToast(
-        <Toast>
-          <ToastTitle>{title}</ToastTitle>
-          <ToastBody>{body}</ToastBody>
-        </Toast>,
-        { intent, timeout: 5000 }
-      );
-      // Update live region for screen readers
-      setLiveRegionMessage(`${title}: ${body}`);
-      setTimeout(() => setLiveRegionMessage(''), 100);
-    },
-    [dispatchToast]
-  );
+  const showToast = useCallback((title: string, body: string, intent: ToastIntent = 'success') => {
+    dispatchToast(
+      <Toast>
+        <ToastTitle>{title}</ToastTitle>
+        <ToastBody>{body}</ToastBody>
+      </Toast>,
+      { intent, timeout: 5000 }
+    );
+    // Update live region for screen readers
+    setLiveRegionMessage(`${title}: ${body}`);
+    setTimeout(() => setLiveRegionMessage(''), 100);
+  }, [dispatchToast]);
 
   // Handlers
   const handleSystemClick = useCallback((id: string) => {
@@ -1101,43 +979,28 @@ export const ApproveHub: React.FC = () => {
 
   const handleApprove = useCallback(() => {
     if (currentTask) {
-      setTasks((prev) => prev.filter((t) => t.id !== currentTask.id));
+      setTasks(prev => prev.filter(t => t.id !== currentTask.id));
       setCurrentTask(null);
-      showToast(
-        'Затверджено',
-        `Документ ${currentTask.number} успішно затверджено`,
-        'success'
-      );
+      showToast('Затверджено', `Документ ${currentTask.number} успішно затверджено`, 'success');
     }
   }, [currentTask, showToast]);
 
-  const handleApproveTask = useCallback(
-    (e: React.MouseEvent, task: Task) => {
-      e.stopPropagation();
-      setTasks((prev) => prev.filter((t) => t.id !== task.id));
-      setSelectedTasks((prev) => prev.filter((id) => id !== task.id));
-      if (currentTask?.id === task.id) {
-        setCurrentTask(null);
-      }
-      showToast(
-        'Затверджено',
-        `Документ ${task.number} успішно затверджено`,
-        'success'
-      );
-    },
-    [currentTask, showToast]
-  );
+  const handleApproveTask = useCallback((e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    setTasks(prev => prev.filter(t => t.id !== task.id));
+    setSelectedTasks(prev => prev.filter(id => id !== task.id));
+    if (currentTask?.id === task.id) {
+      setCurrentTask(null);
+    }
+    showToast('Затверджено', `Документ ${task.number} успішно затверджено`, 'success');
+  }, [currentTask, showToast]);
 
   const handleRejectConfirm = useCallback(() => {
     if (currentTask && rejectReason.trim()) {
-      setTasks((prev) => prev.filter((t) => t.id !== currentTask.id));
+      setTasks(prev => prev.filter(t => t.id !== currentTask.id));
       setCurrentTask(null);
       setRejectReason('');
-      showToast(
-        'Відхилено',
-        `Документ ${currentTask.number} відхилено`,
-        'warning'
-      );
+      showToast('Відхилено', `Документ ${currentTask.number} відхилено`, 'warning');
     }
   }, [currentTask, rejectReason, showToast]);
 
@@ -1147,27 +1010,20 @@ export const ApproveHub: React.FC = () => {
 
   const handleConfirmBulkApprove = useCallback(() => {
     const count = selectedTasks.length;
-    setTasks((prev) => prev.filter((t) => !selectedTasks.includes(t.id)));
+    setTasks(prev => prev.filter(t => !selectedTasks.includes(t.id)));
     setSelectedTasks([]);
     setCurrentTask(null);
     setShowBulkApproveModal(false);
-    showToast(
-      'Затверджено',
-      `${count} документів успішно затверджено`,
-      'success'
-    );
+    showToast('Затверджено', `${count} документів успішно затверджено`, 'success');
   }, [selectedTasks, showToast]);
 
-  const toggleTaskSelection = useCallback(
-    (id: number) => {
-      const task = tasks.find((t) => t.id === id);
-      if (task && !isActionable(task.type)) return;
-      setSelectedTasks((prev) =>
-        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-      );
-    },
-    [tasks]
-  );
+  const toggleTaskSelection = useCallback((id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (task && !isActionable(task.type)) return;
+    setSelectedTasks(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  }, [tasks]);
 
   const handleLoadAttachments = useCallback(() => {
     setAttachmentsLoading(true);
@@ -1181,10 +1037,7 @@ export const ApproveHub: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Skip if typing in input
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
 
@@ -1206,13 +1059,7 @@ export const ApproveHub: React.FC = () => {
       }
 
       // Reject: R (if reason filled)
-      if (
-        e.key === 'r' &&
-        currentTask &&
-        isActionable(currentTask.type) &&
-        rejectReason.trim() &&
-        rejectReason.length <= 500
-      ) {
+      if (e.key === 'r' && currentTask && isActionable(currentTask.type) && rejectReason.trim() && rejectReason.length <= 500) {
         e.preventDefault();
         handleRejectConfirm();
       }
@@ -1220,25 +1067,16 @@ export const ApproveHub: React.FC = () => {
       // Search: /
       if (e.key === '/') {
         e.preventDefault();
-        document
-          .querySelector<HTMLInputElement>('[data-search-input]')
-          ?.focus();
+        document.querySelector<HTMLInputElement>('[data-search-input]')?.focus();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    currentTask,
-    rejectReason,
-    showBulkApproveModal,
-    handleApprove,
-    handleRejectConfirm,
-    handleCloseDetail,
-  ]);
+  }, [currentTask, rejectReason, showBulkApproveModal, handleApprove, handleRejectConfirm, handleCloseDetail]);
 
   // Filtered tasks
-  const filteredTasks = tasks.filter((task) => {
+  const filteredTasks = tasks.filter(task => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -1249,54 +1087,46 @@ export const ApproveHub: React.FC = () => {
     );
   });
 
-  const actionableTasks = filteredTasks.filter((t) => isActionable(t.type));
-  const isAllSelected =
-    actionableTasks.length > 0 &&
-    actionableTasks.every((t) => selectedTasks.includes(t.id));
+  const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
+  const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
   const selectedCount = selectedTasks.length;
 
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        setSelectedTasks(actionableTasks.map((t) => t.id));
-      } else {
-        setSelectedTasks([]);
-      }
-    },
-    [actionableTasks]
-  );
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedTasks(actionableTasks.map(t => t.id));
+    } else {
+      setSelectedTasks([]);
+    }
+  }, [actionableTasks]);
 
-  const activeSystemData = systems.find((s) => s.id === activeSystem);
+  const activeSystemData = systems.find(s => s.id === activeSystem);
 
   return (
-    <div
-      lang="uk"
-      className={styles.app}
-      role="application"
-      aria-label="ApproveHub - Центр затверджень"
-    >
+    <div lang="uk" className={styles.app} role="application" aria-label="ApproveHub - Центр затверджень">
       <Toaster toasterId={toasterId} position="top-end" />
+
       {/* MICROSOFT 365 TOP HEADER */}
       <div className={styles.msHeader}>
         <div className={styles.msBrand}>Microsoft 365</div>
         <div className={styles.msSearch}>
-          <Input
+          <Input 
             placeholder="Search this site"
             contentBefore={<Search size={16} />}
             style={{ width: '100%' }}
           />
         </div>
       </div>
+
       {/* BREADCRUMBS */}
       <div className={styles.breadcrumbs}>
-        <button
-          style={{
-            background: 'none',
-            border: 'none',
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
             padding: spacing.sm,
             cursor: 'pointer',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'center'
           }}
           aria-label="Відкрити меню"
         >
@@ -1306,1272 +1136,740 @@ export const ApproveHub: React.FC = () => {
         <span className={styles.breadcrumbSeparator}>›</span>
         <span className={styles.breadcrumbItem}>ApproveHub</span>
       </div>
+
       <div className={styles.appBody}>
-        {/* SIDEBAR */}
-        <aside
-          className={styles.sidebar}
-          role="navigation"
-          aria-label="Навігація по системах"
-        >
-          <div className={styles.sidebarHeader}>
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <span style={{ fontSize: '20px' }}>✓</span>
-            </div>
-            <span className={styles.sidebarTitle}>Manager Workspace</span>
+      {/* SIDEBAR */}
+      <aside className={styles.sidebar} role="navigation" aria-label="Навігація по системах">
+        <div className={styles.sidebarHeader}>
+          <div style={{ 
+            width: '32px', 
+            height: '32px', 
+            background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{ fontSize: '20px' }}>✓</span>
+          </div>
+          <span className={styles.sidebarTitle}>Manager Workspace</span>
+        </div>
+
+        <nav className={styles.sidebarNav} aria-label="Список систем">
+          {/* HR Operations - Active */}
+          <div style={{
+            padding: `${spacing.sm} ${spacing.md}`,
+            backgroundColor: 'rgba(124, 58, 237, 0.08)',
+            borderLeft: '3px solid #7C3AED',
+            marginBottom: spacing.md,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.sm,
+            color: '#7C3AED',
+            fontWeight: 600,
+            fontSize: '14px'
+          }}>
+            <Users size={18} />
+            <span>HR operations</span>
           </div>
 
-          <nav className={styles.sidebarNav} aria-label="Список систем">
-            {/* HR Operations - Active */}
-            <div
-              style={{
-                padding: `${spacing.sm} ${spacing.md}`,
-                backgroundColor: 'rgba(124, 58, 237, 0.08)',
-                borderLeft: '3px solid #7C3AED',
-                marginBottom: spacing.md,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: spacing.sm,
-                color: '#7C3AED',
-                fontWeight: 600,
-                fontSize: '14px',
-              }}
-            >
-              <Users size={18} />
-              <span>HR operations</span>
-            </div>
+          <div className={styles.navLabel} id="systems-label">Системи затвердження</div>
+          <ul role="listbox" aria-labelledby="systems-label" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {systems.map(sys => (
+              <li key={sys.id} className={styles.navItemWrapper}>
+                <div
+                  role="option"
+                  aria-selected={activeSystem === sys.id}
+                  tabIndex={0}
+                  className={`${styles.navItem} ${activeSystem === sys.id ? styles.navItemActive : ''}`}
+                  onClick={() => handleSystemClick(sys.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSystemClick(sys.id);
+                    }
+                  }}
+                >
+                  <span className={styles.navIcon} aria-hidden="true">{sys.icon}</span>
+                  <span className={styles.navText}>{sys.name}</span>
+                  <span 
+                    className={`${styles.navBadge} ${sys.urgent ? styles.navBadgeUrgent : ''}`}
+                    aria-label={`${sys.count} документів${sys.urgent ? ', терміново' : ''}`}
+                  >
+                    {sys.count}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-            <div className={styles.navLabel} id="systems-label">
-              Системи затвердження
+        <div className={styles.sidebarStats} role="region" aria-label="Статистика">
+          <div className={styles.statsHeader}>
+            <BarChart3 size={20} style={{ color: '#7C3AED' }} aria-hidden="true" />
+            <span>Сьогодні</span>
+          </div>
+          <div className={styles.statsRow}>
+            <span>Оброблено</span>
+            <span className={styles.statsValue}>8/15</span>
+          </div>
+          <div style={{ 
+            width: '100%', 
+            height: '6px', 
+            background: 'rgba(124, 58, 237, 0.1)', 
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginTop: '8px',
+            marginBottom: '12px'
+          }}>
+            <div style={{
+              width: '53%',
+              height: '100%',
+              background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 100%)',
+              borderRadius: '3px',
+              transition: 'width 0.6s ease-out'
+            }} />
+          </div>
+          <div className={styles.statsRow}>
+            <span>Залишилось</span>
+            <span className={styles.statsValue}>{tasks.length}</span>
+          </div>
+          <div className={styles.statsRow}>
+            <span>Затверджено сьогодні</span>
+            <span className={styles.statsValueGreen}>8</span>
+          </div>
+        </div>
+
+        <div className={styles.sidebarUser}>
+          <div className={styles.userCard}>
+            <Avatar name="Микола Адмін" size={32} color="brand" aria-hidden="true" />
+            <div className={styles.userInfo}>
+              <Text weight="semibold" size={200}>Микола Адмін</Text>
+              <Text size={100} style={{ color: tokens.colorNeutralForeground3, display: 'block' }}>
+                ID: 3001638794
+              </Text>
             </div>
-            <ul
-              role="listbox"
-              aria-labelledby="systems-label"
-              style={{ listStyle: 'none', margin: 0, padding: 0 }}
-            >
-              {systems.map((sys) => (
-                <li key={sys.id} className={styles.navItemWrapper}>
-                  <div
-                    role="option"
-                    aria-selected={activeSystem === sys.id}
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main className={styles.main} role="main" aria-label="Список документів">
+        <header className={styles.heroHeader}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.heroTitle}>Центр затверджень</h1>
+            <p className={styles.heroSubtitle}>
+              Швидке опрацювання та затвердження документів з усіх оперативних систем компанії
+            </p>
+          </div>
+          {/* Hero Illustration */}
+          <div className={styles.heroIllustration} aria-hidden="true">
+            <svg viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Desk */}
+              <rect x="40" y="140" width="200" height="8" rx="4" fill="rgba(255,255,255,0.2)"/>
+              {/* Person */}
+              <circle cx="140" cy="80" r="20" fill="rgba(255,255,255,0.3)"/>
+              <rect x="125" y="100" width="30" height="40" rx="8" fill="rgba(255,255,255,0.3)"/>
+              {/* Documents Stack */}
+              <rect x="180" y="100" width="50" height="40" rx="4" fill="rgba(255,255,255,0.25)"/>
+              <rect x="185" y="95" width="50" height="40" rx="4" fill="rgba(255,255,255,0.3)"/>
+              <rect x="190" y="90" width="50" height="40" rx="4" fill="rgba(255,255,255,0.35)"/>
+              {/* Checkmarks */}
+              <circle cx="215" cy="70" r="15" fill="#10B981"/>
+              <path d="M209 70L213 74L221 66" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="245" cy="85" r="12" fill="#10B981"/>
+              <path d="M240 85L243 88L250 81" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              {/* Laptop */}
+              <rect x="80" y="115" width="60" height="35" rx="4" fill="rgba(255,255,255,0.2)"/>
+              <rect x="85" y="120" width="50" height="25" rx="2" fill="rgba(59,130,246,0.3)"/>
+              {/* Decorative Elements */}
+              <circle cx="250" cy="40" r="8" fill="rgba(255,255,255,0.15)"/>
+              <circle cx="60" cy="50" r="6" fill="rgba(255,255,255,0.1)"/>
+              <circle cx="90" cy="30" r="10" fill="rgba(255,255,255,0.12)"/>
+            </svg>
+          </div>
+        </header>
+
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>
+            <FileText size={20} aria-hidden="true" />
+            <span>{activeSystemData?.name}</span>
+          </div>
+          <Input
+            data-search-input
+            contentBefore={<Search size={20} aria-hidden="true" />}
+            placeholder="Пошук... (натисніть /)"
+            style={{ width: '240px' }}
+            value={searchQuery}
+            onChange={(e, data) => setSearchQuery(data.value)}
+            aria-label="Пошук документів"
+          />
+        </div>
+
+        <div className={styles.toolbar} role="toolbar" aria-label="Панель інструментів">
+          <div className={styles.toolbarLeft}>
+            <Checkbox
+              label="Вибрати всі"
+              checked={isAllSelected}
+              onChange={(e, data) => handleSelectAll(!!data.checked)}
+              aria-label={`Вибрати всі документи для затвердження (${actionableTasks.length})`}
+            />
+          </div>
+          <div className={styles.toolbarRight}>
+            {selectedCount > 0 && (
+              <Button
+                icon={<Check size={16} aria-hidden="true" />}
+                onClick={handleApproveSelected}
+                className={styles.btnActive}
+                style={{
+                  backgroundColor: hoveredBtn === 'toolbar-approve' ? '#22a566' : '#f0fff4',
+                  color: hoveredBtn === 'toolbar-approve' ? 'white' : '#22a566',
+                  border: '1px solid #22a566',
+                  borderRadius: '8px',
+                  padding: '6px 20px',
+                  fontWeight: 600,
+                  transition: `all ${motion.fast} ${motion.easeOut}`,
+                }}
+                onMouseEnter={() => setHoveredBtn('toolbar-approve')}
+                onMouseLeave={() => setHoveredBtn(null)}
+                aria-label={`Затвердити ${selectedCount} обраних документів`}
+              >
+                Затвердити обрані ({selectedCount})
+              </Button>
+            )}
+            <span className={styles.taskCount} aria-live="polite">
+              {filteredTasks.length} документів
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.contentArea}>
+          <div 
+            className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}
+            role="list"
+            aria-label="Список документів на затвердження"
+          >
+            {filteredTasks.length === 0 ? (
+              // Empty state - all done
+              searchQuery.trim() ? (
+                // No search results
+                <div className={styles.emptyState} role="status">
+                  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
+                    {/* Magnifying glass */}
+                    <circle cx="50" cy="50" r="20" stroke="#7C3AED" strokeWidth="3" fill="none"/>
+                    <line x1="65" y1="65" x2="80" y2="80" stroke="#7C3AED" strokeWidth="3" strokeLinecap="round"/>
+                    {/* Question mark */}
+                    <circle cx="90" cy="35" r="15" fill="rgba(124, 58, 237, 0.1)"/>
+                    <text x="90" y="42" fontSize="18" fill="#7C3AED" textAnchor="middle" fontWeight="600">?</text>
+                  </svg>
+                  <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
+                    Нічого не знайдено
+                  </Text>
+                  <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', marginBottom: spacing.md }}>
+                    За запитом "{searchQuery}" не знайдено документів
+                  </Text>
+                  <Button 
+                    appearance="subtle" 
+                    onClick={() => setSearchQuery('')}
+                    style={{ marginTop: spacing.sm }}
+                  >
+                    Очистити пошук
+                  </Button>
+                </div>
+              ) : (
+                // All tasks completed
+                <div className={styles.emptyState} role="status">
+                  <svg width="140" height="140" viewBox="0 0 140 140" fill="none" style={{ marginBottom: spacing.lg }}>
+                    {/* Coffee cup */}
+                    <rect x="45" y="70" width="50" height="55" rx="6" fill="url(#coffeeGradient)"/>
+                    <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669"/>
+                    <rect x="90" y="90" width="8" height="25" rx="4" fill="#059669"/>
+                    {/* Steam */}
+                    <path d="M55 60 Q 50 50 55 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
+                    <path d="M70 55 Q 65 45 70 35" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
+                    <path d="M85 60 Q 80 50 85 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
+                    {/* Checkmark badge */}
+                    <circle cx="100" cy="50" r="18" fill="#10B981"/>
+                    <path d="M93 50L98 55L107 44" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    {/* Decorative elements */}
+                    <circle cx="25" cy="40" r="4" fill="rgba(124, 58, 237, 0.2)"/>
+                    <circle cx="115" cy="100" r="5" fill="rgba(37, 99, 235, 0.2)"/>
+                    <circle cx="30" cy="110" r="3" fill="rgba(16, 185, 129, 0.2)"/>
+                    
+                    <defs>
+                      <linearGradient id="coffeeGradient" x1="45" y1="70" x2="95" y2="125">
+                        <stop offset="0%" stopColor="#10B981"/>
+                        <stop offset="100%" stopColor="#059669"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs, fontSize: '18px' }}>
+                    Чудова робота! ✨
+                  </Text>
+                  <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.6' }}>
+                    Усі документи в цій системі розглянуто.<br />
+                    Час для кави ☕
+                  </Text>
+                  <div style={{ 
+                    marginTop: spacing.xl, 
+                    padding: spacing.md,
+                    background: 'rgba(16, 185, 129, 0.05)',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    color: '#059669',
+                    fontWeight: 500
+                  }}>
+                    🎯 Сьогодні опрацьовано: 8 документів
+                  </div>
+                </div>
+              )
+            ) : (
+              filteredTasks.map(task => {
+                const isSelected = currentTask?.id === task.id;
+                const canApprove = isActionable(task.type);
+                const isChecked = selectedTasks.includes(task.id);
+
+                return (
+                  <article
+                    key={task.id}
+                    role="listitem"
                     tabIndex={0}
-                    className={`${styles.navItem} ${
-                      activeSystem === sys.id ? styles.navItemActive : ''
-                    }`}
-                    onClick={() => handleSystemClick(sys.id)}
+                    aria-selected={isSelected}
+                    aria-label={`${task.type} ${task.number}: ${task.summary}`}
+                    className={`${styles.taskCard} ${isSelected ? styles.taskCardSelected : ''}`}
+                    onClick={() => handleTaskClick(task)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        handleSystemClick(sys.id);
+                        handleTaskClick(task);
                       }
                     }}
                   >
-                    <span className={styles.navIcon} aria-hidden="true">
-                      {sys.icon}
-                    </span>
-                    <span className={styles.navText}>{sys.name}</span>
-                    <span
-                      className={`${styles.navBadge} ${
-                        sys.urgent ? styles.navBadgeUrgent : ''
-                      }`}
-                      aria-label={`${sys.count} документів${
-                        sys.urgent ? ', терміново' : ''
-                      }`}
-                    >
-                      {sys.count}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div
-            className={styles.sidebarStats}
-            role="region"
-            aria-label="Статистика"
-          >
-            <div className={styles.statsHeader}>
-              <BarChart3
-                size={20}
-                style={{ color: '#7C3AED' }}
-                aria-hidden="true"
-              />
-              <span>Сьогодні</span>
-            </div>
-            <div className={styles.statsRow}>
-              <span>Оброблено</span>
-              <span className={styles.statsValue}>8/15</span>
-            </div>
-            <div
-              style={{
-                width: '100%',
-                height: '6px',
-                background: 'rgba(124, 58, 237, 0.1)',
-                borderRadius: '3px',
-                overflow: 'hidden',
-                marginTop: '8px',
-                marginBottom: '12px',
-              }}
-            >
-              <div
-                style={{
-                  width: '53%',
-                  height: '100%',
-                  background:
-                    'linear-gradient(90deg, #7C3AED 0%, #2563EB 100%)',
-                  borderRadius: '3px',
-                  transition: 'width 0.6s ease-out',
-                }}
-              />
-            </div>
-            <div className={styles.statsRow}>
-              <span>Залишилось</span>
-              <span className={styles.statsValue}>{tasks.length}</span>
-            </div>
-            <div className={styles.statsRow}>
-              <span>Затверджено сьогодні</span>
-              <span className={styles.statsValueGreen}>8</span>
-            </div>
-          </div>
-
-          <div className={styles.sidebarUser}>
-            <div className={styles.userCard}>
-              <Avatar
-                name="Микола Адмін"
-                size={32}
-                color="brand"
-                aria-hidden="true"
-              />
-              <div className={styles.userInfo}>
-                <Text weight="semibold" size={200}>
-                  Микола Адмін
-                </Text>
-                <Text
-                  size={100}
-                  style={{
-                    color: tokens.colorNeutralForeground3,
-                    display: 'block',
-                  }}
-                >
-                  ID: 3001638794
-                </Text>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* MAIN */}
-        <main
-          className={styles.main}
-          role="main"
-          aria-label="Список документів"
-        >
-          <header className={styles.heroHeader}>
-            <div className={styles.heroContent}>
-              <h1 className={styles.heroTitle}>Центр затверджень</h1>
-              <p className={styles.heroSubtitle}>
-                Швидке опрацювання та затвердження документів з усіх оперативних
-                систем компанії
-              </p>
-            </div>
-            {/* Hero Illustration */}
-            <div className={styles.heroIllustration} aria-hidden="true">
-              <svg
-                viewBox="0 0 280 180"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Desk */}
-                <rect
-                  x="40"
-                  y="140"
-                  width="200"
-                  height="8"
-                  rx="4"
-                  fill="rgba(255,255,255,0.2)"
-                />
-                {/* Person */}
-                <circle cx="140" cy="80" r="20" fill="rgba(255,255,255,0.3)" />
-                <rect
-                  x="125"
-                  y="100"
-                  width="30"
-                  height="40"
-                  rx="8"
-                  fill="rgba(255,255,255,0.3)"
-                />
-                {/* Documents Stack */}
-                <rect
-                  x="180"
-                  y="100"
-                  width="50"
-                  height="40"
-                  rx="4"
-                  fill="rgba(255,255,255,0.25)"
-                />
-                <rect
-                  x="185"
-                  y="95"
-                  width="50"
-                  height="40"
-                  rx="4"
-                  fill="rgba(255,255,255,0.3)"
-                />
-                <rect
-                  x="190"
-                  y="90"
-                  width="50"
-                  height="40"
-                  rx="4"
-                  fill="rgba(255,255,255,0.35)"
-                />
-                {/* Checkmarks */}
-                <circle cx="215" cy="70" r="15" fill="#10B981" />
-                <path
-                  d="M209 70L213 74L221 66"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <circle cx="245" cy="85" r="12" fill="#10B981" />
-                <path
-                  d="M240 85L243 88L250 81"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                {/* Laptop */}
-                <rect
-                  x="80"
-                  y="115"
-                  width="60"
-                  height="35"
-                  rx="4"
-                  fill="rgba(255,255,255,0.2)"
-                />
-                <rect
-                  x="85"
-                  y="120"
-                  width="50"
-                  height="25"
-                  rx="2"
-                  fill="rgba(59,130,246,0.3)"
-                />
-                {/* Decorative Elements */}
-                <circle cx="250" cy="40" r="8" fill="rgba(255,255,255,0.15)" />
-                <circle cx="60" cy="50" r="6" fill="rgba(255,255,255,0.1)" />
-                <circle cx="90" cy="30" r="10" fill="rgba(255,255,255,0.12)" />
-              </svg>
-            </div>
-          </header>
-
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>
-              <FileText size={20} aria-hidden="true" />
-              <span>{activeSystemData?.name}</span>
-            </div>
-            <Input
-              data-search-input
-              contentBefore={<Search size={20} aria-hidden="true" />}
-              placeholder="Пошук... (натисніть /)"
-              style={{ width: '240px' }}
-              value={searchQuery}
-              onChange={(e, data) => setSearchQuery(data.value)}
-              aria-label="Пошук документів"
-            />
-          </div>
-
-          <div
-            className={styles.toolbar}
-            role="toolbar"
-            aria-label="Панель інструментів"
-          >
-            <div className={styles.toolbarLeft}>
-              <Checkbox
-                label="Вибрати всі"
-                checked={isAllSelected}
-                onChange={(e, data) => handleSelectAll(!!data.checked)}
-                aria-label={`Вибрати всі документи для затвердження (${actionableTasks.length})`}
-              />
-            </div>
-            <div className={styles.toolbarRight}>
-              {selectedCount > 0 && (
-                <Button
-                  icon={<Check size={16} aria-hidden="true" />}
-                  onClick={handleApproveSelected}
-                  className={styles.btnActive}
-                  style={{
-                    backgroundColor:
-                      hoveredBtn === 'toolbar-approve' ? '#22a566' : '#f0fff4',
-                    color:
-                      hoveredBtn === 'toolbar-approve' ? 'white' : '#22a566',
-                    border: '1px solid #22a566',
-                    borderRadius: '8px',
-                    padding: '6px 20px',
-                    fontWeight: 600,
-                    transition: `all ${motion.fast} ${motion.easeOut}`,
-                  }}
-                  onMouseEnter={() => setHoveredBtn('toolbar-approve')}
-                  onMouseLeave={() => setHoveredBtn(null)}
-                  aria-label={`Затвердити ${selectedCount} обраних документів`}
-                >
-                  Затвердити обрані ({selectedCount})
-                </Button>
-              )}
-              <span className={styles.taskCount} aria-live="polite">
-                {filteredTasks.length} документів
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.contentArea}>
-            <div
-              className={`${styles.taskList} ${
-                currentTask ? styles.taskListSplit : ''
-              }`}
-              role="list"
-              aria-label="Список документів на затвердження"
-            >
-              {filteredTasks.length === 0 ? (
-                // Empty state - all done
-                searchQuery.trim() ? (
-                  // No search results
-                  <div className={styles.emptyState} role="status">
-                    <svg
-                      width="120"
-                      height="120"
-                      viewBox="0 0 120 120"
-                      fill="none"
-                      style={{ marginBottom: spacing.lg }}
-                    >
-                      {/* Magnifying glass */}
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="20"
-                        stroke="#7C3AED"
-                        strokeWidth="3"
-                        fill="none"
-                      />
-                      <line
-                        x1="65"
-                        y1="65"
-                        x2="80"
-                        y2="80"
-                        stroke="#7C3AED"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                      />
-                      {/* Question mark */}
-                      <circle
-                        cx="90"
-                        cy="35"
-                        r="15"
-                        fill="rgba(124, 58, 237, 0.1)"
-                      />
-                      <text
-                        x="90"
-                        y="42"
-                        fontSize="18"
-                        fill="#7C3AED"
-                        textAnchor="middle"
-                        fontWeight="600"
-                      >
-                        ?
-                      </text>
-                    </svg>
-                    <Text
-                      weight="semibold"
-                      size={500}
-                      style={{ marginBottom: spacing.xs }}
-                    >
-                      Нічого не знайдено
-                    </Text>
-                    <Text
-                      style={{
-                        color: tokens.colorNeutralForeground2,
-                        textAlign: 'center',
-                        marginBottom: spacing.md,
-                      }}
-                    >
-                      За запитом "{searchQuery}" не знайдено документів
-                    </Text>
-                    <Button
-                      appearance="subtle"
-                      onClick={() => setSearchQuery('')}
-                      style={{ marginTop: spacing.sm }}
-                    >
-                      Очистити пошук
-                    </Button>
-                  </div>
-                ) : (
-                  // All tasks completed
-                  <div className={styles.emptyState} role="status">
-                    <svg
-                      width="140"
-                      height="140"
-                      viewBox="0 0 140 140"
-                      fill="none"
-                      style={{ marginBottom: spacing.lg }}
-                    >
-                      {/* Coffee cup */}
-                      <rect
-                        x="45"
-                        y="70"
-                        width="50"
-                        height="55"
-                        rx="6"
-                        fill="url(#coffeeGradient)"
-                      />
-                      <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669" />
-                      <rect
-                        x="90"
-                        y="90"
-                        width="8"
-                        height="25"
-                        rx="4"
-                        fill="#059669"
-                      />
-                      {/* Steam */}
-                      <path
-                        d="M55 60 Q 50 50 55 40"
-                        stroke="#10B981"
-                        strokeWidth="2.5"
-                        fill="none"
-                        strokeLinecap="round"
-                        opacity="0.6"
-                      />
-                      <path
-                        d="M70 55 Q 65 45 70 35"
-                        stroke="#10B981"
-                        strokeWidth="2.5"
-                        fill="none"
-                        strokeLinecap="round"
-                        opacity="0.6"
-                      />
-                      <path
-                        d="M85 60 Q 80 50 85 40"
-                        stroke="#10B981"
-                        strokeWidth="2.5"
-                        fill="none"
-                        strokeLinecap="round"
-                        opacity="0.6"
-                      />
-                      {/* Checkmark badge */}
-                      <circle cx="100" cy="50" r="18" fill="#10B981" />
-                      <path
-                        d="M93 50L98 55L107 44"
-                        stroke="white"
-                        strokeWidth="3"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      {/* Decorative elements */}
-                      <circle
-                        cx="25"
-                        cy="40"
-                        r="4"
-                        fill="rgba(124, 58, 237, 0.2)"
-                      />
-                      <circle
-                        cx="115"
-                        cy="100"
-                        r="5"
-                        fill="rgba(37, 99, 235, 0.2)"
-                      />
-                      <circle
-                        cx="30"
-                        cy="110"
-                        r="3"
-                        fill="rgba(16, 185, 129, 0.2)"
-                      />
-
-                      <defs>
-                        <linearGradient
-                          id="coffeeGradient"
-                          x1="45"
-                          y1="70"
-                          x2="95"
-                          y2="125"
-                        >
-                          <stop offset="0%" stopColor="#10B981" />
-                          <stop offset="100%" stopColor="#059669" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <Text
-                      weight="semibold"
-                      size={500}
-                      style={{ marginBottom: spacing.xs, fontSize: '18px' }}
-                    >
-                      Чудова робота! ✨
-                    </Text>
-                    <Text
-                      style={{
-                        color: tokens.colorNeutralForeground2,
-                        textAlign: 'center',
-                        lineHeight: '1.6',
-                      }}
-                    >
-                      Усі документи в цій системі розглянуто.
-                      <br />
-                      Час для кави ☕
-                    </Text>
-                    <div
-                      style={{
-                        marginTop: spacing.xl,
-                        padding: spacing.md,
-                        background: 'rgba(16, 185, 129, 0.05)',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: '#059669',
-                        fontWeight: 500,
-                      }}
-                    >
-                      🎯 Сьогодні опрацьовано: 8 документів
-                    </div>
-                  </div>
-                )
-              ) : (
-                filteredTasks.map((task) => {
-                  const isSelected = currentTask?.id === task.id;
-                  const canApprove = isActionable(task.type);
-                  const isChecked = selectedTasks.includes(task.id);
-
-                  return (
-                    <article
-                      key={task.id}
-                      role="listitem"
-                      tabIndex={0}
-                      aria-selected={isSelected}
-                      aria-label={`${task.type} ${task.number}: ${task.summary}`}
-                      className={`${styles.taskCard} ${
-                        isSelected ? styles.taskCardSelected : ''
-                      }`}
-                      onClick={() => handleTaskClick(task)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleTaskClick(task);
-                        }
-                      }}
-                    >
-                      <div className={styles.taskCardInner}>
-                        <div
-                          className={styles.taskCheckbox}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Checkbox
-                            checked={isChecked}
-                            disabled={!canApprove}
-                            onChange={() => toggleTaskSelection(task.id)}
-                            aria-label={`Вибрати документ ${task.number}`}
-                          />
-                        </div>
-                        <div className={styles.taskBody}>
-                          <div className={styles.taskHeader}>
-                            <div className={styles.taskBadgeContainer}>
-                              <span
-                                className={
-                                  canApprove
-                                    ? styles.taskTypeActionable
-                                    : styles.taskTypeViewOnly
-                                }
-                              >
-                                {canApprove ? (
-                                  <Check size={14} aria-hidden="true" />
-                                ) : (
-                                  <Eye size={14} aria-hidden="true" />
-                                )}
-                                {task.type}
-                              </span>
-                            </div>
-                            <span
-                              className={`${styles.taskDate} ${
-                                task.urgent ? styles.taskDateUrgent : ''
-                              }`}
-                            >
-                              {task.urgent && (
-                                <span aria-label="Терміново">🔥 </span>
-                              )}
-                              Строк: {task.date}
+                    <div className={styles.taskCardInner}>
+                      <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isChecked}
+                          disabled={!canApprove}
+                          onChange={() => toggleTaskSelection(task.id)}
+                          aria-label={`Вибрати документ ${task.number}`}
+                        />
+                      </div>
+                      <div className={styles.taskBody}>
+                        <div className={styles.taskHeader}>
+                          <div className={styles.taskBadgeContainer}>
+                            <span className={canApprove ? styles.taskTypeActionable : styles.taskTypeViewOnly}>
+                              {canApprove ? <Check size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
+                              {task.type}
                             </span>
                           </div>
-                          <h3 className={styles.taskTitle}>
-                            {task.number} — {task.summary.substring(0, 55)}...
-                          </h3>
-                          <p className={styles.taskDesc}>{task.summary}</p>
-                          <div className={styles.taskFooter}>
-                            <div className={styles.taskMeta}>
-                              <Avatar
-                                name={task.preparedBy}
-                                size={20}
-                                aria-hidden="true"
-                              />
-                              <span className={styles.taskAuthorName}>
-                                {task.preparedBy}
-                              </span>
-                              <span className={styles.taskDepartment}>
-                                · {task.preparedByDept}
-                              </span>
-                            </div>
-                            {canApprove && (
-                              <div className={styles.taskCardActions}>
-                                <Button
-                                  size="small"
-                                  icon={<Check size={16} aria-hidden="true" />}
-                                  onClick={(e) => handleApproveTask(e, task)}
-                                  className={styles.btnActive}
-                                  onMouseEnter={() =>
-                                    setHoveredBtn(`card-${task.id}`)
-                                  }
-                                  onMouseLeave={() => setHoveredBtn(null)}
-                                  style={{
-                                    backgroundColor:
-                                      hoveredBtn === `card-${task.id}`
-                                        ? '#22a566'
-                                        : '#f0fff4',
-                                    color:
-                                      hoveredBtn === `card-${task.id}`
-                                        ? 'white'
-                                        : '#22a566',
-                                    border: '1px solid #22a566',
-                                    borderRadius: '8px',
-                                    fontWeight: 600,
-                                    transition: `all ${motion.fast} ${motion.easeOut}`,
-                                  }}
-                                  aria-label={`Затвердити документ ${task.number}`}
-                                >
-                                  Затвердити
-                                </Button>
-                              </div>
-                            )}
+                          <span className={`${styles.taskDate} ${task.urgent ? styles.taskDateUrgent : ''}`}>
+                            {task.urgent && <span aria-label="Терміново">🔥 </span>}
+                            Строк: {task.date}
+                          </span>
+                        </div>
+                        <h3 className={styles.taskTitle}>{task.number} — {task.summary.substring(0, 55)}...</h3>
+                        <p className={styles.taskDesc}>{task.summary}</p>
+                        <div className={styles.taskFooter}>
+                          <div className={styles.taskMeta}>
+                            <Avatar name={task.preparedBy} size={20} aria-hidden="true" />
+                            <span className={styles.taskAuthorName}>{task.preparedBy}</span>
+                            <span className={styles.taskDepartment}>· {task.preparedByDept}</span>
                           </div>
+                          {canApprove && (
+                            <div className={styles.taskCardActions}>
+                              <Button
+                                size="small"
+                                icon={<Check size={16} aria-hidden="true" />}
+                                onClick={(e) => handleApproveTask(e, task)}
+                                className={styles.btnActive}
+                                onMouseEnter={() => setHoveredBtn(`card-${task.id}`)}
+                                onMouseLeave={() => setHoveredBtn(null)}
+                                style={{
+                                  backgroundColor: hoveredBtn === `card-${task.id}` ? '#22a566' : '#f0fff4',
+                                  color: hoveredBtn === `card-${task.id}` ? 'white' : '#22a566',
+                                  border: '1px solid #22a566',
+                                  borderRadius: '8px',
+                                  fontWeight: 600,
+                                  transition: `all ${motion.fast} ${motion.easeOut}`,
+                                }}
+                                aria-label={`Затвердити документ ${task.number}`}
+                              >
+                                Затвердити
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
+                    </div>
+                  </article>
+                );
+              })
+            )}
+          </div>
 
-            {/* DETAIL PANEL */}
-            {currentTask && (
-              <aside
-                className={styles.detailPanel}
-                role="complementary"
-                aria-label={`Деталі документа ${currentTask.number}`}
-              >
-                <div className={styles.detailHeader}>
+          {/* DETAIL PANEL */}
+          {currentTask && (
+            <aside 
+              className={styles.detailPanel} 
+              role="complementary" 
+              aria-label={`Деталі документа ${currentTask.number}`}
+            >
+              <div className={styles.detailHeader}>
+                <Button 
+                  appearance="subtle" 
+                  icon={<ExternalLink size={20} aria-hidden="true" />}
+                  aria-label="Відкрити документ у зовнішній системі"
+                >
+                  Відкрити в системі
+                </Button>
+                <Button 
+                  appearance="subtle" 
+                  icon={<X size={20} aria-hidden="true" />} 
+                  onClick={handleCloseDetail}
+                  aria-label="Закрити панель деталей"
+                />
+              </div>
+
+              <div className={styles.detailBody}>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: tokens.colorBrandForeground1, marginBottom: spacing.sm }}>
+                  {currentTask.type} {currentTask.number}
+                </div>
+                <div className={styles.detailTitle} id="detail-title">{currentTask.summary.substring(0, 60)}...</div>
+
+                <section aria-labelledby="detail-info-heading" style={{ marginBottom: spacing.lg }}>
+                  <div id="detail-info-heading" style={{ position: 'absolute', left: '-10000px' }}>Інформація про документ</div>
+                  <div className={styles.detailGrid}>
+                    <div className={styles.detailField}>
+                      <div className={styles.detailFieldLabel}>Строк</div>
+                      <div className={styles.detailFieldValue}>{currentTask.date}</div>
+                    </div>
+                  <div className={styles.detailField}>
+                    <div className={styles.detailFieldLabel}>Вид документа</div>
+                    <div className={styles.detailFieldValue}>{currentTask.docType}</div>
+                  </div>
+                  <div className={styles.detailFieldFull}>
+                    <div className={styles.detailFieldLabel}>Контрагент</div>
+                    <div className={styles.detailFieldValue}>{currentTask.contractor}</div>
+                  </div>
+                </div>
+                </section>
+
+                <section aria-labelledby="detail-summary-heading">
+                  <div id="detail-summary-heading" className={styles.detailSectionTitle}>Короткий зміст</div>
+                  <div className={styles.detailDescription}>{currentTask.summary}</div>
+                </section>
+
+                <section aria-labelledby="detail-preparer-heading" style={{ marginBottom: spacing.lg }}>
+                  <div id="detail-preparer-heading" className={styles.detailSectionTitle}>Готував</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: '4px' }}>
+                    <Avatar name={currentTask.preparedBy} size={24} aria-hidden="true" />
+                    <span style={{ fontWeight: 500 }}>{currentTask.preparedBy}</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '34px' }}>
+                    {currentTask.preparedByDept}
+                  </div>
+                </section>
+
+                <section aria-labelledby="detail-creator-heading" style={{ marginBottom: spacing.lg }}>
+                  <div id="detail-creator-heading" className={styles.detailSectionTitle}>Створив</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: '4px' }}>
+                    <Avatar name={currentTask.createdBy} size={24} aria-hidden="true" />
+                    <span style={{ fontWeight: 500 }}>{currentTask.createdBy}</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '34px' }}>
+                    {currentTask.createdByDept}
+                  </div>
+                </section>
+
+                {/* Attachments */}
+                {currentTask.attachments.length > 0 && (
+                  <section 
+                    aria-labelledby="attachments-heading"
+                    style={{
+                      marginBottom: spacing.lg,
+                      border: `1px solid ${tokens.colorNeutralStroke2}`,
+                      borderRadius: spacing.sm,
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: `${spacing.md} ${spacing.lg}`,
+                      backgroundColor: tokens.colorNeutralBackground3,
+                      borderBottom: `1px solid ${tokens.colorNeutralStroke2}`
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                        <Paperclip size={20} aria-hidden="true" />
+                        <div id="attachments-heading" style={{ fontWeight: 600, fontSize: '13px', margin: 0 }}>
+                          ВКЛАДЕННЯ ({currentTask.attachments.length})
+                        </div>
+                      </div>
+                      {!attachmentsLoaded && (
+                        <Button
+                          size="small"
+                          icon={attachmentsLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" /> : <Download size={16} aria-hidden="true" />}
+                          onClick={handleLoadAttachments}
+                          disabled={attachmentsLoading}
+                          aria-label={attachmentsLoading ? 'Завантаження файлів...' : 'Завантажити вкладення'}
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: `1px solid ${tokens.colorBrandBackground}`,
+                            color: tokens.colorBrandForeground1,
+                            borderRadius: '6px',
+                          }}
+                        >
+                          {attachmentsLoading ? 'Завантаження...' : 'Завантажити'}
+                        </Button>
+                      )}
+                    </div>
+                    <ul style={{ padding: `${spacing.sm} 0`, margin: 0, listStyle: 'none' }}>
+                      {currentTask.attachments.map((file, idx) => (
+                        <li
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: `${spacing.sm} ${spacing.lg}`,
+                            cursor: attachmentsLoaded ? 'pointer' : 'default',
+                            opacity: attachmentsLoaded ? 1 : 0.6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                            <File size={20} style={{ color: tokens.colorBrandBackground }} aria-hidden="true" />
+                            <span style={{
+                              fontSize: '13px',
+                              color: attachmentsLoaded ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground2,
+                              textDecoration: attachmentsLoaded ? 'underline' : 'none'
+                            }}>
+                              {file.name}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
+                            {file.size}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
+                {/* Rejection reason (for actionable) */}
+                {isActionable(currentTask.type) && (
+                  <section aria-labelledby="reject-reason-heading" style={{ marginBottom: spacing.lg }}>
+                    <div id="reject-reason-heading" className={styles.detailSectionTitle}>
+                      Причина відхилення {!rejectReason.trim() && <span style={{ color: '#e53e3e' }}>*</span>}
+                    </div>
+                    <Textarea
+                      placeholder="Опишіть детально причину відхилення документа. Наприклад: 'Документ не містить необхідних підписів' або 'Потрібні додаткові роз'яснення по пункту 3.2'"
+                      value={rejectReason}
+                      onChange={(e, data) => {
+                        const newValue = data.value;
+                        if (newValue.length <= 500) {
+                          setRejectReason(newValue);
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        minHeight: '100px',
+                        borderColor: !rejectReason.trim() ? '#e53e3e' : rejectReason.length > 500 ? '#e53e3e' : undefined,
+                      }}
+                      aria-label="Причина відхилення документа"
+                      aria-required="true"
+                      aria-invalid={!rejectReason.trim() || rejectReason.length > 500}
+                      aria-describedby="reject-reason-hint reject-reason-counter"
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.xs }}>
+                      {!rejectReason.trim() ? (
+                        <div id="reject-reason-hint" style={{ fontSize: '12px', color: '#e53e3e' }}>
+                          * Обов'язкове поле для відхилення документа
+                        </div>
+                      ) : (
+                        <div id="reject-reason-hint" style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
+                          Вкажіть конкретну та зрозумілу причину відхилення
+                        </div>
+                      )}
+                      <div 
+                        id="reject-reason-counter"
+                        className={`${styles.characterCounter} ${rejectReason.length > 500 ? styles.characterCounterError : ''}`}
+                        aria-live="polite"
+                      >
+                        {rejectReason.length}/500
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {/* View-only warning */}
+                {!isActionable(currentTask.type) && (
+                  <div className={styles.detailInfoWarning} role="alert">
+                    <AlertCircle size={20} aria-hidden="true" />
+                    <span>Цей документ доступний лише для перегляду. Для затвердження перейдіть у систему.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer buttons */}
+              {isActionable(currentTask.type) ? (
+                <div className={styles.detailFooter}>
                   <Button
-                    appearance="subtle"
+                    icon={<Check size={20} aria-hidden="true" />}
+                    onClick={handleApprove}
+                    className={styles.btnActive}
+                    onMouseEnter={() => setHoveredBtn('detail-approve')}
+                    onMouseLeave={() => setHoveredBtn(null)}
+                    style={{
+                      backgroundColor: hoveredBtn === 'detail-approve' ? '#22a566' : '#f0fff4',
+                      color: hoveredBtn === 'detail-approve' ? 'white' : '#22a566',
+                      border: '1px solid #22a566',
+                      borderRadius: '8px',
+                      padding: '10px 24px',
+                      fontWeight: 600,
+                      transition: `all ${motion.fast} ${motion.easeOut}`,
+                    }}
+                    aria-label="Затвердити документ (клавіша A)"
+                  >
+                    Затвердити
+                  </Button>
+                  <Button
+                    icon={<X size={20} aria-hidden="true" />}
+                    onClick={handleRejectConfirm}
+                    disabled={!rejectReason.trim() || rejectReason.length > 500}
+                    className={styles.btnActive}
+                    onMouseEnter={() => setHoveredBtn('detail-reject')}
+                    onMouseLeave={() => setHoveredBtn(null)}
+                    style={{
+                      backgroundColor: (!rejectReason.trim() || rejectReason.length > 500) ? '#f5f5f5' : (hoveredBtn === 'detail-reject' ? '#fee2e2' : 'transparent'),
+                      color: (!rejectReason.trim() || rejectReason.length > 500) ? '#999' : '#e53e3e',
+                      border: `1px solid ${(!rejectReason.trim() || rejectReason.length > 500) ? '#ccc' : '#e53e3e'}`,
+                      borderRadius: '8px',
+                      padding: '10px 24px',
+                      fontWeight: 600,
+                      transition: `all ${motion.fast} ${motion.easeOut}`,
+                      cursor: (!rejectReason.trim() || rejectReason.length > 500) ? 'not-allowed' : 'pointer',
+                    }}
+                    aria-label={
+                      rejectReason.length > 500 
+                        ? "Причина відхилення перевищує ліміт 500 символів" 
+                        : (rejectReason.trim() ? "Відхилити документ (клавіша R)" : "Введіть причину відхилення")
+                    }
+                  >
+                    Відхилити
+                  </Button>
+                </div>
+              ) : (
+                <div className={styles.detailFooterViewOnly}>
+                  <Button
                     icon={<ExternalLink size={20} aria-hidden="true" />}
+                    className={styles.btnActive}
+                    onMouseEnter={() => setHoveredBtn('open-system')}
+                    onMouseLeave={() => setHoveredBtn(null)}
+                    style={{
+                      backgroundColor: hoveredBtn === 'open-system' ? '#0078d4' : '#e6f2ff',
+                      color: hoveredBtn === 'open-system' ? 'white' : '#0078d4',
+                      border: '1px solid #0078d4',
+                      borderRadius: '8px',
+                      padding: '10px 24px',
+                      fontWeight: 600,
+                      transition: `all ${motion.fast} ${motion.easeOut}`,
+                    }}
                     aria-label="Відкрити документ у зовнішній системі"
                   >
                     Відкрити в системі
                   </Button>
-                  <Button
-                    appearance="subtle"
-                    icon={<X size={20} aria-hidden="true" />}
-                    onClick={handleCloseDetail}
-                    aria-label="Закрити панель деталей"
-                  />
                 </div>
+              )}
+            </aside>
+          )}
+        </div>
+      </main>
 
-                <div className={styles.detailBody}>
-                  <div
-                    style={{
-                      fontSize: '16px',
-                      fontWeight: 600,
-                      color: tokens.colorBrandForeground1,
-                      marginBottom: spacing.sm,
-                    }}
-                  >
-                    {currentTask.type} {currentTask.number}
-                  </div>
-                  <div className={styles.detailTitle} id="detail-title">
-                    {currentTask.summary.substring(0, 60)}...
-                  </div>
-
-                  <section
-                    aria-labelledby="detail-info-heading"
-                    style={{ marginBottom: spacing.lg }}
-                  >
-                    <div
-                      id="detail-info-heading"
-                      style={{ position: 'absolute', left: '-10000px' }}
-                    >
-                      Інформація про документ
-                    </div>
-                    <div className={styles.detailGrid}>
-                      <div className={styles.detailField}>
-                        <div className={styles.detailFieldLabel}>Строк</div>
-                        <div className={styles.detailFieldValue}>
-                          {currentTask.date}
-                        </div>
-                      </div>
-                      <div className={styles.detailField}>
-                        <div className={styles.detailFieldLabel}>
-                          Вид документа
-                        </div>
-                        <div className={styles.detailFieldValue}>
-                          {currentTask.docType}
-                        </div>
-                      </div>
-                      <div className={styles.detailFieldFull}>
-                        <div className={styles.detailFieldLabel}>
-                          Контрагент
-                        </div>
-                        <div className={styles.detailFieldValue}>
-                          {currentTask.contractor}
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section aria-labelledby="detail-summary-heading">
-                    <div
-                      id="detail-summary-heading"
-                      className={styles.detailSectionTitle}
-                    >
-                      Короткий зміст
-                    </div>
-                    <div className={styles.detailDescription}>
-                      {currentTask.summary}
-                    </div>
-                  </section>
-
-                  <section
-                    aria-labelledby="detail-preparer-heading"
-                    style={{ marginBottom: spacing.lg }}
-                  >
-                    <div
-                      id="detail-preparer-heading"
-                      className={styles.detailSectionTitle}
-                    >
-                      Готував
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: spacing.sm,
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <Avatar
-                        name={currentTask.preparedBy}
-                        size={24}
-                        aria-hidden="true"
-                      />
-                      <span style={{ fontWeight: 500 }}>
-                        {currentTask.preparedBy}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        color: tokens.colorNeutralForeground3,
-                        marginLeft: '34px',
-                      }}
-                    >
-                      {currentTask.preparedByDept}
-                    </div>
-                  </section>
-
-                  <section
-                    aria-labelledby="detail-creator-heading"
-                    style={{ marginBottom: spacing.lg }}
-                  >
-                    <div
-                      id="detail-creator-heading"
-                      className={styles.detailSectionTitle}
-                    >
-                      Створив
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: spacing.sm,
-                        marginBottom: '4px',
-                      }}
-                    >
-                      <Avatar
-                        name={currentTask.createdBy}
-                        size={24}
-                        aria-hidden="true"
-                      />
-                      <span style={{ fontWeight: 500 }}>
-                        {currentTask.createdBy}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        color: tokens.colorNeutralForeground3,
-                        marginLeft: '34px',
-                      }}
-                    >
-                      {currentTask.createdByDept}
-                    </div>
-                  </section>
-
-                  {/* Attachments */}
-                  {currentTask.attachments.length > 0 && (
-                    <section
-                      aria-labelledby="attachments-heading"
-                      style={{
-                        marginBottom: spacing.lg,
-                        border: `1px solid ${tokens.colorNeutralStroke2}`,
-                        borderRadius: spacing.sm,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: `${spacing.md} ${spacing.lg}`,
-                          backgroundColor: tokens.colorNeutralBackground3,
-                          borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: spacing.sm,
-                          }}
-                        >
-                          <Paperclip size={20} aria-hidden="true" />
-                          <div
-                            id="attachments-heading"
-                            style={{
-                              fontWeight: 600,
-                              fontSize: '13px',
-                              margin: 0,
-                            }}
-                          >
-                            ВКЛАДЕННЯ ({currentTask.attachments.length})
-                          </div>
-                        </div>
-                        {!attachmentsLoaded && (
-                          <Button
-                            size="small"
-                            icon={
-                              attachmentsLoading ? (
-                                <Loader2
-                                  size={16}
-                                  style={{
-                                    animation: 'spin 1s linear infinite',
-                                  }}
-                                  aria-hidden="true"
-                                />
-                              ) : (
-                                <Download size={16} aria-hidden="true" />
-                              )
-                            }
-                            onClick={handleLoadAttachments}
-                            disabled={attachmentsLoading}
-                            aria-label={
-                              attachmentsLoading
-                                ? 'Завантаження файлів...'
-                                : 'Завантажити вкладення'
-                            }
-                            style={{
-                              backgroundColor: 'transparent',
-                              border: `1px solid ${tokens.colorBrandBackground}`,
-                              color: tokens.colorBrandForeground1,
-                              borderRadius: '6px',
-                            }}
-                          >
-                            {attachmentsLoading
-                              ? 'Завантаження...'
-                              : 'Завантажити'}
-                          </Button>
-                        )}
-                      </div>
-                      <ul
-                        style={{
-                          padding: `${spacing.sm} 0`,
-                          margin: 0,
-                          listStyle: 'none',
-                        }}
-                      >
-                        {currentTask.attachments.map((file, idx) => (
-                          <li
-                            key={idx}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              padding: `${spacing.sm} ${spacing.lg}`,
-                              cursor: attachmentsLoaded ? 'pointer' : 'default',
-                              opacity: attachmentsLoaded ? 1 : 0.6,
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: spacing.sm,
-                              }}
-                            >
-                              <File
-                                size={20}
-                                style={{ color: tokens.colorBrandBackground }}
-                                aria-hidden="true"
-                              />
-                              <span
-                                style={{
-                                  fontSize: '13px',
-                                  color: attachmentsLoaded
-                                    ? tokens.colorBrandForeground1
-                                    : tokens.colorNeutralForeground2,
-                                  textDecoration: attachmentsLoaded
-                                    ? 'underline'
-                                    : 'none',
-                                }}
-                              >
-                                {file.name}
-                              </span>
-                            </div>
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                color: tokens.colorNeutralForeground3,
-                              }}
-                            >
-                              {file.size}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </section>
-                  )}
-
-                  {/* Rejection reason (for actionable) */}
-                  {isActionable(currentTask.type) && (
-                    <section
-                      aria-labelledby="reject-reason-heading"
-                      style={{ marginBottom: spacing.lg }}
-                    >
-                      <div
-                        id="reject-reason-heading"
-                        className={styles.detailSectionTitle}
-                      >
-                        Причина відхилення{' '}
-                        {!rejectReason.trim() && (
-                          <span style={{ color: '#e53e3e' }}>*</span>
-                        )}
-                      </div>
-                      <Textarea
-                        placeholder="Опишіть детально причину відхилення документа. Наприклад: 'Документ не містить необхідних підписів' або 'Потрібні додаткові роз'яснення по пункту 3.2'"
-                        value={rejectReason}
-                        onChange={(e, data) => {
-                          const newValue = data.value;
-                          if (newValue.length <= 500) {
-                            setRejectReason(newValue);
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          minHeight: '100px',
-                          borderColor: !rejectReason.trim()
-                            ? '#e53e3e'
-                            : rejectReason.length > 500
-                            ? '#e53e3e'
-                            : undefined,
-                        }}
-                        aria-label="Причина відхилення документа"
-                        aria-required="true"
-                        aria-invalid={
-                          !rejectReason.trim() || rejectReason.length > 500
-                        }
-                        aria-describedby="reject-reason-hint reject-reason-counter"
-                      />
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginTop: spacing.xs,
-                        }}
-                      >
-                        {!rejectReason.trim() ? (
-                          <div
-                            id="reject-reason-hint"
-                            style={{ fontSize: '12px', color: '#e53e3e' }}
-                          >
-                            * Обов'язкове поле для відхилення документа
-                          </div>
-                        ) : (
-                          <div
-                            id="reject-reason-hint"
-                            style={{
-                              fontSize: '12px',
-                              color: tokens.colorNeutralForeground3,
-                            }}
-                          >
-                            Вкажіть конкретну та зрозумілу причину відхилення
-                          </div>
-                        )}
-                        <div
-                          id="reject-reason-counter"
-                          className={`${styles.characterCounter} ${
-                            rejectReason.length > 500
-                              ? styles.characterCounterError
-                              : ''
-                          }`}
-                          aria-live="polite"
-                        >
-                          {rejectReason.length}/500
-                        </div>
-                      </div>
-                    </section>
-                  )}
-
-                  {/* View-only warning */}
-                  {!isActionable(currentTask.type) && (
-                    <div className={styles.detailInfoWarning} role="alert">
-                      <AlertCircle size={20} aria-hidden="true" />
-                      <span>
-                        Цей документ доступний лише для перегляду. Для
-                        затвердження перейдіть у систему.
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer buttons */}
-                {isActionable(currentTask.type) ? (
-                  <div className={styles.detailFooter}>
-                    <Button
-                      icon={<Check size={20} aria-hidden="true" />}
-                      onClick={handleApprove}
-                      className={styles.btnActive}
-                      onMouseEnter={() => setHoveredBtn('detail-approve')}
-                      onMouseLeave={() => setHoveredBtn(null)}
-                      style={{
-                        backgroundColor:
-                          hoveredBtn === 'detail-approve'
-                            ? '#22a566'
-                            : '#f0fff4',
-                        color:
-                          hoveredBtn === 'detail-approve' ? 'white' : '#22a566',
-                        border: '1px solid #22a566',
-                        borderRadius: '8px',
-                        padding: '10px 24px',
-                        fontWeight: 600,
-                        transition: `all ${motion.fast} ${motion.easeOut}`,
-                      }}
-                      aria-label="Затвердити документ (клавіша A)"
-                    >
-                      Затвердити
-                    </Button>
-                    <Button
-                      icon={<X size={20} aria-hidden="true" />}
-                      onClick={handleRejectConfirm}
-                      disabled={
-                        !rejectReason.trim() || rejectReason.length > 500
-                      }
-                      className={styles.btnActive}
-                      onMouseEnter={() => setHoveredBtn('detail-reject')}
-                      onMouseLeave={() => setHoveredBtn(null)}
-                      style={{
-                        backgroundColor:
-                          !rejectReason.trim() || rejectReason.length > 500
-                            ? '#f5f5f5'
-                            : hoveredBtn === 'detail-reject'
-                            ? '#fee2e2'
-                            : 'transparent',
-                        color:
-                          !rejectReason.trim() || rejectReason.length > 500
-                            ? '#999'
-                            : '#e53e3e',
-                        border: `1px solid ${
-                          !rejectReason.trim() || rejectReason.length > 500
-                            ? '#ccc'
-                            : '#e53e3e'
-                        }`,
-                        borderRadius: '8px',
-                        padding: '10px 24px',
-                        fontWeight: 600,
-                        transition: `all ${motion.fast} ${motion.easeOut}`,
-                        cursor:
-                          !rejectReason.trim() || rejectReason.length > 500
-                            ? 'not-allowed'
-                            : 'pointer',
-                      }}
-                      aria-label={
-                        rejectReason.length > 500
-                          ? 'Причина відхилення перевищує ліміт 500 символів'
-                          : rejectReason.trim()
-                          ? 'Відхилити документ (клавіша R)'
-                          : 'Введіть причину відхилення'
-                      }
-                    >
-                      Відхилити
-                    </Button>
-                  </div>
-                ) : (
-                  <div className={styles.detailFooterViewOnly}>
-                    <Button
-                      icon={<ExternalLink size={20} aria-hidden="true" />}
-                      className={styles.btnActive}
-                      onMouseEnter={() => setHoveredBtn('open-system')}
-                      onMouseLeave={() => setHoveredBtn(null)}
-                      style={{
-                        backgroundColor:
-                          hoveredBtn === 'open-system' ? '#0078d4' : '#e6f2ff',
-                        color:
-                          hoveredBtn === 'open-system' ? 'white' : '#0078d4',
-                        border: '1px solid #0078d4',
-                        borderRadius: '8px',
-                        padding: '10px 24px',
-                        fontWeight: 600,
-                        transition: `all ${motion.fast} ${motion.easeOut}`,
-                      }}
-                      aria-label="Відкрити документ у зовнішній системі"
-                    >
-                      Відкрити в системі
-                    </Button>
-                  </div>
-                )}
-              </aside>
-            )}
-          </div>
-        </main>
-
-        {/* Bulk Approve Confirmation Modal */}
-        {showBulkApproveModal && selectedTasks.length > 0 && (
-          <div
-            className={styles.modalOverlay}
-            onClick={() => setShowBulkApproveModal(false)}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="bulk-approve-modal-title"
-            aria-describedby="bulk-approve-modal-description"
+      {/* Bulk Approve Confirmation Modal */}
+      {showBulkApproveModal && selectedTasks.length > 0 && (
+        <div 
+          className={styles.modalOverlay}
+          onClick={() => setShowBulkApproveModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bulk-approve-modal-title"
+          aria-describedby="bulk-approve-modal-description"
+        >
+          <div 
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div id="bulk-approve-modal-title" className={styles.modalHeader}>
-                Масове затвердження
+            <div id="bulk-approve-modal-title" className={styles.modalHeader}>Масове затвердження</div>
+            <div id="bulk-approve-modal-description" className={styles.modalBody}>
+              <p>Ви впевнені, що хочете затвердити <strong>{selectedTasks.length}</strong> {selectedTasks.length === 1 ? 'документ' : selectedTasks.length < 5 ? 'документи' : 'документів'}?</p>
+              <div style={{ 
+                marginTop: spacing.md, 
+                padding: spacing.md, 
+                backgroundColor: tokens.colorNeutralBackground3,
+                borderRadius: spacing.sm,
+                maxHeight: '200px',
+                overflowY: 'auto'
+              }}>
+                {tasks.filter(t => selectedTasks.includes(t.id)).map(task => (
+                  <div key={task.id} style={{ 
+                    padding: spacing.sm,
+                    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+                    fontSize: '13px'
+                  }}>
+                    <div style={{ fontWeight: 600 }}>{task.number}</div>
+                    <div style={{ color: tokens.colorNeutralForeground3 }}>{task.summary}</div>
+                  </div>
+                ))}
               </div>
-              <div
-                id="bulk-approve-modal-description"
-                className={styles.modalBody}
+              <p style={{ marginTop: spacing.md, fontSize: '13px', color: tokens.colorNeutralForeground3 }}>
+                ⚠️ Ця дія обробить всі вибрані документи одночасно. Скасувати масове затвердження неможливо.
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <Button
+                appearance="secondary"
+                onClick={() => setShowBulkApproveModal(false)}
+                style={{ borderRadius: '8px' }}
+                aria-label="Скасувати масове затвердження"
               >
-                <p>
-                  Ви впевнені, що хочете затвердити{' '}
-                  <strong>{selectedTasks.length}</strong>{' '}
-                  {selectedTasks.length === 1
-                    ? 'документ'
-                    : selectedTasks.length < 5
-                    ? 'документи'
-                    : 'документів'}
-                  ?
-                </p>
-                <div
-                  style={{
-                    marginTop: spacing.md,
-                    padding: spacing.md,
-                    backgroundColor: tokens.colorNeutralBackground3,
-                    borderRadius: spacing.sm,
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  {tasks
-                    .filter((t) => selectedTasks.includes(t.id))
-                    .map((task) => (
-                      <div
-                        key={task.id}
-                        style={{
-                          padding: spacing.sm,
-                          borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-                          fontSize: '13px',
-                        }}
-                      >
-                        <div style={{ fontWeight: 600 }}>{task.number}</div>
-                        <div style={{ color: tokens.colorNeutralForeground3 }}>
-                          {task.summary}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-                <p
-                  style={{
-                    marginTop: spacing.md,
-                    fontSize: '13px',
-                    color: tokens.colorNeutralForeground3,
-                  }}
-                >
-                  ⚠️ Ця дія обробить всі вибрані документи одночасно. Скасувати
-                  масове затвердження неможливо.
-                </p>
-              </div>
-              <div className={styles.modalFooter}>
-                <Button
-                  appearance="secondary"
-                  onClick={() => setShowBulkApproveModal(false)}
-                  style={{ borderRadius: '8px' }}
-                  aria-label="Скасувати масове затвердження"
-                >
-                  Скасувати
-                </Button>
-                <Button
-                  appearance="primary"
-                  onClick={handleConfirmBulkApprove}
-                  style={{
-                    background:
-                      'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                    borderColor: '#10B981',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
-                  }}
-                  aria-label={`Підтвердити затвердження ${selectedTasks.length} документів`}
-                >
-                  Затвердити всі ({selectedTasks.length})
-                </Button>
-              </div>
+                Скасувати
+              </Button>
+              <Button
+                appearance="primary"
+                onClick={handleConfirmBulkApprove}
+                style={{ 
+                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                  borderColor: '#10B981',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                }}
+                aria-label={`Підтвердити затвердження ${selectedTasks.length} документів`}
+              >
+                Затвердити всі ({selectedTasks.length})
+              </Button>
             </div>
           </div>
-        )}
-
-        {/* Screen reader live region */}
-        <div
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          style={{
-            position: 'absolute',
-            left: '-10000px',
-            width: '1px',
-            height: '1px',
-            overflow: 'hidden',
-          }}
-        >
-          {liveRegionMessage}
         </div>
-      </div>{' '}
-      {/* Close appBody */}
+      )}
+
+      {/* Screen reader live region */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: 'absolute',
+          left: '-10000px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+        }}
+      >
+        {liveRegionMessage}
+      </div>
+      </div> {/* Close appBody */}
     </div>
   );
 };
