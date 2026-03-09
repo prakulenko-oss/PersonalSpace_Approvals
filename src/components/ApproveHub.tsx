@@ -39,6 +39,12 @@ import {
   Sparkles,
   HelpCircle,
   Lightbulb,
+  LayoutGrid,
+  Wallet,
+  FileText,
+  Users,
+  Settings,
+  Shield,
 } from 'lucide-react';
 
 // ============================================
@@ -73,21 +79,31 @@ const isActionable = (type: string) => ACTIONABLE_TYPES.includes(type);
 
 // Filter categories
 const filterCategories = [
-  { id: 'all', label: 'Всі' },
-  { id: 'finance', label: 'Фінанси' },
-  { id: 'documents', label: 'Документи' },
-  { id: 'hr', label: 'Кадри' },
-  { id: 'processes', label: 'Процеси' },
-  { id: 'access', label: 'Доступи' },
+  { id: 'all',       label: 'Всі',       icon: LayoutGrid },
+  { id: 'finance',   label: 'Фінанси',   icon: Wallet },
+  { id: 'documents', label: 'Документи', icon: FileText },
+  { id: 'hr',        label: 'Кадри',     icon: Users },
+  { id: 'processes', label: 'Процеси',   icon: Settings },
+  { id: 'access',    label: 'Доступи',   icon: Shield },
 ];
 
 // Sorting options
 const sortOptions = [
-  { id: 'date-asc', label: 'За строком (спочатку термінові)' },
+  { id: 'date-asc',  label: 'За строком (спочатку термінові)' },
   { id: 'date-desc', label: 'За строком (спочатку пізні)' },
-  { id: 'type', label: 'За типом' },
-  { id: 'author', label: 'За автором (А → Я)' },
+  { id: 'type',      label: 'За типом' },
+  { id: 'author',    label: 'За автором (А → Я)' },
 ];
+
+// ─── inline border helper (використовується в style={} пропах) ───────────────
+const ib = (color: string, width = '1px'): React.CSSProperties => ({
+  borderTopWidth:    width, borderBottomWidth:    width,
+  borderLeftWidth:   width, borderRightWidth:     width,
+  borderTopStyle:   'solid', borderBottomStyle:   'solid',
+  borderLeftStyle:  'solid', borderRightStyle:    'solid',
+  borderTopColor:   color,  borderBottomColor:   color,
+  borderLeftColor:  color,  borderRightColor:    color,
+});
 
 const useStyles = makeStyles({
   // ============================================
@@ -105,7 +121,9 @@ const useStyles = makeStyles({
   sidebar: {
     width: '240px',
     backgroundColor: 'white',
-    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRightWidth: '1px',
+    borderRightStyle: 'solid',
+    borderRightColor: tokens.colorNeutralStroke2,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -186,14 +204,25 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // GAMIFICATION - Soft & Elegant
+  // GAMIFICATION
   // ============================================
   progressBlock: {
     margin: spacing.md,
     padding: spacing.lg,
     background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
     borderRadius: '12px',
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth:    '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth:   '1px',
+    borderRightWidth:  '1px',
+    borderTopStyle:    'solid',
+    borderBottomStyle: 'solid',
+    borderLeftStyle:   'solid',
+    borderRightStyle:  'solid',
+    borderTopColor:    tokens.colorNeutralStroke2,
+    borderBottomColor: tokens.colorNeutralStroke2,
+    borderLeftColor:   tokens.colorNeutralStroke2,
+    borderRightColor:  tokens.colorNeutralStroke2,
   },
   progressHeader: {
     display: 'flex',
@@ -309,7 +338,7 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // FILTER BAR (with search inside)
+  // FILTER BAR
   // ============================================
   filterBar: {
     padding: `${spacing.md} ${spacing.xl}`,
@@ -338,7 +367,18 @@ const useStyles = makeStyles({
     gap: spacing.xs,
     padding: `${spacing.sm} ${spacing.lg}`,
     borderRadius: '20px',
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth:    '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth:   '1px',
+    borderRightWidth:  '1px',
+    borderTopStyle:    'solid',
+    borderBottomStyle: 'solid',
+    borderLeftStyle:   'solid',
+    borderRightStyle:  'solid',
+    borderTopColor:    tokens.colorNeutralStroke2,
+    borderBottomColor: tokens.colorNeutralStroke2,
+    borderLeftColor:   tokens.colorNeutralStroke2,
+    borderRightColor:  tokens.colorNeutralStroke2,
     backgroundColor: 'white',
     cursor: 'pointer',
     fontSize: '13px',
@@ -347,18 +387,27 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      borderColor: '#7C3AED',
+      borderTopColor:    '#7C3AED',
+      borderBottomColor: '#7C3AED',
+      borderLeftColor:   '#7C3AED',
+      borderRightColor:  '#7C3AED',
       color: '#7C3AED',
     },
   },
   filterChipActive: {
     backgroundColor: '#7C3AED',
-    borderColor: '#7C3AED',
+    borderTopColor:    '#7C3AED',
+    borderBottomColor: '#7C3AED',
+    borderLeftColor:   '#7C3AED',
+    borderRightColor:  '#7C3AED',
     color: 'white',
     boxShadow: '0 2px 4px rgba(124, 58, 237, 0.3)',
     ':hover': {
       backgroundColor: '#6D28D9',
-      borderColor: '#6D28D9',
+      borderTopColor:    '#6D28D9',
+      borderBottomColor: '#6D28D9',
+      borderLeftColor:   '#6D28D9',
+      borderRightColor:  '#6D28D9',
       color: 'white',
     },
   },
@@ -410,13 +459,24 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // TASK CARD - With animations
+  // TASK CARD
   // ============================================
   taskCard: {
     marginBottom: spacing.md,
     backgroundColor: 'white',
     borderRadius: '12px',
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth:    '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth:   '1px',
+    borderRightWidth:  '1px',
+    borderTopStyle:    'solid',
+    borderBottomStyle: 'solid',
+    borderLeftStyle:   'solid',
+    borderRightStyle:  'solid',
+    borderTopColor:    tokens.colorNeutralStroke2,
+    borderBottomColor: tokens.colorNeutralStroke2,
+    borderLeftColor:   tokens.colorNeutralStroke2,
+    borderRightColor:  tokens.colorNeutralStroke2,
     overflow: 'hidden',
     cursor: 'pointer',
     transition: `all ${motion.normal} ${motion.easeOut}`,
@@ -429,10 +489,16 @@ const useStyles = makeStyles({
     },
   },
   taskCardSelected: {
-    border: `2px solid #7C3AED`,
+    borderTopWidth:    '2px',
+    borderBottomWidth: '2px',
+    borderLeftWidth:   '2px',
+    borderRightWidth:  '2px',
+    borderTopColor:    '#7C3AED',
+    borderBottomColor: '#7C3AED',
+    borderLeftColor:   '#7C3AED',
+    borderRightColor:  '#7C3AED',
     boxShadow: elevation.shadow8,
   },
-  // Animation class for disappearing
   taskCardRemoving: {
     opacity: 0,
     transform: 'translateX(100px) scale(0.95)',
@@ -464,7 +530,6 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
   },
-  // Actionable badge (Візування, Підписання)
   taskTypeActionable: {
     fontSize: '11px',
     fontWeight: 600,
@@ -472,14 +537,24 @@ const useStyles = makeStyles({
     letterSpacing: '0.5px',
     color: '#7C3AED',
     background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
-    border: '1px solid rgba(124, 58, 237, 0.2)',
+    borderTopWidth:    '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth:   '1px',
+    borderRightWidth:  '1px',
+    borderTopStyle:    'solid',
+    borderBottomStyle: 'solid',
+    borderLeftStyle:   'solid',
+    borderRightStyle:  'solid',
+    borderTopColor:    'rgba(124, 58, 237, 0.2)',
+    borderBottomColor: 'rgba(124, 58, 237, 0.2)',
+    borderLeftColor:   'rgba(124, 58, 237, 0.2)',
+    borderRightColor:  'rgba(124, 58, 237, 0.2)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
   },
-  // View-only badge (По руху, Розгляд)
   taskTypeViewOnly: {
     fontSize: '11px',
     fontWeight: 600,
@@ -540,19 +615,23 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // DETAIL PANEL - Full original version
+  // DETAIL PANEL
   // ============================================
   detailPanel: {
     width: '45%',
     backgroundColor: 'white',
-    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderLeftWidth:  '1px',
+    borderLeftStyle:  'solid',
+    borderLeftColor:  tokens.colorNeutralStroke2,
     display: 'flex',
     flexDirection: 'column',
     boxShadow: elevation.shadow8,
   },
   detailHeader: {
     padding: `${spacing.md} ${spacing.xl}`,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.colorNeutralStroke2,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -581,7 +660,9 @@ const useStyles = makeStyles({
     gap: `${spacing.lg} ${spacing.xxl}`,
     marginBottom: spacing.xl,
     paddingBottom: spacing.xl,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.colorNeutralStroke2,
   },
   detailField: {},
   detailFieldFull: {
@@ -631,14 +712,18 @@ const useStyles = makeStyles({
   },
   detailFooter: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: tokens.colorNeutralStroke2,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: spacing.md,
   },
   detailFooterViewOnly: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: tokens.colorNeutralStroke2,
     display: 'flex',
     justifyContent: 'center',
   },
@@ -648,7 +733,18 @@ const useStyles = makeStyles({
   // ============================================
   attachmentsBlock: {
     marginBottom: spacing.lg,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderTopWidth:    '1px',
+    borderBottomWidth: '1px',
+    borderLeftWidth:   '1px',
+    borderRightWidth:  '1px',
+    borderTopStyle:    'solid',
+    borderBottomStyle: 'solid',
+    borderLeftStyle:   'solid',
+    borderRightStyle:  'solid',
+    borderTopColor:    tokens.colorNeutralStroke2,
+    borderBottomColor: tokens.colorNeutralStroke2,
+    borderLeftColor:   tokens.colorNeutralStroke2,
+    borderRightColor:  tokens.colorNeutralStroke2,
     borderRadius: spacing.sm,
     overflow: 'hidden',
   },
@@ -658,7 +754,9 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     padding: `${spacing.md} ${spacing.lg}`,
     backgroundColor: tokens.colorNeutralBackground3,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.colorNeutralStroke2,
   },
   attachmentsList: {
     padding: `${spacing.sm} 0`,
@@ -857,7 +955,9 @@ const useStyles = makeStyles({
     fontSize: '14px',
     color: tokens.colorNeutralForeground1,
     zIndex: 100,
-    animation: 'slideIn 300ms ease-out',
+    animationName: 'slideIn',
+    animationDuration: '300ms',
+    animationTimingFunction: 'ease-out',
   },
 });
 
@@ -890,85 +990,88 @@ interface Task {
 // DATA
 // ============================================
 const initialTasks: Task[] = [
-  { 
-    id: 1, 
-    type: 'Візування', 
-    number: '№12345', 
-    date: '06.02.2026', 
-    urgent: true, 
+  {
+    id: 1,
+    type: 'Візування',
+    number: '№12345',
+    date: '06.02.2026',
+    urgent: true,
     category: 'finance',
-    docType: 'Службова записка', 
-    contractor: 'ТОВ "Альфа-Трейд"', 
-    summary: 'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.', 
-    preparedBy: 'Оболоник А.С.', 
-    preparedByDept: 'Відділ управління операційними системами', 
+    docType: 'Службова записка',
+    contractor: 'ТОВ "Альфа-Трейд"',
+    summary: 'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.',
+    preparedBy: 'Оболоник А.С.',
+    preparedByDept: 'Відділ управління операційними системами',
     createdBy: 'Іваненко М.В.',
     createdByDept: 'Канцелярія',
-    attachments: [{ name: 'Договір_постачання.pdf', size: '2.4 MB' }, { name: 'Специфікація.xlsx', size: '156 KB' }] 
+    attachments: [
+      { name: 'Договір_постачання.pdf', size: '2.4 MB' },
+      { name: 'Специфікація.xlsx', size: '156 KB' },
+    ],
   },
-  { 
-    id: 2, 
-    type: 'Підписання', 
-    number: '№987-Н', 
-    date: '10.02.2026', 
-    urgent: false, 
+  {
+    id: 2,
+    type: 'Підписання',
+    number: '№987-Н',
+    date: '10.02.2026',
+    urgent: false,
     category: 'documents',
-    docType: 'Наказ', 
-    contractor: '—', 
-    summary: 'Відрядження до м. Одеса для проведення аудиту філії.', 
-    preparedBy: 'Коваленко І.П.', 
-    preparedByDept: 'Відділ кадрів', 
+    docType: 'Наказ',
+    contractor: '—',
+    summary: 'Відрядження до м. Одеса для проведення аудиту філії.',
+    preparedBy: 'Коваленко І.П.',
+    preparedByDept: 'Відділ кадрів',
     createdBy: 'Коваленко І.П.',
     createdByDept: 'Відділ кадрів',
-    attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }] 
+    attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }],
   },
-  { 
-    id: 3, 
-    type: 'По руху', 
-    number: '№0042', 
-    date: '11.02.2026', 
-    urgent: false, 
+  {
+    id: 3,
+    type: 'По руху',
+    number: '№0042',
+    date: '11.02.2026',
+    urgent: false,
     category: 'hr',
-    docType: 'Заявка', 
-    contractor: 'Adobe Inc.', 
-    summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.', 
-    preparedBy: 'Сидоренко О.М.', 
-    preparedByDept: 'IT департамент', 
+    docType: 'Заявка',
+    contractor: 'Adobe Inc.',
+    summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.',
+    preparedBy: 'Сидоренко О.М.',
+    preparedByDept: 'IT департамент',
     createdBy: 'Сидоренко О.М.',
     createdByDept: 'IT департамент',
-    attachments: [] 
+    attachments: [],
   },
-  { 
-    id: 4, 
-    type: 'Розгляд', 
-    number: '№0098', 
-    date: '12.02.2026', 
-    urgent: false, 
+  {
+    id: 4,
+    type: 'Розгляд',
+    number: '№0098',
+    date: '12.02.2026',
+    urgent: false,
     category: 'access',
-    docType: 'Договір', 
-    contractor: 'ПП "ТехноПостач"', 
-    summary: 'Розгляд договору з постачальником обладнання.', 
-    preparedBy: 'Петренко В.І.', 
-    preparedByDept: 'Юридичний відділ', 
+    docType: 'Договір',
+    contractor: 'ПП "ТехноПостач"',
+    summary: 'Розгляд договору з постачальником обладнання.',
+    preparedBy: 'Петренко В.І.',
+    preparedByDept: 'Юридичний відділ',
     createdBy: 'Бондаренко К.Л.',
     createdByDept: 'Юридичний відділ',
-    attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }] 
+    attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }],
   },
-  { 
-    id: 5, 
-    type: 'Візування', 
-    number: '№0156', 
-    date: '08.02.2026', 
-    urgent: true, 
+  {
+    id: 5,
+    type: 'Візування',
+    number: '№0156',
+    date: '08.02.2026',
+    urgent: true,
     category: 'finance',
-    docType: 'Бюджет', 
-    contractor: '—', 
-    summary: 'Бюджет на Q2 2026 — затвердження видатків.', 
-    preparedBy: 'Мельник О.П.', 
-    preparedByDept: 'Фінансовий відділ', 
+    docType: 'Бюджет',
+    contractor: '—',
+    summary: 'Бюджет на Q2 2026 — затвердження видатків.',
+    preparedBy: 'Мельник О.П.',
+    preparedByDept: 'Фінансовий відділ',
     createdBy: 'Ткаченко Р.С.',
     createdByDept: 'Фінансовий відділ',
-    attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }] 
+    attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }],
   },
 ];
 
@@ -993,11 +1096,10 @@ export const ApproveHub: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
-  
+
   // Animation & Onboarding
   const [removingTaskIds, setRemovingTaskIds] = useState<number[]>([]);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    // Check if user has seen onboarding
     if (typeof window !== 'undefined') {
       return !localStorage.getItem('approvehub-onboarding-seen');
     }
@@ -1012,13 +1114,12 @@ export const ApproveHub: React.FC = () => {
 
   // Encouragement messages
   const encouragements = [
-    { threshold: 5, message: "Непогано! Вже 5 документів ✨" },
-    { threshold: 10, message: "Десятка! Так тримати! 🔥" },
-    { threshold: 15, message: "15 документів — ти машина! 🚀" },
-    { threshold: 20, message: "20! Ти сьогодні герой! 🏆" },
+    { threshold: 5,  message: 'Непогано! Вже 5 документів ✨' },
+    { threshold: 10, message: 'Десятка! Так тримати! 🔥' },
+    { threshold: 15, message: '15 документів — ти машина! 🚀' },
+    { threshold: 20, message: '20! Ти сьогодні герой! 🏆' },
   ];
 
-  // Show encouragement when reaching milestones
   useEffect(() => {
     const encouragement = encouragements.find(e => e.threshold === todayApproved);
     if (encouragement) {
@@ -1027,7 +1128,6 @@ export const ApproveHub: React.FC = () => {
     }
   }, [todayApproved]);
 
-  // Toast
   const showToast = useCallback((title: string, body: string, intent: ToastIntent = 'success') => {
     dispatchToast(
       <Toast>
@@ -1038,7 +1138,6 @@ export const ApproveHub: React.FC = () => {
     );
   }, [dispatchToast]);
 
-  // Animated task removal
   const removeTaskWithAnimation = useCallback((taskId: number, callback?: () => void) => {
     setRemovingTaskIds(prev => [...prev, taskId]);
     setTimeout(() => {
@@ -1049,7 +1148,6 @@ export const ApproveHub: React.FC = () => {
     }, 400);
   }, []);
 
-  // Handlers
   const handleTaskClick = useCallback((task: Task) => {
     setCurrentTask(task);
     setRejectReason('');
@@ -1131,11 +1229,10 @@ export const ApproveHub: React.FC = () => {
     }, 1500);
   }, []);
 
-  // Filtered tasks
   const filteredTasks = useMemo(() => {
     const filtered = tasks.filter(task => {
       const matchesFilter = activeFilter === 'all' || task.category === activeFilter;
-      const matchesSearch = !searchQuery.trim() || 
+      const matchesSearch = !searchQuery.trim() ||
         task.contractor.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.preparedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1143,7 +1240,6 @@ export const ApproveHub: React.FC = () => {
       return matchesFilter && matchesSearch;
     });
 
-    // Sort tasks
     const parseDate = (dateStr: string) => {
       const [day, month, year] = dateStr.split('.');
       return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -1152,18 +1248,16 @@ export const ApproveHub: React.FC = () => {
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'date-asc':
-          // Urgent first, then by date ascending
           if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
           return parseDate(a.date).getTime() - parseDate(b.date).getTime();
         case 'date-desc':
-          // By date descending
           return parseDate(b.date).getTime() - parseDate(a.date).getTime();
-        case 'type':
-          // Actionable first (Візування, Підписання), then others
+        case 'type': {
           const aActionable = isActionable(a.type) ? 0 : 1;
           const bActionable = isActionable(b.type) ? 0 : 1;
           if (aActionable !== bActionable) return aActionable - bActionable;
           return a.type.localeCompare(b.type, 'uk');
+        }
         case 'author':
           return a.preparedBy.localeCompare(b.preparedBy, 'uk');
         default:
@@ -1249,27 +1343,47 @@ export const ApproveHub: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Bar with Search */}
+        {/* Filter Bar with Search and Help */}
         <div className={styles.filterBar}>
           <div className={styles.filterChips}>
-            {filterCategories.map(cat => (
-              <button
-                key={cat.id}
-                className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
-                onClick={() => setActiveFilter(cat.id)}
-              >
-                {cat.id === 'all' && activeFilter === 'all' && <Check size={14} />}
-                {cat.label}
-              </button>
-            ))}
+            {filterCategories.map(cat => {
+              const IconComponent = cat.icon;
+              return (
+                <button
+                  key={cat.id}
+                  className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
+                  onClick={() => setActiveFilter(cat.id)}
+                >
+                  <IconComponent size={14} />
+                  {cat.label}
+                </button>
+              );
+            })}
           </div>
-          <div className={styles.filterSearch}>
-            <Input
-              contentBefore={<Search size={18} />}
-              placeholder="Швидкий пошук..."
-              value={searchQuery}
-              onChange={(_e, data) => setSearchQuery(data.value)}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+            <Tooltip content="Показати підказки" relationship="label">
+              <Button
+                appearance="subtle"
+                icon={<HelpCircle size={18} />}
+                onClick={() => {
+                  setOnboardingStep(0);
+                  setShowOnboarding(true);
+                }}
+                style={{ 
+                  color: tokens.colorNeutralForeground3,
+                  minWidth: 'auto',
+                  padding: spacing.sm,
+                }}
+              />
+            </Tooltip>
+            <div className={styles.filterSearch}>
+              <Input
+                contentBefore={<Search size={18} />}
+                placeholder="Швидкий пошук..."
+                value={searchQuery}
+                onChange={(_e, data) => setSearchQuery(data.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -1307,7 +1421,9 @@ export const ApproveHub: React.FC = () => {
                 ))}
               </Dropdown>
             </div>
-            <span className={styles.taskCount}>{filteredTasks.length} {filteredTasks.length === 1 ? 'документ очікує' : 'документів очікують'} на вас</span>
+            <span className={styles.taskCount}>
+              {filteredTasks.length} {filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}
+            </span>
           </div>
         </div>
 
@@ -1315,19 +1431,15 @@ export const ApproveHub: React.FC = () => {
         <div className={styles.contentArea}>
           <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
             {filteredTasks.length === 0 ? (
-              // Empty states
               searchQuery.trim() ? (
                 // 1. No search results
                 <div className={styles.emptyState}>
                   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
-                    {/* Detective magnifying glass */}
-                    <circle cx="50" cy="50" r="22" stroke="#7C3AED" strokeWidth="3" fill="rgba(124, 58, 237, 0.05)"/>
-                    <line x1="67" y1="67" x2="85" y2="85" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round"/>
-                    {/* Confused eyes inside magnifying glass */}
-                    <circle cx="43" cy="48" r="3" fill="#7C3AED"/>
-                    <circle cx="57" cy="48" r="3" fill="#7C3AED"/>
-                    <path d="M43 58 Q50 54 57 58" stroke="#7C3AED" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                    {/* Question marks */}
+                    <circle cx="50" cy="50" r="22" stroke="#7C3AED" strokeWidth="3" fill="rgba(124, 58, 237, 0.05)" />
+                    <line x1="67" y1="67" x2="85" y2="85" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="43" cy="48" r="3" fill="#7C3AED" />
+                    <circle cx="57" cy="48" r="3" fill="#7C3AED" />
+                    <path d="M43 58 Q50 54 57 58" stroke="#7C3AED" strokeWidth="2" fill="none" strokeLinecap="round" />
                     <text x="20" y="30" fontSize="16" fill="#7C3AED" opacity="0.4">?</text>
                     <text x="90" y="35" fontSize="20" fill="#7C3AED" opacity="0.6">?</text>
                     <text x="100" y="70" fontSize="14" fill="#7C3AED" opacity="0.3">?</text>
@@ -1339,8 +1451,8 @@ export const ApproveHub: React.FC = () => {
                     За запитом "{searchQuery}" документів немає.<br />
                     Може, спробуємо інші слова?
                   </Text>
-                  <Button 
-                    appearance="subtle" 
+                  <Button
+                    appearance="subtle"
                     onClick={() => setSearchQuery('')}
                     style={{ marginTop: spacing.sm }}
                   >
@@ -1348,34 +1460,30 @@ export const ApproveHub: React.FC = () => {
                   </Button>
                 </div>
               ) : tasks.length > 0 ? (
-                // 2. Category is empty but other categories have tasks (steppe)
+                // 2. Category is empty
                 <div className={styles.emptyState}>
                   <svg width="130" height="130" viewBox="0 0 130 130" fill="none" style={{ marginBottom: spacing.lg }}>
-                    {/* Empty box/folder */}
-                    <rect x="30" y="45" width="70" height="55" rx="8" stroke="#7C3AED" strokeWidth="2.5" fill="rgba(124, 58, 237, 0.03)"/>
-                    <path d="M30 55 L65 55 L70 45 L100 45" stroke="#7C3AED" strokeWidth="2.5" fill="none"/>
-                    {/* Tumbleweed / dust */}
-                    <circle cx="50" cy="85" r="8" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeDasharray="3 2"/>
-                    <circle cx="75" cy="82" r="5" stroke="#D1D5DB" strokeWidth="1" fill="none" strokeDasharray="2 2"/>
-                    {/* Wind lines */}
-                    <path d="M20 75 Q35 73 45 75" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
-                    <path d="M85 80 Q100 78 115 80" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
-                    {/* Sparkle - it's clean! */}
-                    <path d="M105 35 L105 25 M100 30 L110 30" stroke="#10B981" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="25" cy="40" r="2" fill="#10B981" opacity="0.6"/>
+                    <rect x="30" y="45" width="70" height="55" rx="8" stroke="#7C3AED" strokeWidth="2.5" fill="rgba(124, 58, 237, 0.03)" />
+                    <path d="M30 55 L65 55 L70 45 L100 45" stroke="#7C3AED" strokeWidth="2.5" fill="none" />
+                    <circle cx="50" cy="85" r="8" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeDasharray="3 2" />
+                    <circle cx="75" cy="82" r="5" stroke="#D1D5DB" strokeWidth="1" fill="none" strokeDasharray="2 2" />
+                    <path d="M20 75 Q35 73 45 75" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5" />
+                    <path d="M85 80 Q100 78 115 80" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5" />
+                    <path d="M105 35 L105 25 M100 30 L110 30" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
+                    <circle cx="25" cy="40" r="2" fill="#10B981" opacity="0.6" />
                   </svg>
                   <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
                     Тут порожньо... як у степу 🌾
                   </Text>
                   <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.5' }}>
-                    {activeFilter !== 'all' 
+                    {activeFilter !== 'all'
                       ? <>У категорії "{filterCategories.find(f => f.id === activeFilter)?.label}" поки тихо.<br />Жодного документа на затвердження!</>
                       : <>Нових документів поки немає.<br />Перевірте пізніше!</>
                     }
                   </Text>
                   {activeFilter !== 'all' && (
-                    <Button 
-                      appearance="subtle" 
+                    <Button
+                      appearance="subtle"
                       onClick={() => setActiveFilter('all')}
                       style={{ marginTop: spacing.lg }}
                     >
@@ -1384,24 +1492,24 @@ export const ApproveHub: React.FC = () => {
                   )}
                 </div>
               ) : (
-                // 3. All tasks completed - Inbox Zero! 🎉 (no tasks at all)
+                // 3. Inbox Zero
                 <div className={styles.emptyState}>
                   <svg width="140" height="140" viewBox="0 0 140 140" fill="none" style={{ marginBottom: spacing.lg }}>
-                    <rect x="45" y="70" width="50" height="55" rx="6" fill="url(#coffeeGradient)"/>
-                    <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669"/>
-                    <rect x="90" y="90" width="8" height="25" rx="4" fill="#059669"/>
-                    <path d="M55 60 Q 50 50 55 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
-                    <path d="M70 55 Q 65 45 70 35" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
-                    <path d="M85 60 Q 80 50 85 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
-                    <circle cx="100" cy="50" r="18" fill="#10B981"/>
-                    <path d="M93 50L98 55L107 44" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="25" cy="40" r="4" fill="rgba(124, 58, 237, 0.2)"/>
-                    <circle cx="115" cy="100" r="5" fill="rgba(37, 99, 235, 0.2)"/>
-                    <circle cx="30" cy="110" r="3" fill="rgba(16, 185, 129, 0.2)"/>
+                    <rect x="45" y="70" width="50" height="55" rx="6" fill="url(#coffeeGradient)" />
+                    <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669" />
+                    <rect x="90" y="90" width="8" height="25" rx="4" fill="#059669" />
+                    <path d="M55 60 Q 50 50 55 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                    <path d="M70 55 Q 65 45 70 35" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                    <path d="M85 60 Q 80 50 85 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                    <circle cx="100" cy="50" r="18" fill="#10B981" />
+                    <path d="M93 50L98 55L107 44" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="25" cy="40" r="4" fill="rgba(124, 58, 237, 0.2)" />
+                    <circle cx="115" cy="100" r="5" fill="rgba(37, 99, 235, 0.2)" />
+                    <circle cx="30" cy="110" r="3" fill="rgba(16, 185, 129, 0.2)" />
                     <defs>
                       <linearGradient id="coffeeGradient" x1="45" y1="70" x2="95" y2="125">
-                        <stop offset="0%" stopColor="#10B981"/>
-                        <stop offset="100%" stopColor="#059669"/>
+                        <stop offset="0%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#059669" />
                       </linearGradient>
                     </defs>
                   </svg>
@@ -1412,14 +1520,14 @@ export const ApproveHub: React.FC = () => {
                     Усі документи розглянуто.<br />
                     Час для кави ☕
                   </Text>
-                  <div style={{ 
-                    marginTop: spacing.xl, 
+                  <div style={{
+                    marginTop: spacing.xl,
                     padding: spacing.md,
                     background: 'rgba(16, 185, 129, 0.05)',
                     borderRadius: '8px',
                     fontSize: '13px',
                     color: '#059669',
-                    fontWeight: 500
+                    fontWeight: 500,
                   }}>
                     🎯 Сьогодні опрацьовано: {todayApproved} документів
                   </div>
@@ -1481,9 +1589,9 @@ export const ApproveHub: React.FC = () => {
                                 style={{
                                   backgroundColor: hoveredBtn === `card-${task.id}` ? '#22C55E' : '#f0fff4',
                                   color: hoveredBtn === `card-${task.id}` ? 'white' : '#22C55E',
-                                  border: '1px solid #22C55E',
                                   borderRadius: '8px',
                                   fontWeight: 600,
+                                  ...ib('#22C55E'),
                                 }}
                               >
                                 Затвердити
@@ -1570,14 +1678,16 @@ export const ApproveHub: React.FC = () => {
                       {!attachmentsLoaded && (
                         <Button
                           size="small"
-                          icon={attachmentsLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={16} />}
+                          icon={attachmentsLoading
+                            ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                            : <Download size={16} />}
                           onClick={handleLoadAttachments}
                           disabled={attachmentsLoading}
                           style={{
                             backgroundColor: 'transparent',
-                            border: `1px solid #7C3AED`,
                             color: '#7C3AED',
                             borderRadius: '6px',
+                            ...ib('#7C3AED'),
                           }}
                         >
                           {attachmentsLoading ? 'Завантаження...' : 'Завантажити'}
@@ -1586,10 +1696,14 @@ export const ApproveHub: React.FC = () => {
                     </div>
                     <ul className={styles.attachmentsList}>
                       {currentTask.attachments.map((file, idx) => (
-                        <li key={idx} className={styles.attachmentItem} style={{
-                          cursor: attachmentsLoaded ? 'pointer' : 'default',
-                          opacity: attachmentsLoaded ? 1 : 0.6,
-                        }}>
+                        <li
+                          key={idx}
+                          className={styles.attachmentItem}
+                          style={{
+                            cursor: attachmentsLoaded ? 'pointer' : 'default',
+                            opacity: attachmentsLoaded ? 1 : 0.6,
+                          }}
+                        >
                           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                             <File size={20} style={{ color: '#7C3AED' }} />
                             <span style={{
@@ -1629,10 +1743,10 @@ export const ApproveHub: React.FC = () => {
                     style={{
                       backgroundColor: hoveredBtn === 'detail-approve' ? '#22C55E' : '#f0fff4',
                       color: hoveredBtn === 'detail-approve' ? 'white' : '#22C55E',
-                      border: '1px solid #22C55E',
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
+                      ...ib('#22C55E'),
                     }}
                   >
                     Затвердити
@@ -1645,10 +1759,10 @@ export const ApproveHub: React.FC = () => {
                     style={{
                       backgroundColor: hoveredBtn === 'detail-reject' ? '#fee2e2' : 'transparent',
                       color: '#e53e3e',
-                      border: '1px solid #e53e3e',
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
+                      ...ib('#e53e3e'),
                     }}
                   >
                     Відхилити
@@ -1663,10 +1777,10 @@ export const ApproveHub: React.FC = () => {
                     style={{
                       backgroundColor: hoveredBtn === 'open-system' ? '#0078d4' : '#e6f2ff',
                       color: hoveredBtn === 'open-system' ? 'white' : '#0078d4',
-                      border: '1px solid #0078d4',
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
+                      ...ib('#0078d4'),
                     }}
                   >
                     Відкрити в системі
@@ -1784,7 +1898,7 @@ export const ApproveHub: React.FC = () => {
         <div className={styles.onboardingOverlay}>
           <div className={styles.onboardingCard}>
             <div className={styles.onboardingDecor} />
-            
+
             {onboardingStep === 0 && (
               <>
                 <div className={styles.onboardingIcon}>
@@ -1830,7 +1944,7 @@ export const ApproveHub: React.FC = () => {
                       <Flame size={14} style={{ color: '#EF4444' }} />
                     </div>
                     <div>
-                      <strong style={{ color: '#EF4444' }}>Терміново</strong> — документи з наближаючимся дедлайном
+                      <strong style={{ color: '#EF4444' }}>Терміново</strong> — протерміновані документи
                     </div>
                   </div>
                 </div>
