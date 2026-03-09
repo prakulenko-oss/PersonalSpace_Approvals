@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   makeStyles,
   tokens,
@@ -14,6 +14,9 @@ import {
   Toast,
   ToastTitle,
   ToastBody,
+  Dropdown,
+  Option,
+  Tooltip,
 } from '@fluentui/react-components';
 import type { ToastIntent } from '@fluentui/react-components';
 import {
@@ -21,23 +24,25 @@ import {
   ExternalLink,
   Check,
   X,
-  Database,
-  FileText,
-  LayoutGrid,
-  Shield,
-  CreditCard,
-  Users,
-  BarChart3,
+  Inbox,
+  Key,
+  FileEdit,
+  Trophy,
   Paperclip,
   Download,
   File,
   Loader2,
   Eye,
   AlertCircle,
+  Flame,
+  ArrowUpDown,
+  Sparkles,
+  HelpCircle,
+  Lightbulb,
 } from 'lucide-react';
 
 // ============================================
-// DESIGN TOKENS - Spacing Scale (4px base)
+// DESIGN TOKENS
 // ============================================
 const spacing = {
   xs: '4px',
@@ -50,84 +55,66 @@ const spacing = {
   xxxxl: '40px',
 } as const;
 
-// ============================================
-// DESIGN TOKENS - Elevation (Shadows)
-// ============================================
 const elevation = {
   shadow2: '0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.1)',
   shadow4: '0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 6px rgba(0, 0, 0, 0.1)',
   shadow8: '0 4px 8px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.1)',
-  shadow16: '0 8px 16px rgba(0, 0, 0, 0.1), 0 16px 32px rgba(0, 0, 0, 0.12)',
 } as const;
 
-// ============================================
-// DESIGN TOKENS - Motion (Fluent)
-// ============================================
 const motion = {
   fast: '100ms',
   normal: '200ms',
-  slow: '300ms',
   easeOut: 'cubic-bezier(0.33, 1, 0.68, 1)',
-  easeInOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
 } as const;
 
 // Document type categories
 const ACTIONABLE_TYPES = ['Візування', 'Підписання'];
 const isActionable = (type: string) => ACTIONABLE_TYPES.includes(type);
 
+// Filter categories
+const filterCategories = [
+  { id: 'all', label: 'Всі' },
+  { id: 'finance', label: 'Фінанси' },
+  { id: 'documents', label: 'Документи' },
+  { id: 'hr', label: 'Кадри' },
+  { id: 'processes', label: 'Процеси' },
+  { id: 'access', label: 'Доступи' },
+];
+
+// Sorting options
+const sortOptions = [
+  { id: 'date-asc', label: 'За строком (спочатку термінові)' },
+  { id: 'date-desc', label: 'За строком (спочатку пізні)' },
+  { id: 'type', label: 'За типом' },
+  { id: 'author', label: 'За автором (А → Я)' },
+];
+
 const useStyles = makeStyles({
   // ============================================
-  // GLOBAL FOCUS STYLES
-  // ============================================
-  focusVisible: {
-    ':focus-visible': {
-      outline: `2px solid ${tokens.colorBrandBackground}`,
-      outlineOffset: '2px',
-    },
-  },
-
-  // ============================================
-  // APP LAYOUT - Responsive
+  // APP LAYOUT
   // ============================================
   app: {
     display: 'flex',
-    flexDirection: 'column',
     height: '100vh',
-    backgroundColor: tokens.colorNeutralBackground1,
-  },
-  appBody: {
-    display: 'flex',
-    flex: 1,
-    overflow: 'hidden',
+    backgroundColor: '#F8FAFC',
   },
 
   // ============================================
-  // SIDEBAR - Responsive
+  // SIDEBAR
   // ============================================
   sidebar: {
-    width: '260px',
-    backgroundColor: tokens.colorNeutralBackground1,
+    width: '240px',
+    backgroundColor: 'white',
     borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
-    transition: `width ${motion.normal} ${motion.easeOut}`,
-    '@media (max-width: 1024px)': {
-      width: '220px',
-    },
-    '@media (max-width: 768px)': {
-      width: '72px',
-    },
   },
   sidebarHeader: {
-    padding: `${spacing.lg} ${spacing.xl}`,
+    padding: `${spacing.xl} ${spacing.lg}`,
     display: 'flex',
     alignItems: 'center',
     gap: spacing.md,
-    '@media (max-width: 768px)': {
-      padding: spacing.md,
-      justifyContent: 'center',
-    },
   },
   sidebarLogo: {
     width: '36px',
@@ -140,260 +127,255 @@ const useStyles = makeStyles({
     color: 'white',
     fontWeight: 700,
     fontSize: '18px',
-    boxShadow: '0 2px 8px rgba(124, 58, 237, 0.25)',
+    boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
   },
   sidebarTitle: {
-    fontSize: '15px',
-    fontWeight: 600,
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
+    fontSize: '17px',
+    fontWeight: 700,
+    color: tokens.colorNeutralForeground1,
   },
   sidebarNav: {
-    flex: 1,
     padding: `${spacing.sm} ${spacing.md}`,
-    overflowY: 'auto',
-  },
-  navLabel: {
-    fontSize: '12px',
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground2,
-    padding: `${spacing.md} ${spacing.md} ${spacing.sm}`,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
+    flex: 1,
   },
   navItem: {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.md,
-    padding: `${spacing.sm} ${spacing.md}`,
-    borderRadius: '6px',
+    padding: `${spacing.md} ${spacing.lg}`,
+    borderRadius: '10px',
     cursor: 'pointer',
-    marginBottom: '2px',
-    borderLeft: '3px solid transparent',
+    marginBottom: spacing.xs,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     color: tokens.colorNeutralForeground2,
-    outline: 'none',
+    fontWeight: 500,
+    fontSize: '14px',
     ':hover': {
       backgroundColor: tokens.colorNeutralBackground3,
     },
-    ':focus-visible': {
-      outline: `2px solid ${tokens.colorBrandBackground}`,
-      outlineOffset: '2px',
-    },
-    ':active': {
-      transform: 'scale(0.98)',
-      backgroundColor: tokens.colorNeutralBackground4,
-    },
-    '@media (max-width: 768px)': {
-      justifyContent: 'center',
-      padding: spacing.md,
-    },
   },
   navItemActive: {
-    backgroundColor: tokens.colorNeutralBackground3,
-    borderLeftColor: tokens.colorBrandBackground,
-    color: tokens.colorBrandForeground1,
+    backgroundColor: 'rgba(124, 58, 237, 0.08)',
+    color: '#7C3AED',
     fontWeight: 600,
-    boxShadow: elevation.shadow2,
-    '@media (max-width: 768px)': {
-      borderLeftColor: 'transparent',
-      borderBottomColor: tokens.colorBrandBackground,
-    },
   },
-  navIcon: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '20px',
-    height: '20px',
-    flexShrink: 0,
-  },
-  navText: {
-    flex: 1,
-    fontSize: '14px',
-    '@media (max-width: 768px)': {
-      display: 'none',
+  navItemDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+    ':hover': {
+      backgroundColor: 'transparent',
     },
   },
   navBadge: {
+    marginLeft: 'auto',
+    backgroundColor: '#7C3AED',
+    color: 'white',
     fontSize: '12px',
     fontWeight: 600,
-    padding: `3px ${spacing.sm}`,
-    borderRadius: '12px',
-    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
-    color: '#7C3AED',
-    border: '1px solid rgba(124, 58, 237, 0.2)',
-    '@media (max-width: 768px)': {
-      position: 'absolute' as const,
-      top: '-4px',
-      right: '-4px',
-      minWidth: '20px',
-      height: '20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 5px',
-    },
+    padding: '2px 8px',
+    borderRadius: '10px',
+    minWidth: '24px',
+    textAlign: 'center' as const,
   },
-  navBadgeUrgent: {
-    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%)',
-    color: '#DC2626',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-  },
-  navItemWrapper: {
-    position: 'relative' as const,
-  },
-  sidebarStats: {
-    margin: `${spacing.sm} ${spacing.md}`,
-    padding: spacing.lg,
-    backgroundColor: tokens.colorNeutralBackground1,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    borderRadius: spacing.sm,
-    boxShadow: elevation.shadow2,
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
-  },
-  statsHeader: {
-    fontSize: '13px',
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground1,
-    marginBottom: spacing.md,
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  statsRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '13px',
-    marginBottom: spacing.sm,
-    color: tokens.colorNeutralForeground2,
-  },
-  statsValue: {
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground1,
-  },
-  statsValueGreen: {
-    fontWeight: 600,
-    color: tokens.colorPaletteGreenForeground1,
+  comingSoon: {
+    fontSize: '10px',
+    color: tokens.colorNeutralForeground3,
+    marginLeft: 'auto',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
   },
 
   // ============================================
-  // MAIN CONTENT - Responsive
+  // GAMIFICATION - Soft & Elegant
+  // ============================================
+  progressBlock: {
+    margin: spacing.md,
+    padding: spacing.lg,
+    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
+    borderRadius: '12px',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  progressHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    fontWeight: 600,
+    fontSize: '13px',
+    color: tokens.colorNeutralForeground2,
+  },
+  progressStats: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  progressNumber: {
+    fontSize: '28px',
+    fontWeight: 700,
+    color: '#7C3AED',
+    lineHeight: 1,
+  },
+  progressLabel: {
+    fontSize: '13px',
+    color: tokens.colorNeutralForeground3,
+  },
+  progressBar: {
+    height: '6px',
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: '3px',
+    overflow: 'hidden',
+    marginBottom: spacing.sm,
+  },
+  progressFill: {
+    height: '100%',
+    background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 100%)',
+    borderRadius: '3px',
+  },
+  progressRank: {
+    fontSize: '12px',
+    fontWeight: 500,
+    color: '#10B981',
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+
+  // ============================================
+  // MAIN
   // ============================================
   main: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
-    backgroundColor: tokens.colorNeutralBackground1,
     minWidth: 0,
+    backgroundColor: '#F8FAFC',
   },
+
+  // ============================================
+  // HERO HEADER
+  // ============================================
   heroHeader: {
     background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
-    padding: `${spacing.xxxl} ${spacing.xxxxl}`,
-    margin: `${spacing.xxl} ${spacing.xxxl}`,
+    padding: `${spacing.xxl} ${spacing.xxxl}`,
+    margin: `${spacing.xl} ${spacing.xxl}`,
     color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     position: 'relative' as const,
     overflow: 'hidden',
-    minHeight: '180px',
+    minHeight: '100px',
     borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.15)',
-    '@media (max-width: 768px)': {
-      padding: `${spacing.xl} ${spacing.lg}`,
-      margin: `${spacing.lg}`,
-      minHeight: '140px',
-      borderRadius: '12px',
-    },
+    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)',
   },
   heroContent: {
     position: 'relative' as const,
     zIndex: 1,
-    maxWidth: '60%',
-    '@media (max-width: 768px)': {
-      maxWidth: '100%',
-    },
   },
   heroTitle: {
-    fontSize: '32px',
+    fontSize: '24px',
     fontWeight: 700,
-    marginBottom: spacing.sm,
-    lineHeight: '1.2',
-    textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    '@media (max-width: 768px)': {
-      fontSize: '24px',
-    },
+    marginBottom: spacing.xs,
   },
   heroSubtitle: {
-    fontSize: '15px',
-    opacity: 0.95,
-    lineHeight: '1.5',
-    maxWidth: '500px',
-    '@media (max-width: 768px)': {
-      fontSize: '14px',
-    },
+    fontSize: '14px',
+    opacity: 0.9,
   },
-  heroIllustration: {
+  heroDecor1: {
     position: 'absolute' as const,
-    right: spacing.xxxxl,
-    bottom: 0,
-    width: '280px',
-    height: '180px',
-    zIndex: 0,
-    '@media (max-width: 1024px)': {
-      width: '200px',
-      height: '140px',
-      right: spacing.xl,
-    },
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
+    width: '200px',
+    height: '200px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: '-60px',
+    right: '100px',
   },
-  sectionHeader: {
-    padding: `${spacing.lg} ${spacing.xxl}`,
-    margin: `0 ${spacing.xxxl}`,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  heroDecor2: {
+    position: 'absolute' as const,
+    width: '150px',
+    height: '150px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    bottom: '-40px',
+    right: '250px',
+  },
+  heroDecor3: {
+    position: 'absolute' as const,
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    top: '20px',
+    right: '350px',
+  },
+
+  // ============================================
+  // FILTER BAR (with search inside)
+  // ============================================
+  filterBar: {
+    padding: `${spacing.md} ${spacing.xl}`,
+    margin: `0 ${spacing.xxl}`,
+    marginTop: `-${spacing.lg}`,
+    backgroundColor: 'white',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.lg,
-    '@media (max-width: 768px)': {
-      padding: `${spacing.md} ${spacing.lg}`,
-      margin: `0 ${spacing.lg}`,
-      flexDirection: 'column',
-      alignItems: 'stretch',
-    },
+    boxShadow: elevation.shadow2,
+    position: 'relative' as const,
+    zIndex: 10,
   },
-  sectionTitle: {
+  filterChips: {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.sm,
-    fontSize: '15px',
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground1,
+    flex: 1,
+    overflowX: 'auto',
   },
+  filterChip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.xs,
+    padding: `${spacing.sm} ${spacing.lg}`,
+    borderRadius: '20px',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 500,
+    color: tokens.colorNeutralForeground2,
+    whiteSpace: 'nowrap' as const,
+    transition: `all ${motion.fast} ${motion.easeOut}`,
+    ':hover': {
+      borderColor: '#7C3AED',
+      color: '#7C3AED',
+    },
+  },
+  filterChipActive: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
+    color: 'white',
+    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.3)',
+    ':hover': {
+      backgroundColor: '#6D28D9',
+      borderColor: '#6D28D9',
+      color: 'white',
+    },
+  },
+  filterSearch: {
+    width: '240px',
+    flexShrink: 0,
+  },
+
+  // ============================================
+  // TOOLBAR
+  // ============================================
   toolbar: {
-    padding: `${spacing.md} ${spacing.xxxxl}`,
-    backgroundColor: tokens.colorNeutralBackground1,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    padding: `${spacing.md} ${spacing.xxl}`,
+    margin: `${spacing.md} ${spacing.xxl} 0`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: '52px',
-    '@media (max-width: 768px)': {
-      padding: `${spacing.md} ${spacing.lg}`,
-      flexWrap: 'wrap',
-      gap: spacing.sm,
-    },
   },
   toolbarLeft: {
     display: 'flex',
@@ -405,77 +387,56 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: spacing.md,
   },
-  toolbarActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
   taskCount: {
     fontSize: '13px',
-    color: tokens.colorNeutralForeground2,
+    color: tokens.colorNeutralForeground3,
   },
 
   // ============================================
-  // CONTENT AREA - Responsive
+  // CONTENT AREA
   // ============================================
   contentArea: {
     flex: 1,
     display: 'flex',
     overflow: 'hidden',
-    '@media (max-width: 1024px)': {
-      flexDirection: 'column',
-    },
   },
   taskList: {
     flex: 1,
     overflowY: 'auto',
-    padding: `${spacing.xl} ${spacing.xxl}`,
-    margin: `0 ${spacing.xxxl} ${spacing.xxl} ${spacing.xxxl}`,
-    '@media (max-width: 768px)': {
-      padding: spacing.lg,
-      margin: `0 ${spacing.lg} ${spacing.lg} ${spacing.lg}`,
-    },
+    padding: `${spacing.sm} ${spacing.xxl}`,
   },
   taskListSplit: {
     maxWidth: '55%',
-    '@media (max-width: 1024px)': {
-      maxWidth: '100%',
-      flex: '0 0 auto',
-      maxHeight: '40vh',
-    },
   },
 
   // ============================================
-  // TASK CARD - with focus, active states
+  // TASK CARD - With animations
   // ============================================
   taskCard: {
     marginBottom: spacing.md,
-    padding: '0',
-    cursor: 'pointer',
-    backgroundColor: tokens.colorNeutralBackground1,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    backgroundColor: 'white',
     borderRadius: '12px',
-    transition: `all ${motion.normal} ${motion.easeOut}`,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     overflow: 'hidden',
-    outline: 'none',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)',
+    cursor: 'pointer',
+    transition: `all ${motion.normal} ${motion.easeOut}`,
+    boxShadow: elevation.shadow2,
+    opacity: 1,
+    transform: 'translateX(0) scale(1)',
     ':hover': {
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-      transform: 'translateY(-2px)',
-      border: `1px solid ${tokens.colorBrandStroke1}`,
-    },
-    ':focus-visible': {
-      outline: `2px solid ${tokens.colorBrandBackground}`,
-      outlineOffset: '2px',
-    },
-    ':active': {
-      transform: 'scale(0.995)',
+      boxShadow: elevation.shadow4,
+      transform: 'translateY(-1px)',
     },
   },
   taskCardSelected: {
-    border: `2px solid ${tokens.colorBrandBackground}`,
-    backgroundColor: tokens.colorBrandBackground2,
+    border: `2px solid #7C3AED`,
     boxShadow: elevation.shadow8,
+  },
+  // Animation class for disappearing
+  taskCardRemoving: {
+    opacity: 0,
+    transform: 'translateX(100px) scale(0.95)',
+    transition: `all 400ms ${motion.easeOut}`,
   },
   taskCardInner: {
     padding: `${spacing.lg} ${spacing.xl}`,
@@ -503,6 +464,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
   },
+  // Actionable badge (Візування, Підписання)
   taskTypeActionable: {
     fontSize: '11px',
     fontWeight: 600,
@@ -517,6 +479,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '4px',
   },
+  // View-only badge (По руху, Розгляд)
   taskTypeViewOnly: {
     fontSize: '11px',
     fontWeight: 600,
@@ -524,8 +487,8 @@ const useStyles = makeStyles({
     letterSpacing: '0.5px',
     color: tokens.colorNeutralForeground2,
     backgroundColor: tokens.colorNeutralBackground3,
-    padding: `2px ${spacing.sm}`,
-    borderRadius: '4px',
+    padding: `4px ${spacing.md}`,
+    borderRadius: '8px',
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
@@ -533,10 +496,13 @@ const useStyles = makeStyles({
   taskDate: {
     fontSize: '12px',
     color: tokens.colorNeutralForeground2,
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   taskDateUrgent: {
-    color: tokens.colorPaletteRedForeground1,
-    fontWeight: 500,
+    color: '#EF4444',
+    fontWeight: 600,
   },
   taskTitle: {
     fontSize: '14px',
@@ -564,14 +530,9 @@ const useStyles = makeStyles({
     fontSize: '13px',
     color: tokens.colorNeutralForeground2,
   },
-  taskAuthorName: {
-    marginRight: spacing.sm,
-  },
+  taskAuthorName: {},
   taskDepartment: {
     color: tokens.colorNeutralForeground3,
-    '@media (max-width: 768px)': {
-      display: 'none',
-    },
   },
   taskCardActions: {
     display: 'flex',
@@ -579,21 +540,15 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // DETAIL PANEL - Responsive
+  // DETAIL PANEL - Full original version
   // ============================================
   detailPanel: {
     width: '45%',
-    backgroundColor: tokens.colorNeutralBackground1,
+    backgroundColor: 'white',
     borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     flexDirection: 'column',
     boxShadow: elevation.shadow8,
-    '@media (max-width: 1024px)': {
-      width: '100%',
-      flex: 1,
-      borderLeft: 'none',
-      borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-    },
   },
   detailHeader: {
     padding: `${spacing.md} ${spacing.xl}`,
@@ -602,19 +557,15 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  detailHeaderBtns: {
-    display: 'flex',
-    gap: '4px',
-  },
   detailBody: {
     flex: 1,
     overflowY: 'auto',
     padding: spacing.xxl,
   },
   detailType: {
-    fontSize: '12px',
+    fontSize: '16px',
     fontWeight: 600,
-    color: tokens.colorBrandForeground1,
+    color: '#7C3AED',
     marginBottom: spacing.sm,
   },
   detailTitle: {
@@ -628,24 +579,18 @@ const useStyles = makeStyles({
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: `${spacing.lg} ${spacing.xxl}`,
-    marginBottom: spacing.xxl,
+    marginBottom: spacing.xl,
     paddingBottom: spacing.xl,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: '1fr',
-    },
   },
   detailField: {},
   detailFieldFull: {
     gridColumn: 'span 2',
-    '@media (max-width: 480px)': {
-      gridColumn: 'span 1',
-    },
   },
   detailFieldLabel: {
     fontSize: '11px',
     fontWeight: 600,
-    color: tokens.colorNeutralForeground2,
+    color: tokens.colorNeutralForeground3,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.3px',
     marginBottom: '4px',
@@ -658,7 +603,7 @@ const useStyles = makeStyles({
   detailSectionTitle: {
     fontSize: '11px',
     fontWeight: 600,
-    color: tokens.colorNeutralForeground2,
+    color: tokens.colorNeutralForeground3,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.3px',
     marginBottom: spacing.sm,
@@ -669,28 +614,20 @@ const useStyles = makeStyles({
     lineHeight: '1.6',
     padding: spacing.lg,
     backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: '6px',
+    borderRadius: '8px',
+    fontStyle: 'italic' as const,
     marginBottom: spacing.lg,
-  },
-  detailInfo: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    padding: `${spacing.md} ${spacing.lg}`,
-    backgroundColor: tokens.colorBrandBackground2,
-    borderRadius: '6px',
-    fontSize: '13px',
-    color: tokens.colorBrandForeground1,
   },
   detailInfoWarning: {
     display: 'flex',
     alignItems: 'flex-start',
     gap: spacing.sm,
-    padding: `${spacing.md} ${spacing.lg}`,
-    backgroundColor: tokens.colorPaletteYellowBackground1,
-    borderRadius: '6px',
-    fontSize: '15px',
-    color: tokens.colorPaletteYellowForeground2,
+    padding: spacing.lg,
+    backgroundColor: '#FEF3C7',
+    borderRadius: '8px',
+    fontSize: '14px',
+    color: '#92400E',
+    marginBottom: spacing.lg,
   },
   detailFooter: {
     padding: `${spacing.lg} ${spacing.xxl}`,
@@ -698,15 +635,41 @@ const useStyles = makeStyles({
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: spacing.md,
-    '@media (max-width: 480px)': {
-      gridTemplateColumns: '1fr',
-    },
   },
   detailFooterViewOnly: {
     padding: `${spacing.lg} ${spacing.xxl}`,
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     justifyContent: 'center',
+  },
+
+  // ============================================
+  // ATTACHMENTS BLOCK
+  // ============================================
+  attachmentsBlock: {
+    marginBottom: spacing.lg,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: spacing.sm,
+    overflow: 'hidden',
+  },
+  attachmentsHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: `${spacing.md} ${spacing.lg}`,
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  attachmentsList: {
+    padding: `${spacing.sm} 0`,
+    margin: 0,
+    listStyle: 'none',
+  },
+  attachmentItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: `${spacing.sm} ${spacing.lg}`,
   },
 
   // ============================================
@@ -717,27 +680,23 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: `60px ${spacing.xl}`,
+    padding: '80px 20px',
     textAlign: 'center' as const,
   },
   emptyIcon: {
-    width: '64px',
-    height: '64px',
-    backgroundColor: tokens.colorPaletteGreenBackground1,
+    width: '80px',
+    height: '80px',
+    backgroundColor: '#DCFCE7',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg,
-    color: tokens.colorPaletteGreenForeground1,
-    boxShadow: elevation.shadow4,
+    color: '#22C55E',
   },
 
   // ============================================
-  // KEYBOARD SHORTCUTS HINT
-  // ============================================
-  // ============================================
-  // CONFIRMATION MODAL STYLES
+  // MODAL
   // ============================================
   modalOverlay: {
     position: 'fixed' as const,
@@ -753,7 +712,7 @@ const useStyles = makeStyles({
     backdropFilter: 'blur(4px)',
   },
   modalContent: {
-    backgroundColor: tokens.colorNeutralBackground1,
+    backgroundColor: 'white',
     borderRadius: '16px',
     padding: spacing.xxl,
     maxWidth: '480px',
@@ -762,38 +721,143 @@ const useStyles = makeStyles({
     position: 'relative' as const,
   },
   modalHeader: {
-    fontSize: '20px',
+    fontSize: '18px',
     fontWeight: 600,
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
     color: tokens.colorNeutralForeground1,
-  },
-  modalBody: {
-    fontSize: '14px',
-    color: tokens.colorNeutralForeground2,
-    marginBottom: spacing.xxl,
-    lineHeight: '1.5',
   },
   modalFooter: {
     display: 'flex',
     gap: spacing.md,
     justifyContent: 'flex-end',
+    marginTop: spacing.xl,
   },
-  characterCounter: {
+
+  // ============================================
+  // ONBOARDING
+  // ============================================
+  onboardingOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    zIndex: 1000,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onboardingCard: {
+    backgroundColor: 'white',
+    borderRadius: '20px',
+    padding: spacing.xxxl,
+    maxWidth: '500px',
+    width: '90%',
+    textAlign: 'center' as const,
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+    position: 'relative' as const,
+    overflow: 'hidden',
+  },
+  onboardingDecor: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '6px',
+    background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 50%, #10B981 100%)',
+  },
+  onboardingIcon: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto',
+    marginBottom: spacing.xl,
+  },
+  onboardingTitle: {
+    fontSize: '24px',
+    fontWeight: 700,
+    color: tokens.colorNeutralForeground1,
+    marginBottom: spacing.md,
+  },
+  onboardingText: {
+    fontSize: '15px',
+    color: tokens.colorNeutralForeground2,
+    lineHeight: '1.6',
+    marginBottom: spacing.xl,
+  },
+  onboardingTips: {
+    textAlign: 'left' as const,
+    padding: spacing.lg,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: '12px',
+    marginBottom: spacing.xl,
+  },
+  onboardingTip: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground2,
+  },
+  onboardingTipIcon: {
+    width: '24px',
+    height: '24px',
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  onboardingSteps: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  onboardingDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: tokens.colorNeutralStroke2,
+  },
+  onboardingDotActive: {
+    backgroundColor: '#7C3AED',
+    width: '24px',
+    borderRadius: '4px',
+  },
+
+  // ============================================
+  // EMPATHY ELEMENTS
+  // ============================================
+  welcomeBack: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: spacing.xs,
     fontSize: '12px',
-    color: tokens.colorNeutralForeground3,
-    marginTop: spacing.xs,
-    textAlign: 'right' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: spacing.sm,
   },
-  characterCounterError: {
-    color: '#e53e3e',
-  },
-  // ============================================
-  // BUTTON STYLES with active state
-  // ============================================
-  btnActive: {
-    ':active': {
-      transform: 'scale(0.96)',
-    },
+  encouragement: {
+    position: 'fixed' as const,
+    bottom: spacing.xxl,
+    right: spacing.xxl,
+    backgroundColor: 'white',
+    padding: `${spacing.md} ${spacing.lg}`,
+    borderRadius: '12px',
+    boxShadow: elevation.shadow8,
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground1,
+    zIndex: 100,
+    animation: 'slideIn 300ms ease-out',
   },
 });
 
@@ -811,6 +875,7 @@ interface Task {
   number: string;
   date: string;
   urgent: boolean;
+  category: string;
   docType: string;
   contractor: string;
   summary: string;
@@ -821,32 +886,90 @@ interface Task {
   attachments: Attachment[];
 }
 
-interface SystemItem {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-  count: number;
-  urgent: boolean;
-}
-
 // ============================================
 // DATA
 // ============================================
-const systems: SystemItem[] = [
-  { id: 'erp', name: 'ERP Система', icon: <Database size={20} style={{ color: '#7C3AED' }} aria-hidden="true" />, count: 5, urgent: true },
-  { id: 'docflow', name: 'Документообіг', icon: <FileText size={20} style={{ color: '#2563EB' }} aria-hidden="true" />, count: 12, urgent: false },
-  { id: 'bpms', name: 'BPMS', icon: <LayoutGrid size={20} style={{ color: '#0891B2' }} aria-hidden="true" />, count: 3, urgent: false },
-  { id: 'access', name: 'Контроль доступу', icon: <Shield size={20} style={{ color: '#10B981' }} aria-hidden="true" />, count: 7, urgent: true },
-  { id: 'finance', name: 'Фінанси', icon: <CreditCard size={20} style={{ color: '#F59E0B' }} aria-hidden="true" />, count: 2, urgent: false },
-  { id: 'hr', name: 'Відпустки та кадри', icon: <Users size={20} style={{ color: '#EC4899' }} aria-hidden="true" />, count: 4, urgent: false },
-];
-
 const initialTasks: Task[] = [
-  { id: 1, type: 'Візування', number: '№12345', date: '06.02.2026', urgent: true, docType: 'Службова записка', contractor: 'ТОВ "Альфа-Трейд"', summary: 'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.', preparedBy: 'Оболоник А.С.', preparedByDept: 'Відділ управління операційними системами', createdBy: 'Іваненко М.В.', createdByDept: 'Канцелярія', attachments: [{ name: 'Договір_постачання.pdf', size: '2.4 MB' }, { name: 'Специфікація.xlsx', size: '156 KB' }] },
-  { id: 2, type: 'Підписання', number: '№987-Н', date: '10.02.2026', urgent: false, docType: 'Наказ', contractor: '—', summary: 'Відрядження до м. Одеса для проведення аудиту філії.', preparedBy: 'Коваленко І.П.', preparedByDept: 'Відділ кадрів', createdBy: 'Коваленко І.П.', createdByDept: 'Відділ кадрів', attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }] },
-  { id: 3, type: 'По руху', number: '№0042', date: '11.02.2026', urgent: false, docType: 'Заявка', contractor: 'Adobe Inc.', summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.', preparedBy: 'Сидоренко О.М.', preparedByDept: 'IT департамент', createdBy: 'Сидоренко О.М.', createdByDept: 'IT департамент', attachments: [] },
-  { id: 4, type: 'Розгляд', number: '№0098', date: '12.02.2026', urgent: false, docType: 'Договір', contractor: 'ПП "ТехноПостач"', summary: 'Розгляд договору з постачальником обладнання.', preparedBy: 'Петренко В.І.', preparedByDept: 'Юридичний відділ', createdBy: 'Бондаренко К.Л.', createdByDept: 'Юридичний відділ', attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }] },
-  { id: 5, type: 'Візування', number: '№0156', date: '08.02.2026', urgent: true, docType: 'Бюджет', contractor: '—', summary: 'Бюджет на Q2 2026 — затвердження видатків.', preparedBy: 'Мельник О.П.', preparedByDept: 'Фінансовий відділ', createdBy: 'Ткаченко Р.С.', createdByDept: 'Фінансовий відділ', attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }] },
+  { 
+    id: 1, 
+    type: 'Візування', 
+    number: '№12345', 
+    date: '06.02.2026', 
+    urgent: true, 
+    category: 'finance',
+    docType: 'Службова записка', 
+    contractor: 'ТОВ "Альфа-Трейд"', 
+    summary: 'Реорганізація відділу маркетингу та впровадження нових KPI для Q1 2026.', 
+    preparedBy: 'Оболоник А.С.', 
+    preparedByDept: 'Відділ управління операційними системами', 
+    createdBy: 'Іваненко М.В.',
+    createdByDept: 'Канцелярія',
+    attachments: [{ name: 'Договір_постачання.pdf', size: '2.4 MB' }, { name: 'Специфікація.xlsx', size: '156 KB' }] 
+  },
+  { 
+    id: 2, 
+    type: 'Підписання', 
+    number: '№987-Н', 
+    date: '10.02.2026', 
+    urgent: false, 
+    category: 'documents',
+    docType: 'Наказ', 
+    contractor: '—', 
+    summary: 'Відрядження до м. Одеса для проведення аудиту філії.', 
+    preparedBy: 'Коваленко І.П.', 
+    preparedByDept: 'Відділ кадрів', 
+    createdBy: 'Коваленко І.П.',
+    createdByDept: 'Відділ кадрів',
+    attachments: [{ name: 'Кошторис_45.pdf', size: '320 KB' }] 
+  },
+  { 
+    id: 3, 
+    type: 'По руху', 
+    number: '№0042', 
+    date: '11.02.2026', 
+    urgent: false, 
+    category: 'hr',
+    docType: 'Заявка', 
+    contractor: 'Adobe Inc.', 
+    summary: 'Закупівля 5 ліцензій Adobe Creative Cloud.', 
+    preparedBy: 'Сидоренко О.М.', 
+    preparedByDept: 'IT департамент', 
+    createdBy: 'Сидоренко О.М.',
+    createdByDept: 'IT департамент',
+    attachments: [] 
+  },
+  { 
+    id: 4, 
+    type: 'Розгляд', 
+    number: '№0098', 
+    date: '12.02.2026', 
+    urgent: false, 
+    category: 'access',
+    docType: 'Договір', 
+    contractor: 'ПП "ТехноПостач"', 
+    summary: 'Розгляд договору з постачальником обладнання.', 
+    preparedBy: 'Петренко В.І.', 
+    preparedByDept: 'Юридичний відділ', 
+    createdBy: 'Бондаренко К.Л.',
+    createdByDept: 'Юридичний відділ',
+    attachments: [{ name: 'Договір.pdf', size: '1.2 MB' }] 
+  },
+  { 
+    id: 5, 
+    type: 'Візування', 
+    number: '№0156', 
+    date: '08.02.2026', 
+    urgent: true, 
+    category: 'finance',
+    docType: 'Бюджет', 
+    contractor: '—', 
+    summary: 'Бюджет на Q2 2026 — затвердження видатків.', 
+    preparedBy: 'Мельник О.П.', 
+    preparedByDept: 'Фінансовий відділ', 
+    createdBy: 'Ткаченко Р.С.',
+    createdByDept: 'Фінансовий відділ',
+    attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }] 
+  },
 ];
 
 // ============================================
@@ -858,20 +981,53 @@ export const ApproveHub: React.FC = () => {
   const { dispatchToast } = useToastController(toasterId);
 
   // State
-  const [activeSystem, setActiveSystem] = useState('docflow');
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
-  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('date-asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [attachmentsLoading, setAttachmentsLoading] = useState(false);
   const [attachmentsLoaded, setAttachmentsLoaded] = useState(false);
-  const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [liveRegionMessage, setLiveRegionMessage] = useState('');
+  const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
+  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  
+  // Animation & Onboarding
+  const [removingTaskIds, setRemovingTaskIds] = useState<number[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    // Check if user has seen onboarding
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('approvehub-onboarding-seen');
+    }
+    return false;
+  });
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [encouragementMessage, setEncouragementMessage] = useState<string | null>(null);
 
-  // Toast notifications
+  // Stats
+  const [todayApproved, setTodayApproved] = useState(12);
+  const progressPercent = Math.min(100, (todayApproved / 20) * 100);
+
+  // Encouragement messages
+  const encouragements = [
+    { threshold: 5, message: "Непогано! Вже 5 документів ✨" },
+    { threshold: 10, message: "Десятка! Так тримати! 🔥" },
+    { threshold: 15, message: "15 документів — ти машина! 🚀" },
+    { threshold: 20, message: "20! Ти сьогодні герой! 🏆" },
+  ];
+
+  // Show encouragement when reaching milestones
+  useEffect(() => {
+    const encouragement = encouragements.find(e => e.threshold === todayApproved);
+    if (encouragement) {
+      setEncouragementMessage(encouragement.message);
+      setTimeout(() => setEncouragementMessage(null), 3000);
+    }
+  }, [todayApproved]);
+
+  // Toast
   const showToast = useCallback((title: string, body: string, intent: ToastIntent = 'success') => {
     dispatchToast(
       <Toast>
@@ -880,20 +1036,20 @@ export const ApproveHub: React.FC = () => {
       </Toast>,
       { intent, timeout: 5000 }
     );
-    // Update live region for screen readers
-    setLiveRegionMessage(`${title}: ${body}`);
-    setTimeout(() => setLiveRegionMessage(''), 100);
   }, [dispatchToast]);
 
-  // Handlers
-  const handleSystemClick = useCallback((id: string) => {
-    setActiveSystem(id);
-    setCurrentTask(null);
-    setRejectReason('');
-    setAttachmentsLoading(false);
-    setAttachmentsLoaded(false);
+  // Animated task removal
+  const removeTaskWithAnimation = useCallback((taskId: number, callback?: () => void) => {
+    setRemovingTaskIds(prev => [...prev, taskId]);
+    setTimeout(() => {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      setRemovingTaskIds(prev => prev.filter(id => id !== taskId));
+      setTodayApproved(prev => prev + 1);
+      callback?.();
+    }, 400);
   }, []);
 
+  // Handlers
   const handleTaskClick = useCallback((task: Task) => {
     setCurrentTask(task);
     setRejectReason('');
@@ -903,26 +1059,28 @@ export const ApproveHub: React.FC = () => {
 
   const handleCloseDetail = useCallback(() => {
     setCurrentTask(null);
-    setRejectReason('');
   }, []);
 
   const handleApprove = useCallback(() => {
     if (currentTask) {
-      setTasks(prev => prev.filter(t => t.id !== currentTask.id));
-      setCurrentTask(null);
-      showToast('Затверджено', `Документ ${currentTask.number} успішно затверджено`, 'success');
+      const taskNumber = currentTask.number;
+      removeTaskWithAnimation(currentTask.id, () => {
+        setCurrentTask(null);
+      });
+      showToast('Затверджено ✓', `${taskNumber} — готово!`, 'success');
     }
-  }, [currentTask, showToast]);
+  }, [currentTask, showToast, removeTaskWithAnimation]);
 
   const handleApproveTask = useCallback((e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
-    setTasks(prev => prev.filter(t => t.id !== task.id));
-    setSelectedTasks(prev => prev.filter(id => id !== task.id));
-    if (currentTask?.id === task.id) {
-      setCurrentTask(null);
-    }
-    showToast('Затверджено', `Документ ${task.number} успішно затверджено`, 'success');
-  }, [currentTask, showToast]);
+    removeTaskWithAnimation(task.id, () => {
+      setSelectedTasks(prev => prev.filter(id => id !== task.id));
+      if (currentTask?.id === task.id) {
+        setCurrentTask(null);
+      }
+    });
+    showToast('Затверджено ✓', `${task.number} — готово!`, 'success');
+  }, [currentTask, showToast, removeTaskWithAnimation]);
 
   const handleOpenRejectModal = useCallback(() => {
     setShowRejectModal(true);
@@ -973,59 +1131,46 @@ export const ApproveHub: React.FC = () => {
     }, 1500);
   }, []);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip if typing in input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
+  // Filtered tasks
+  const filteredTasks = useMemo(() => {
+    const filtered = tasks.filter(task => {
+      const matchesFilter = activeFilter === 'all' || task.category === activeFilter;
+      const matchesSearch = !searchQuery.trim() || 
+        task.contractor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.preparedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.number.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
 
-      // Close modals with Escape
-      if (e.key === 'Escape') {
-        if (showBulkApproveModal) {
-          e.preventDefault();
-          setShowBulkApproveModal(false);
-          return;
-        }
-        handleCloseDetail();
-        return;
-      }
-
-      // Approve: A
-      if (e.key === 'a' && currentTask && isActionable(currentTask.type)) {
-        e.preventDefault();
-        handleApprove();
-      }
-
-      // Reject: R (if reason filled)
-      if (e.key === 'r' && currentTask && isActionable(currentTask.type) && rejectReason.trim() && rejectReason.length <= 500) {
-        e.preventDefault();
-        handleRejectConfirm();
-      }
-
-      // Search: /
-      if (e.key === '/') {
-        e.preventDefault();
-        document.querySelector<HTMLInputElement>('[data-search-input]')?.focus();
-      }
+    // Sort tasks
+    const parseDate = (dateStr: string) => {
+      const [day, month, year] = dateStr.split('.');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentTask, rejectReason, showBulkApproveModal, handleApprove, handleRejectConfirm, handleCloseDetail]);
-
-  // Filtered tasks
-  const filteredTasks = tasks.filter(task => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      task.type.toLowerCase().includes(query) ||
-      task.number.toLowerCase().includes(query) ||
-      task.summary.toLowerCase().includes(query) ||
-      task.preparedBy.toLowerCase().includes(query)
-    );
-  });
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc':
+          // Urgent first, then by date ascending
+          if (a.urgent !== b.urgent) return a.urgent ? -1 : 1;
+          return parseDate(a.date).getTime() - parseDate(b.date).getTime();
+        case 'date-desc':
+          // By date descending
+          return parseDate(b.date).getTime() - parseDate(a.date).getTime();
+        case 'type':
+          // Actionable first (Візування, Підписання), then others
+          const aActionable = isActionable(a.type) ? 0 : 1;
+          const bActionable = isActionable(b.type) ? 0 : 1;
+          if (aActionable !== bActionable) return aActionable - bActionable;
+          return a.type.localeCompare(b.type, 'uk');
+        case 'author':
+          return a.preparedBy.localeCompare(b.preparedBy, 'uk');
+        default:
+          return 0;
+      }
+    });
+  }, [tasks, activeFilter, searchQuery, sortBy]);
 
   const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
   const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
@@ -1039,213 +1184,160 @@ export const ApproveHub: React.FC = () => {
     }
   }, [actionableTasks]);
 
-  const activeSystemData = systems.find(s => s.id === activeSystem);
-
   return (
-    <div lang="uk" className={styles.app} role="application" aria-label="ApproveHub - Центр затверджень">
+    <div className={styles.app}>
       <Toaster toasterId={toasterId} position="top-end" />
 
-      <div className={styles.appBody}>
       {/* SIDEBAR */}
-      <aside className={styles.sidebar} role="navigation" aria-label="Навігація по системах">
+      <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ fontSize: '20px' }}>✓</span>
-          </div>
+          <div className={styles.sidebarLogo}>✓</div>
           <span className={styles.sidebarTitle}>ApproveHub</span>
         </div>
 
-        <nav className={styles.sidebarNav} aria-label="Список систем">
-          <div className={styles.navLabel} id="systems-label">Системи затвердження</div>
-          <ul role="listbox" aria-labelledby="systems-label" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {systems.map(sys => (
-              <li key={sys.id} className={styles.navItemWrapper}>
-                <div
-                  role="option"
-                  aria-selected={activeSystem === sys.id}
-                  tabIndex={0}
-                  className={`${styles.navItem} ${activeSystem === sys.id ? styles.navItemActive : ''}`}
-                  onClick={() => handleSystemClick(sys.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleSystemClick(sys.id);
-                    }
-                  }}
-                >
-                  <span className={styles.navIcon} aria-hidden="true">{sys.icon}</span>
-                  <span className={styles.navText}>{sys.name}</span>
-                  <span 
-                    className={`${styles.navBadge} ${sys.urgent ? styles.navBadgeUrgent : ''}`}
-                    aria-label={`${sys.count} документів${sys.urgent ? ', терміново' : ''}`}
-                  >
-                    {sys.count}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <nav className={styles.sidebarNav}>
+          <div className={`${styles.navItem} ${styles.navItemActive}`}>
+            <Inbox size={20} />
+            <span>Затвердження</span>
+            <span className={styles.navBadge}>{tasks.length}</span>
+          </div>
+
+          <div className={`${styles.navItem} ${styles.navItemDisabled}`}>
+            <Key size={20} />
+            <span>Доступи</span>
+            <span className={styles.comingSoon}>скоро</span>
+          </div>
+
+          <div className={`${styles.navItem} ${styles.navItemDisabled}`}>
+            <FileEdit size={20} />
+            <span>Заявки</span>
+            <span className={styles.comingSoon}>скоро</span>
+          </div>
         </nav>
 
-        <div className={styles.sidebarStats} role="region" aria-label="Статистика">
-          <div className={styles.statsHeader}>
-            <BarChart3 size={20} style={{ color: '#7C3AED' }} aria-hidden="true" />
-            <span>Сьогодні</span>
+        <div className={styles.progressBlock}>
+          <div className={styles.progressHeader}>
+            <Trophy size={16} style={{ color: '#7C3AED' }} />
+            <span>Твій прогрес</span>
           </div>
-          <div className={styles.statsRow}>
-            <span>Оброблено</span>
-            <span className={styles.statsValue}>8/15</span>
+          <div className={styles.progressStats}>
+            <span className={styles.progressNumber}>{todayApproved}</span>
+            <span className={styles.progressLabel}>опрацьовано сьогодні</span>
           </div>
-          <div style={{ 
-            width: '100%', 
-            height: '6px', 
-            background: 'rgba(124, 58, 237, 0.1)', 
-            borderRadius: '3px',
-            overflow: 'hidden',
-            marginTop: '8px',
-            marginBottom: '12px'
-          }}>
-            <div style={{
-              width: '53%',
-              height: '100%',
-              background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 100%)',
-              borderRadius: '3px',
-              transition: 'width 0.6s ease-out'
-            }} />
+          <div className={styles.progressBar}>
+            <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
           </div>
-          <div className={styles.statsRow}>
-            <span>Залишилось</span>
-            <span className={styles.statsValue}>{tasks.length}</span>
-          </div>
-          <div className={styles.statsRow}>
-            <span>Затверджено сьогодні</span>
-            <span className={styles.statsValueGreen}>8</span>
+          <div className={styles.progressRank}>
+            <span style={{ color: '#10B981' }}>●</span>
+            Ти в топ-5!
           </div>
         </div>
       </aside>
 
       {/* MAIN */}
-      <main className={styles.main} role="main" aria-label="Список документів">
-        <header className={styles.heroHeader}>
+      <main className={styles.main}>
+        {/* Hero Header */}
+        <div className={styles.heroHeader}>
+          <div className={styles.heroDecor1} />
+          <div className={styles.heroDecor2} />
+          <div className={styles.heroDecor3} />
           <div className={styles.heroContent}>
-            <h1 className={styles.heroTitle}>Центр затверджень</h1>
-            <p className={styles.heroSubtitle}>
-              Швидке опрацювання та затвердження документів з усіх оперативних систем компанії
-            </p>
+            <div className={styles.heroTitle}>Доброго дня, Олександре! 👋</div>
+            <div className={styles.heroSubtitle}>
+              У вас {tasks.length} {tasks.length === 1 ? 'завдання' : 'завдань'} на затвердження
+            </div>
           </div>
-          {/* Hero Illustration */}
-          <div className={styles.heroIllustration} aria-hidden="true">
-            <svg viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Desk */}
-              <rect x="40" y="140" width="200" height="8" rx="4" fill="rgba(255,255,255,0.2)"/>
-              {/* Person */}
-              <circle cx="140" cy="80" r="20" fill="rgba(255,255,255,0.3)"/>
-              <rect x="125" y="100" width="30" height="40" rx="8" fill="rgba(255,255,255,0.3)"/>
-              {/* Documents Stack */}
-              <rect x="180" y="100" width="50" height="40" rx="4" fill="rgba(255,255,255,0.25)"/>
-              <rect x="185" y="95" width="50" height="40" rx="4" fill="rgba(255,255,255,0.3)"/>
-              <rect x="190" y="90" width="50" height="40" rx="4" fill="rgba(255,255,255,0.35)"/>
-              {/* Checkmarks */}
-              <circle cx="215" cy="70" r="15" fill="#10B981"/>
-              <path d="M209 70L213 74L221 66" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              <circle cx="245" cy="85" r="12" fill="#10B981"/>
-              <path d="M240 85L243 88L250 81" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              {/* Laptop */}
-              <rect x="80" y="115" width="60" height="35" rx="4" fill="rgba(255,255,255,0.2)"/>
-              <rect x="85" y="120" width="50" height="25" rx="2" fill="rgba(59,130,246,0.3)"/>
-              {/* Decorative Elements */}
-              <circle cx="250" cy="40" r="8" fill="rgba(255,255,255,0.15)"/>
-              <circle cx="60" cy="50" r="6" fill="rgba(255,255,255,0.1)"/>
-              <circle cx="90" cy="30" r="10" fill="rgba(255,255,255,0.12)"/>
-            </svg>
-          </div>
-        </header>
-
-        <div className={styles.sectionHeader}>
-          <div className={styles.sectionTitle}>
-            <FileText size={20} aria-hidden="true" />
-            <span>{activeSystemData?.name}</span>
-          </div>
-          <Input
-            data-search-input
-            contentBefore={<Search size={20} aria-hidden="true" />}
-            placeholder="Пошук... (натисніть /)"
-            style={{ width: '240px' }}
-            value={searchQuery}
-            onChange={(_e, data) => setSearchQuery(data.value)}
-            aria-label="Пошук документів"
-          />
         </div>
 
-        <div className={styles.toolbar} role="toolbar" aria-label="Панель інструментів">
+        {/* Filter Bar with Search */}
+        <div className={styles.filterBar}>
+          <div className={styles.filterChips}>
+            {filterCategories.map(cat => (
+              <button
+                key={cat.id}
+                className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
+                onClick={() => setActiveFilter(cat.id)}
+              >
+                {cat.id === 'all' && activeFilter === 'all' && <Check size={14} />}
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div className={styles.filterSearch}>
+            <Input
+              contentBefore={<Search size={18} />}
+              placeholder="Швидкий пошук..."
+              value={searchQuery}
+              onChange={(_e, data) => setSearchQuery(data.value)}
+            />
+          </div>
+        </div>
+
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
           <div className={styles.toolbarLeft}>
             <Checkbox
-              label="Вибрати всі"
+              label="Обрати всі для затвердження"
               checked={isAllSelected}
               onChange={(_e, data) => handleSelectAll(!!data.checked)}
-              aria-label={`Вибрати всі документи для затвердження (${actionableTasks.length})`}
             />
           </div>
           <div className={styles.toolbarRight}>
             {selectedCount > 0 && (
               <Button
-                icon={<Check size={16} aria-hidden="true" />}
+                appearance="primary"
+                icon={<Check size={16} />}
                 onClick={handleApproveSelected}
-                className={styles.btnActive}
-                style={{
-                  backgroundColor: hoveredBtn === 'toolbar-approve' ? '#22a566' : '#f0fff4',
-                  color: hoveredBtn === 'toolbar-approve' ? 'white' : '#22a566',
-                  border: '1px solid #22a566',
-                  borderRadius: '8px',
-                  padding: '6px 20px',
-                  fontWeight: 600,
-                  transition: `all ${motion.fast} ${motion.easeOut}`,
-                }}
-                onMouseEnter={() => setHoveredBtn('toolbar-approve')}
-                onMouseLeave={() => setHoveredBtn(null)}
-                aria-label={`Затвердити ${selectedCount} обраних документів`}
+                style={{ backgroundColor: '#22C55E', borderRadius: '8px' }}
               >
-                Затвердити обрані ({selectedCount})
+                Затвердити {selectedCount} {selectedCount === 1 ? 'документ' : selectedCount < 5 ? 'документи' : 'документів'}
               </Button>
             )}
-            <span className={styles.taskCount} aria-live="polite">
-              {filteredTasks.length} документів
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+              <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
+              <Dropdown
+                value={sortOptions.find(s => s.id === sortBy)?.label}
+                onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
+                style={{ minWidth: '220px' }}
+              >
+                {sortOptions.map(option => (
+                  <Option key={option.id} value={option.id}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+            <span className={styles.taskCount}>{filteredTasks.length} {filteredTasks.length === 1 ? 'документ очікує' : 'документів очікують'} на вас</span>
           </div>
         </div>
 
+        {/* Content */}
         <div className={styles.contentArea}>
-          <div 
-            className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}
-            role="list"
-            aria-label="Список документів на затвердження"
-          >
+          <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
             {filteredTasks.length === 0 ? (
-              // Empty state - all done
+              // Empty states
               searchQuery.trim() ? (
-                // No search results
-                <div className={styles.emptyState} role="status">
+                // 1. No search results
+                <div className={styles.emptyState}>
                   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
-                    {/* Magnifying glass */}
-                    <circle cx="50" cy="50" r="20" stroke="#7C3AED" strokeWidth="3" fill="none"/>
-                    <line x1="65" y1="65" x2="80" y2="80" stroke="#7C3AED" strokeWidth="3" strokeLinecap="round"/>
-                    {/* Question mark */}
-                    <circle cx="90" cy="35" r="15" fill="rgba(124, 58, 237, 0.1)"/>
-                    <text x="90" y="42" fontSize="18" fill="#7C3AED" textAnchor="middle" fontWeight="600">?</text>
+                    {/* Detective magnifying glass */}
+                    <circle cx="50" cy="50" r="22" stroke="#7C3AED" strokeWidth="3" fill="rgba(124, 58, 237, 0.05)"/>
+                    <line x1="67" y1="67" x2="85" y2="85" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round"/>
+                    {/* Confused eyes inside magnifying glass */}
+                    <circle cx="43" cy="48" r="3" fill="#7C3AED"/>
+                    <circle cx="57" cy="48" r="3" fill="#7C3AED"/>
+                    <path d="M43 58 Q50 54 57 58" stroke="#7C3AED" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                    {/* Question marks */}
+                    <text x="20" y="30" fontSize="16" fill="#7C3AED" opacity="0.4">?</text>
+                    <text x="90" y="35" fontSize="20" fill="#7C3AED" opacity="0.6">?</text>
+                    <text x="100" y="70" fontSize="14" fill="#7C3AED" opacity="0.3">?</text>
                   </svg>
                   <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
-                    Нічого не знайдено
+                    Хм, нічого не знайшли 🤔
                   </Text>
-                  <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', marginBottom: spacing.md }}>
-                    За запитом "{searchQuery}" не знайдено документів
+                  <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', marginBottom: spacing.md, lineHeight: '1.5' }}>
+                    За запитом "{searchQuery}" документів немає.<br />
+                    Може, спробуємо інші слова?
                   </Text>
                   <Button 
                     appearance="subtle" 
@@ -1255,26 +1347,57 @@ export const ApproveHub: React.FC = () => {
                     Очистити пошук
                   </Button>
                 </div>
+              ) : tasks.length > 0 ? (
+                // 2. Category is empty but other categories have tasks (steppe)
+                <div className={styles.emptyState}>
+                  <svg width="130" height="130" viewBox="0 0 130 130" fill="none" style={{ marginBottom: spacing.lg }}>
+                    {/* Empty box/folder */}
+                    <rect x="30" y="45" width="70" height="55" rx="8" stroke="#7C3AED" strokeWidth="2.5" fill="rgba(124, 58, 237, 0.03)"/>
+                    <path d="M30 55 L65 55 L70 45 L100 45" stroke="#7C3AED" strokeWidth="2.5" fill="none"/>
+                    {/* Tumbleweed / dust */}
+                    <circle cx="50" cy="85" r="8" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeDasharray="3 2"/>
+                    <circle cx="75" cy="82" r="5" stroke="#D1D5DB" strokeWidth="1" fill="none" strokeDasharray="2 2"/>
+                    {/* Wind lines */}
+                    <path d="M20 75 Q35 73 45 75" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+                    <path d="M85 80 Q100 78 115 80" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5"/>
+                    {/* Sparkle - it's clean! */}
+                    <path d="M105 35 L105 25 M100 30 L110 30" stroke="#10B981" strokeWidth="2" strokeLinecap="round"/>
+                    <circle cx="25" cy="40" r="2" fill="#10B981" opacity="0.6"/>
+                  </svg>
+                  <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
+                    Тут порожньо... як у степу 🌾
+                  </Text>
+                  <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.5' }}>
+                    {activeFilter !== 'all' 
+                      ? <>У категорії "{filterCategories.find(f => f.id === activeFilter)?.label}" поки тихо.<br />Жодного документа на затвердження!</>
+                      : <>Нових документів поки немає.<br />Перевірте пізніше!</>
+                    }
+                  </Text>
+                  {activeFilter !== 'all' && (
+                    <Button 
+                      appearance="subtle" 
+                      onClick={() => setActiveFilter('all')}
+                      style={{ marginTop: spacing.lg }}
+                    >
+                      Показати всі документи ({tasks.length})
+                    </Button>
+                  )}
+                </div>
               ) : (
-                // All tasks completed
-                <div className={styles.emptyState} role="status">
+                // 3. All tasks completed - Inbox Zero! 🎉 (no tasks at all)
+                <div className={styles.emptyState}>
                   <svg width="140" height="140" viewBox="0 0 140 140" fill="none" style={{ marginBottom: spacing.lg }}>
-                    {/* Coffee cup */}
                     <rect x="45" y="70" width="50" height="55" rx="6" fill="url(#coffeeGradient)"/>
                     <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669"/>
                     <rect x="90" y="90" width="8" height="25" rx="4" fill="#059669"/>
-                    {/* Steam */}
                     <path d="M55 60 Q 50 50 55 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
                     <path d="M70 55 Q 65 45 70 35" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
                     <path d="M85 60 Q 80 50 85 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6"/>
-                    {/* Checkmark badge */}
                     <circle cx="100" cy="50" r="18" fill="#10B981"/>
                     <path d="M93 50L98 55L107 44" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    {/* Decorative elements */}
                     <circle cx="25" cy="40" r="4" fill="rgba(124, 58, 237, 0.2)"/>
                     <circle cx="115" cy="100" r="5" fill="rgba(37, 99, 235, 0.2)"/>
                     <circle cx="30" cy="110" r="3" fill="rgba(16, 185, 129, 0.2)"/>
-                    
                     <defs>
                       <linearGradient id="coffeeGradient" x1="45" y1="70" x2="95" y2="125">
                         <stop offset="0%" stopColor="#10B981"/>
@@ -1286,7 +1409,7 @@ export const ApproveHub: React.FC = () => {
                     Чудова робота! ✨
                   </Text>
                   <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.6' }}>
-                    Усі документи в цій системі розглянуто.<br />
+                    Усі документи розглянуто.<br />
                     Час для кави ☕
                   </Text>
                   <div style={{ 
@@ -1298,7 +1421,7 @@ export const ApproveHub: React.FC = () => {
                     color: '#059669',
                     fontWeight: 500
                   }}>
-                    🎯 Сьогодні опрацьовано: 8 документів
+                    🎯 Сьогодні опрацьовано: {todayApproved} документів
                   </div>
                 </div>
               )
@@ -1307,22 +1430,14 @@ export const ApproveHub: React.FC = () => {
                 const isSelected = currentTask?.id === task.id;
                 const canApprove = isActionable(task.type);
                 const isChecked = selectedTasks.includes(task.id);
+                const isRemoving = removingTaskIds.includes(task.id);
 
                 return (
                   <article
                     key={task.id}
-                    role="listitem"
-                    tabIndex={0}
-                    aria-selected={isSelected}
-                    aria-label={`${task.type} ${task.number}: ${task.summary}`}
-                    className={`${styles.taskCard} ${isSelected ? styles.taskCardSelected : ''}`}
-                    onClick={() => handleTaskClick(task)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleTaskClick(task);
-                      }
-                    }}
+                    className={`${styles.taskCard} ${isSelected ? styles.taskCardSelected : ''} ${isRemoving ? styles.taskCardRemoving : ''}`}
+                    onClick={() => !isRemoving && handleTaskClick(task)}
+                    style={{ pointerEvents: isRemoving ? 'none' : 'auto' }}
                   >
                     <div className={styles.taskCardInner}>
                       <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
@@ -1330,27 +1445,28 @@ export const ApproveHub: React.FC = () => {
                           checked={isChecked}
                           disabled={!canApprove}
                           onChange={() => toggleTaskSelection(task.id)}
-                          aria-label={`Вибрати документ ${task.number}`}
                         />
                       </div>
                       <div className={styles.taskBody}>
                         <div className={styles.taskHeader}>
                           <div className={styles.taskBadgeContainer}>
                             <span className={canApprove ? styles.taskTypeActionable : styles.taskTypeViewOnly}>
-                              {canApprove ? <Check size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
+                              {canApprove ? <Check size={14} /> : <Eye size={14} />}
                               {task.type}
                             </span>
                           </div>
                           <span className={`${styles.taskDate} ${task.urgent ? styles.taskDateUrgent : ''}`}>
-                            {task.urgent && <span aria-label="Терміново">🔥 </span>}
+                            {task.urgent && <Flame size={14} />}
                             Строк: {task.date}
                           </span>
                         </div>
-                        <h3 className={styles.taskTitle}>{task.number} — {task.summary.substring(0, 55)}...</h3>
-                        <p className={styles.taskDesc}>{task.summary}</p>
+                        <div className={styles.taskTitle}>
+                          {task.number} — {task.summary.length > 55 ? task.summary.substring(0, 55) + '...' : task.summary}
+                        </div>
+                        <div className={styles.taskDesc}>{task.summary}</div>
                         <div className={styles.taskFooter}>
                           <div className={styles.taskMeta}>
-                            <Avatar name={task.preparedBy} size={20} aria-hidden="true" />
+                            <Avatar name={task.preparedBy} size={20} />
                             <span className={styles.taskAuthorName}>{task.preparedBy}</span>
                             <span className={styles.taskDepartment}>· {task.preparedByDept}</span>
                           </div>
@@ -1358,20 +1474,17 @@ export const ApproveHub: React.FC = () => {
                             <div className={styles.taskCardActions}>
                               <Button
                                 size="small"
-                                icon={<Check size={16} aria-hidden="true" />}
+                                icon={<Check size={16} />}
                                 onClick={(e) => handleApproveTask(e, task)}
-                                className={styles.btnActive}
                                 onMouseEnter={() => setHoveredBtn(`card-${task.id}`)}
                                 onMouseLeave={() => setHoveredBtn(null)}
                                 style={{
-                                  backgroundColor: hoveredBtn === `card-${task.id}` ? '#22a566' : '#f0fff4',
-                                  color: hoveredBtn === `card-${task.id}` ? 'white' : '#22a566',
-                                  border: '1px solid #22a566',
+                                  backgroundColor: hoveredBtn === `card-${task.id}` ? '#22C55E' : '#f0fff4',
+                                  color: hoveredBtn === `card-${task.id}` ? 'white' : '#22C55E',
+                                  border: '1px solid #22C55E',
                                   borderRadius: '8px',
                                   fontWeight: 600,
-                                  transition: `all ${motion.fast} ${motion.easeOut}`,
                                 }}
-                                aria-label={`Затвердити документ ${task.number}`}
                               >
                                 Затвердити
                               </Button>
@@ -1386,42 +1499,29 @@ export const ApproveHub: React.FC = () => {
             )}
           </div>
 
-          {/* DETAIL PANEL */}
+          {/* Detail Panel */}
           {currentTask && (
-            <aside 
-              className={styles.detailPanel} 
-              role="complementary" 
-              aria-label={`Деталі документа ${currentTask.number}`}
-            >
+            <aside className={styles.detailPanel}>
               <div className={styles.detailHeader}>
-                <Button 
-                  appearance="subtle" 
-                  icon={<ExternalLink size={20} aria-hidden="true" />}
-                  aria-label="Відкрити документ у зовнішній системі"
-                >
+                <Button appearance="subtle" icon={<ExternalLink size={20} />}>
                   Відкрити в системі
                 </Button>
-                <Button 
-                  appearance="subtle" 
-                  icon={<X size={20} aria-hidden="true" />} 
-                  onClick={handleCloseDetail}
-                  aria-label="Закрити панель деталей"
-                />
+                <Button appearance="subtle" icon={<X size={20} />} onClick={handleCloseDetail} />
               </div>
 
               <div className={styles.detailBody}>
-                <div style={{ fontSize: '16px', fontWeight: 600, color: tokens.colorBrandForeground1, marginBottom: spacing.sm }}>
+                <div className={styles.detailType}>
                   {currentTask.type} {currentTask.number}
                 </div>
-                <div className={styles.detailTitle} id="detail-title">{currentTask.summary.substring(0, 60)}...</div>
+                <div className={styles.detailTitle}>
+                  {currentTask.summary.length > 60 ? currentTask.summary.substring(0, 60) + '...' : currentTask.summary}
+                </div>
 
-                <section aria-labelledby="detail-info-heading" style={{ marginBottom: spacing.lg }}>
-                  <div id="detail-info-heading" style={{ position: 'absolute', left: '-10000px' }}>Інформація про документ</div>
-                  <div className={styles.detailGrid}>
-                    <div className={styles.detailField}>
-                      <div className={styles.detailFieldLabel}>Строк</div>
-                      <div className={styles.detailFieldValue}>{currentTask.date}</div>
-                    </div>
+                <div className={styles.detailGrid}>
+                  <div className={styles.detailField}>
+                    <div className={styles.detailFieldLabel}>Строк</div>
+                    <div className={styles.detailFieldValue}>{currentTask.date}</div>
+                  </div>
                   <div className={styles.detailField}>
                     <div className={styles.detailFieldLabel}>Вид документа</div>
                     <div className={styles.detailFieldValue}>{currentTask.docType}</div>
@@ -1431,71 +1531,52 @@ export const ApproveHub: React.FC = () => {
                     <div className={styles.detailFieldValue}>{currentTask.contractor}</div>
                   </div>
                 </div>
-                </section>
 
-                <section aria-labelledby="detail-summary-heading">
-                  <div id="detail-summary-heading" className={styles.detailSectionTitle}>Короткий зміст</div>
-                  <div className={styles.detailDescription}>{currentTask.summary}</div>
-                </section>
+                <div className={styles.detailSectionTitle}>Короткий зміст</div>
+                <div className={styles.detailDescription}>{currentTask.summary}</div>
 
-                <section aria-labelledby="detail-preparer-heading" style={{ marginBottom: spacing.lg }}>
-                  <div id="detail-preparer-heading" className={styles.detailSectionTitle}>Готував</div>
+                <div style={{ marginBottom: spacing.lg }}>
+                  <div className={styles.detailSectionTitle}>Готував</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: '4px' }}>
-                    <Avatar name={currentTask.preparedBy} size={24} aria-hidden="true" />
+                    <Avatar name={currentTask.preparedBy} size={24} />
                     <span style={{ fontWeight: 500 }}>{currentTask.preparedBy}</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '34px' }}>
+                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '32px' }}>
                     {currentTask.preparedByDept}
                   </div>
-                </section>
+                </div>
 
-                <section aria-labelledby="detail-creator-heading" style={{ marginBottom: spacing.lg }}>
-                  <div id="detail-creator-heading" className={styles.detailSectionTitle}>Створив</div>
+                <div style={{ marginBottom: spacing.lg }}>
+                  <div className={styles.detailSectionTitle}>Створив</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, marginBottom: '4px' }}>
-                    <Avatar name={currentTask.createdBy} size={24} aria-hidden="true" />
+                    <Avatar name={currentTask.createdBy} size={24} />
                     <span style={{ fontWeight: 500 }}>{currentTask.createdBy}</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '34px' }}>
+                  <div style={{ fontSize: '13px', color: tokens.colorNeutralForeground3, marginLeft: '32px' }}>
                     {currentTask.createdByDept}
                   </div>
-                </section>
+                </div>
 
                 {/* Attachments */}
                 {currentTask.attachments.length > 0 && (
-                  <section 
-                    aria-labelledby="attachments-heading"
-                    style={{
-                      marginBottom: spacing.lg,
-                      border: `1px solid ${tokens.colorNeutralStroke2}`,
-                      borderRadius: spacing.sm,
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: `${spacing.md} ${spacing.lg}`,
-                      backgroundColor: tokens.colorNeutralBackground3,
-                      borderBottom: `1px solid ${tokens.colorNeutralStroke2}`
-                    }}>
+                  <div className={styles.attachmentsBlock}>
+                    <div className={styles.attachmentsHeader}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                        <Paperclip size={20} aria-hidden="true" />
-                        <div id="attachments-heading" style={{ fontWeight: 600, fontSize: '13px', margin: 0 }}>
+                        <Paperclip size={20} />
+                        <span style={{ fontWeight: 600, fontSize: '13px' }}>
                           ВКЛАДЕННЯ ({currentTask.attachments.length})
-                        </div>
+                        </span>
                       </div>
                       {!attachmentsLoaded && (
                         <Button
                           size="small"
-                          icon={attachmentsLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} aria-hidden="true" /> : <Download size={16} aria-hidden="true" />}
+                          icon={attachmentsLoading ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={16} />}
                           onClick={handleLoadAttachments}
                           disabled={attachmentsLoading}
-                          aria-label={attachmentsLoading ? 'Завантаження файлів...' : 'Завантажити вкладення'}
                           style={{
                             backgroundColor: 'transparent',
-                            border: `1px solid ${tokens.colorBrandBackground}`,
-                            color: tokens.colorBrandForeground1,
+                            border: `1px solid #7C3AED`,
+                            color: '#7C3AED',
                             borderRadius: '6px',
                           }}
                         >
@@ -1503,25 +1584,18 @@ export const ApproveHub: React.FC = () => {
                         </Button>
                       )}
                     </div>
-                    <ul style={{ padding: `${spacing.sm} 0`, margin: 0, listStyle: 'none' }}>
+                    <ul className={styles.attachmentsList}>
                       {currentTask.attachments.map((file, idx) => (
-                        <li
-                          key={idx}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: `${spacing.sm} ${spacing.lg}`,
-                            cursor: attachmentsLoaded ? 'pointer' : 'default',
-                            opacity: attachmentsLoaded ? 1 : 0.6,
-                          }}
-                        >
+                        <li key={idx} className={styles.attachmentItem} style={{
+                          cursor: attachmentsLoaded ? 'pointer' : 'default',
+                          opacity: attachmentsLoaded ? 1 : 0.6,
+                        }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                            <File size={20} style={{ color: tokens.colorBrandBackground }} aria-hidden="true" />
+                            <File size={20} style={{ color: '#7C3AED' }} />
                             <span style={{
                               fontSize: '13px',
-                              color: attachmentsLoaded ? tokens.colorBrandForeground1 : tokens.colorNeutralForeground2,
-                              textDecoration: attachmentsLoaded ? 'underline' : 'none'
+                              color: attachmentsLoaded ? '#7C3AED' : tokens.colorNeutralForeground2,
+                              textDecoration: attachmentsLoaded ? 'underline' : 'none',
                             }}>
                               {file.name}
                             </span>
@@ -1532,44 +1606,40 @@ export const ApproveHub: React.FC = () => {
                         </li>
                       ))}
                     </ul>
-                  </section>
+                  </div>
                 )}
 
                 {/* View-only warning */}
                 {!isActionable(currentTask.type) && (
-                  <div className={styles.detailInfoWarning} role="alert">
-                    <AlertCircle size={20} aria-hidden="true" />
+                  <div className={styles.detailInfoWarning}>
+                    <AlertCircle size={20} />
                     <span>Цей документ доступний лише для перегляду. Для затвердження перейдіть у систему.</span>
                   </div>
                 )}
               </div>
 
-              {/* Footer buttons */}
+              {/* Footer */}
               {isActionable(currentTask.type) ? (
                 <div className={styles.detailFooter}>
                   <Button
-                    icon={<Check size={20} aria-hidden="true" />}
+                    icon={<Check size={20} />}
                     onClick={handleApprove}
-                    className={styles.btnActive}
                     onMouseEnter={() => setHoveredBtn('detail-approve')}
                     onMouseLeave={() => setHoveredBtn(null)}
                     style={{
-                      backgroundColor: hoveredBtn === 'detail-approve' ? '#22a566' : '#f0fff4',
-                      color: hoveredBtn === 'detail-approve' ? 'white' : '#22a566',
-                      border: '1px solid #22a566',
+                      backgroundColor: hoveredBtn === 'detail-approve' ? '#22C55E' : '#f0fff4',
+                      color: hoveredBtn === 'detail-approve' ? 'white' : '#22C55E',
+                      border: '1px solid #22C55E',
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
-                      transition: `all ${motion.fast} ${motion.easeOut}`,
                     }}
-                    aria-label="Затвердити документ"
                   >
                     Затвердити
                   </Button>
                   <Button
-                    icon={<X size={20} aria-hidden="true" />}
+                    icon={<X size={20} />}
                     onClick={handleOpenRejectModal}
-                    className={styles.btnActive}
                     onMouseEnter={() => setHoveredBtn('detail-reject')}
                     onMouseLeave={() => setHoveredBtn(null)}
                     style={{
@@ -1579,9 +1649,7 @@ export const ApproveHub: React.FC = () => {
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
-                      transition: `all ${motion.fast} ${motion.easeOut}`,
                     }}
-                    aria-label="Відхилити документ"
                   >
                     Відхилити
                   </Button>
@@ -1589,8 +1657,7 @@ export const ApproveHub: React.FC = () => {
               ) : (
                 <div className={styles.detailFooterViewOnly}>
                   <Button
-                    icon={<ExternalLink size={20} aria-hidden="true" />}
-                    className={styles.btnActive}
+                    icon={<ExternalLink size={20} />}
                     onMouseEnter={() => setHoveredBtn('open-system')}
                     onMouseLeave={() => setHoveredBtn(null)}
                     style={{
@@ -1600,9 +1667,7 @@ export const ApproveHub: React.FC = () => {
                       borderRadius: '8px',
                       padding: '10px 24px',
                       fontWeight: 600,
-                      transition: `all ${motion.fast} ${motion.easeOut}`,
                     }}
-                    aria-label="Відкрити документ у зовнішній системі"
                   >
                     Відкрити в системі
                   </Button>
@@ -1613,86 +1678,10 @@ export const ApproveHub: React.FC = () => {
         </div>
       </main>
 
-      {/* Bulk Approve Confirmation Modal */}
-      {showBulkApproveModal && selectedTasks.length > 0 && (
-        <div 
-          className={styles.modalOverlay}
-          onClick={() => setShowBulkApproveModal(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="bulk-approve-modal-title"
-          aria-describedby="bulk-approve-modal-description"
-        >
-          <div 
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div id="bulk-approve-modal-title" className={styles.modalHeader}>Масове затвердження</div>
-            <div id="bulk-approve-modal-description" className={styles.modalBody}>
-              <p>Ви впевнені, що хочете затвердити <strong>{selectedTasks.length}</strong> {selectedTasks.length === 1 ? 'документ' : selectedTasks.length < 5 ? 'документи' : 'документів'}?</p>
-              <div style={{ 
-                marginTop: spacing.md, 
-                padding: spacing.md, 
-                backgroundColor: tokens.colorNeutralBackground3,
-                borderRadius: spacing.sm,
-                maxHeight: '200px',
-                overflowY: 'auto'
-              }}>
-                {tasks.filter(t => selectedTasks.includes(t.id)).map(task => (
-                  <div key={task.id} style={{ 
-                    padding: spacing.sm,
-                    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-                    fontSize: '13px'
-                  }}>
-                    <div style={{ fontWeight: 600 }}>{task.number}</div>
-                    <div style={{ color: tokens.colorNeutralForeground3 }}>{task.summary}</div>
-                  </div>
-                ))}
-              </div>
-              <p style={{ marginTop: spacing.md, fontSize: '13px', color: tokens.colorNeutralForeground3 }}>
-                ⚠️ Ця дія обробить всі вибрані документи одночасно. Скасувати масове затвердження неможливо.
-              </p>
-            </div>
-            <div className={styles.modalFooter}>
-              <Button
-                appearance="secondary"
-                onClick={() => setShowBulkApproveModal(false)}
-                style={{ borderRadius: '8px' }}
-                aria-label="Скасувати масове затвердження"
-              >
-                Скасувати
-              </Button>
-              <Button
-                appearance="primary"
-                onClick={handleConfirmBulkApprove}
-                style={{ 
-                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                  borderColor: '#10B981',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
-                }}
-                aria-label={`Підтвердити затвердження ${selectedTasks.length} документів`}
-              >
-                Затвердити всі ({selectedTasks.length})
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Reject Modal */}
       {showRejectModal && currentTask && (
-        <div 
-          className={styles.modalOverlay}
-          onClick={handleCloseRejectModal}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="reject-modal-title"
-        >
-          <div 
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className={styles.modalOverlay} onClick={handleCloseRejectModal}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button
               onClick={handleCloseRejectModal}
               style={{
@@ -1702,13 +1691,7 @@ export const ApproveHub: React.FC = () => {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: spacing.xs,
-                borderRadius: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
-              aria-label="Закрити"
             >
               <X size={20} />
             </button>
@@ -1726,9 +1709,7 @@ export const ApproveHub: React.FC = () => {
                 <AlertCircle size={24} style={{ color: '#DC2626' }} />
               </div>
               <div>
-                <div id="reject-modal-title" className={styles.modalHeader} style={{ marginBottom: spacing.xs }}>
-                  Відхилення документа
-                </div>
+                <div className={styles.modalHeader}>Відхилення документа</div>
                 <div style={{ fontSize: '14px', color: tokens.colorNeutralForeground2 }}>
                   {currentTask.type} {currentTask.number}
                 </div>
@@ -1736,15 +1717,8 @@ export const ApproveHub: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: spacing.lg }}>
-              <div style={{ 
-                fontSize: '13px', 
-                fontWeight: 600, 
-                color: tokens.colorNeutralForeground2,
-                marginBottom: spacing.sm,
-                textTransform: 'uppercase',
-                letterSpacing: '0.3px'
-              }}>
-                Причина відхилення <span style={{ color: '#e53e3e' }}>*</span>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: tokens.colorNeutralForeground2, marginBottom: spacing.sm }}>
+                Причина відхилення <span style={{ color: '#EF4444' }}>*</span>
               </div>
               <Textarea
                 placeholder="Опишіть причину відхилення документа..."
@@ -1754,48 +1728,25 @@ export const ApproveHub: React.FC = () => {
                     setRejectReason(data.value);
                   }
                 }}
-                style={{
-                  width: '100%',
-                  minHeight: '120px',
-                }}
-                aria-label="Причина відхилення документа"
-                aria-required="true"
+                style={{ width: '100%', minHeight: '120px' }}
               />
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                marginTop: spacing.xs 
-              }}>
-                <div style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
-                  Вкажіть конкретну причину для автора документа
-                </div>
-                <div style={{ 
-                  fontSize: '12px', 
-                  color: rejectReason.length > 450 ? '#e53e3e' : tokens.colorNeutralForeground3 
-                }}>
-                  {rejectReason.length}/500
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: spacing.xs, fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
+                {rejectReason.length}/500
               </div>
             </div>
 
             <div className={styles.modalFooter}>
-              <Button
-                appearance="secondary"
-                onClick={handleCloseRejectModal}
-                style={{ borderRadius: '8px' }}
-              >
+              <Button appearance="secondary" onClick={handleCloseRejectModal} style={{ borderRadius: '8px' }}>
                 Скасувати
               </Button>
               <Button
                 onClick={handleRejectConfirm}
                 disabled={!rejectReason.trim()}
-                style={{ 
-                  backgroundColor: !rejectReason.trim() ? '#f5f5f5' : '#DC2626',
-                  color: !rejectReason.trim() ? '#999' : 'white',
+                style={{
+                  backgroundColor: !rejectReason.trim() ? '#E5E7EB' : '#EF4444',
+                  color: !rejectReason.trim() ? '#9CA3AF' : 'white',
                   border: 'none',
                   borderRadius: '8px',
-                  cursor: !rejectReason.trim() ? 'not-allowed' : 'pointer',
                 }}
               >
                 Відхилити документ
@@ -1805,22 +1756,151 @@ export const ApproveHub: React.FC = () => {
         </div>
       )}
 
-      {/* Screen reader live region */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        style={{
-          position: 'absolute',
-          left: '-10000px',
-          width: '1px',
-          height: '1px',
-          overflow: 'hidden',
-        }}
-      >
-        {liveRegionMessage}
-      </div>
-      </div> {/* Close appBody */}
+      {/* Bulk Approve Modal */}
+      {showBulkApproveModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowBulkApproveModal(false)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>Масове затвердження</div>
+            <div style={{ color: tokens.colorNeutralForeground2, marginBottom: spacing.lg }}>
+              Ви впевнені, що хочете затвердити {selectedTasks.length} документів?
+            </div>
+            <div className={styles.modalFooter}>
+              <Button appearance="secondary" onClick={() => setShowBulkApproveModal(false)} style={{ borderRadius: '8px' }}>
+                Скасувати
+              </Button>
+              <Button
+                onClick={handleConfirmBulkApprove}
+                style={{ backgroundColor: '#22C55E', color: 'white', border: 'none', borderRadius: '8px' }}
+              >
+                Затвердити всі ({selectedTasks.length})
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding Modal */}
+      {showOnboarding && (
+        <div className={styles.onboardingOverlay}>
+          <div className={styles.onboardingCard}>
+            <div className={styles.onboardingDecor} />
+            
+            {onboardingStep === 0 && (
+              <>
+                <div className={styles.onboardingIcon}>
+                  <Sparkles size={40} style={{ color: '#7C3AED' }} />
+                </div>
+                <div className={styles.onboardingTitle}>
+                  Вітаємо в ApproveHub! 🎉
+                </div>
+                <div className={styles.onboardingText}>
+                  Тут зібрані всі документи, що очікують на ваше затвердження.<br />
+                  Більше не потрібно перемикатися між системами!
+                </div>
+              </>
+            )}
+
+            {onboardingStep === 1 && (
+              <>
+                <div className={styles.onboardingIcon}>
+                  <Lightbulb size={40} style={{ color: '#F59E0B' }} />
+                </div>
+                <div className={styles.onboardingTitle}>
+                  Як це працює?
+                </div>
+                <div className={styles.onboardingTips}>
+                  <div className={styles.onboardingTip}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)' }}>
+                      <Check size={14} style={{ color: '#7C3AED' }} />
+                    </div>
+                    <div>
+                      <strong style={{ color: '#7C3AED' }}>Візування / Підписання</strong> — документи, які ви можете затвердити або відхилити
+                    </div>
+                  </div>
+                  <div className={styles.onboardingTip}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: tokens.colorNeutralBackground3 }}>
+                      <Eye size={14} style={{ color: tokens.colorNeutralForeground2 }} />
+                    </div>
+                    <div>
+                      <strong>По руху / Розгляд</strong> — документи для ознайомлення, дії в оригінальній системі
+                    </div>
+                  </div>
+                  <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                      <Flame size={14} style={{ color: '#EF4444' }} />
+                    </div>
+                    <div>
+                      <strong style={{ color: '#EF4444' }}>Терміново</strong> — документи з наближаючимся дедлайном
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {onboardingStep === 2 && (
+              <>
+                <div className={styles.onboardingIcon}>
+                  <Trophy size={40} style={{ color: '#10B981' }} />
+                </div>
+                <div className={styles.onboardingTitle}>
+                  Готові до роботи! 💪
+                </div>
+                <div className={styles.onboardingText}>
+                  Слідкуйте за своїм прогресом у боковій панелі.<br />
+                  Опрацьовуйте документи та підіймайтесь у рейтингу!
+                </div>
+              </>
+            )}
+
+            <div className={styles.onboardingSteps}>
+              {[0, 1, 2].map(step => (
+                <div
+                  key={step}
+                  className={`${styles.onboardingDot} ${onboardingStep === step ? styles.onboardingDotActive : ''}`}
+                />
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
+              {onboardingStep > 0 && (
+                <Button
+                  appearance="subtle"
+                  onClick={() => setOnboardingStep(prev => prev - 1)}
+                  style={{ borderRadius: '8px' }}
+                >
+                  Назад
+                </Button>
+              )}
+              <Button
+                appearance="primary"
+                onClick={() => {
+                  if (onboardingStep < 2) {
+                    setOnboardingStep(prev => prev + 1);
+                  } else {
+                    setShowOnboarding(false);
+                    localStorage.setItem('approvehub-onboarding-seen', 'true');
+                  }
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
+                  borderRadius: '8px',
+                  minWidth: '120px',
+                }}
+              >
+                {onboardingStep < 2 ? 'Далі' : 'Почати роботу'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Encouragement Popup */}
+      {encouragementMessage && (
+        <div className={styles.encouragement}>
+          <Sparkles size={20} style={{ color: '#F59E0B' }} />
+          <span>{encouragementMessage}</span>
+        </div>
+      )}
     </div>
   );
 };
