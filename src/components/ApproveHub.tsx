@@ -1452,9 +1452,14 @@ export const ApproveHub: React.FC = () => {
                     Може, спробуємо інші слова?
                   </Text>
                   <Button
-                    appearance="subtle"
+                    appearance="outline"
                     onClick={() => setSearchQuery('')}
-                    style={{ marginTop: spacing.sm }}
+                    style={{ 
+                      marginTop: spacing.sm,
+                      borderRadius: '8px',
+                      borderColor: '#7C3AED',
+                      color: '#7C3AED',
+                    }}
                   >
                     Очистити пошук
                   </Button>
@@ -1483,9 +1488,14 @@ export const ApproveHub: React.FC = () => {
                   </Text>
                   {activeFilter !== 'all' && (
                     <Button
-                      appearance="subtle"
+                      appearance="outline"
                       onClick={() => setActiveFilter('all')}
-                      style={{ marginTop: spacing.lg }}
+                      style={{ 
+                        marginTop: spacing.lg,
+                        borderRadius: '8px',
+                        borderColor: '#7C3AED',
+                        color: '#7C3AED',
+                      }}
                     >
                       Показати всі документи ({tasks.length})
                     </Button>
@@ -1978,9 +1988,12 @@ export const ApproveHub: React.FC = () => {
             <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
               {onboardingStep > 0 && (
                 <Button
-                  appearance="subtle"
+                  appearance="outline"
                   onClick={() => setOnboardingStep(prev => prev - 1)}
-                  style={{ borderRadius: '8px' }}
+                  style={{ 
+                    borderRadius: '8px',
+                    borderColor: tokens.colorNeutralStroke1,
+                  }}
                 >
                   Назад
                 </Button>
