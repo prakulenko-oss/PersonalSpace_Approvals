@@ -174,9 +174,12 @@ const useStyles = makeStyles({
     },
   },
   navItemActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.08)',
-    color: '#7C3AED',
+    backgroundColor: '#229FFF',
+    color: 'white',
     fontWeight: 600,
+    ':hover': {
+      backgroundColor: '#1E8FE5',
+    },
   },
   navItemDisabled: {
     opacity: 0.5,
@@ -187,7 +190,18 @@ const useStyles = makeStyles({
   },
   navBadge: {
     marginLeft: 'auto',
-    backgroundColor: '#7C3AED',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: '10px',
+    minWidth: '24px',
+    textAlign: 'center' as const,
+  },
+  navBadgeInactive: {
+    marginLeft: 'auto',
+    backgroundColor: '#229FFF',
     color: 'white',
     fontSize: '12px',
     fontWeight: 600,
@@ -210,7 +224,7 @@ const useStyles = makeStyles({
   progressBlock: {
     margin: spacing.md,
     padding: spacing.lg,
-    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
+    background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
     borderRadius: '12px',
     borderTopWidth:    '1px',
     borderBottomWidth: '1px',
@@ -243,7 +257,7 @@ const useStyles = makeStyles({
   progressNumber: {
     fontSize: '28px',
     fontWeight: 700,
-    color: '#7C3AED',
+    color: '#229FFF',
     lineHeight: 1,
   },
   progressLabel: {
@@ -259,7 +273,7 @@ const useStyles = makeStyles({
   },
   progressFill: {
     height: '100%',
-    background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 100%)',
+    backgroundColor: '#229FFF',
     borderRadius: '3px',
   },
   progressRank: {
@@ -388,27 +402,27 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      borderTopColor:    '#7C3AED',
-      borderBottomColor: '#7C3AED',
-      borderLeftColor:   '#7C3AED',
-      borderRightColor:  '#7C3AED',
-      color: '#7C3AED',
+      borderTopColor:    '#229FFF',
+      borderBottomColor: '#229FFF',
+      borderLeftColor:   '#229FFF',
+      borderRightColor:  '#229FFF',
+      color: '#229FFF',
     },
   },
   filterChipActive: {
-    backgroundColor: '#7C3AED',
-    borderTopColor:    '#7C3AED',
-    borderBottomColor: '#7C3AED',
-    borderLeftColor:   '#7C3AED',
-    borderRightColor:  '#7C3AED',
+    backgroundColor: '#229FFF',
+    borderTopColor:    '#229FFF',
+    borderBottomColor: '#229FFF',
+    borderLeftColor:   '#229FFF',
+    borderRightColor:  '#229FFF',
     color: 'white',
-    boxShadow: '0 2px 4px rgba(124, 58, 237, 0.3)',
+    boxShadow: '0 2px 4px rgba(34, 159, 255, 0.3)',
     ':hover': {
-      backgroundColor: '#6D28D9',
-      borderTopColor:    '#6D28D9',
-      borderBottomColor: '#6D28D9',
-      borderLeftColor:   '#6D28D9',
-      borderRightColor:  '#6D28D9',
+      backgroundColor: '#1E8FE5',
+      borderTopColor:    '#1E8FE5',
+      borderBottomColor: '#1E8FE5',
+      borderLeftColor:   '#1E8FE5',
+      borderRightColor:  '#1E8FE5',
       color: 'white',
     },
   },
@@ -494,10 +508,10 @@ const useStyles = makeStyles({
     borderBottomWidth: '2px',
     borderLeftWidth:   '2px',
     borderRightWidth:  '2px',
-    borderTopColor:    '#7C3AED',
-    borderBottomColor: '#7C3AED',
-    borderLeftColor:   '#7C3AED',
-    borderRightColor:  '#7C3AED',
+    borderTopColor:    '#229FFF',
+    borderBottomColor: '#229FFF',
+    borderLeftColor:   '#229FFF',
+    borderRightColor:  '#229FFF',
     boxShadow: elevation.shadow8,
   },
   taskCardRemoving: {
@@ -536,8 +550,8 @@ const useStyles = makeStyles({
     fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
-    color: '#7C3AED',
-    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
+    color: '#229FFF',
+    background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.1) 0%, rgba(34, 159, 255, 0.05) 100%)',
     borderTopWidth:    '1px',
     borderBottomWidth: '1px',
     borderLeftWidth:   '1px',
@@ -546,10 +560,10 @@ const useStyles = makeStyles({
     borderBottomStyle: 'solid',
     borderLeftStyle:   'solid',
     borderRightStyle:  'solid',
-    borderTopColor:    'rgba(124, 58, 237, 0.2)',
-    borderBottomColor: 'rgba(124, 58, 237, 0.2)',
-    borderLeftColor:   'rgba(124, 58, 237, 0.2)',
-    borderRightColor:  'rgba(124, 58, 237, 0.2)',
+    borderTopColor:    'rgba(34, 159, 255, 0.2)',
+    borderBottomColor: 'rgba(34, 159, 255, 0.2)',
+    borderLeftColor:   'rgba(34, 159, 255, 0.2)',
+    borderRightColor:  'rgba(34, 159, 255, 0.2)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
@@ -691,7 +705,7 @@ const useStyles = makeStyles({
   detailType: {
     fontSize: '16px',
     fontWeight: 600,
-    color: '#7C3AED',
+    color: '#229FFF',
     marginBottom: spacing.sm,
   },
   detailTitle: {
@@ -910,13 +924,13 @@ const useStyles = makeStyles({
     left: 0,
     right: 0,
     height: '6px',
-    background: 'linear-gradient(90deg, #7C3AED 0%, #2563EB 50%, #10B981 100%)',
+    background: 'linear-gradient(90deg, #229FFF 0%, #57338B 50%, #10B981 100%)',
   },
   onboardingIcon: {
     width: '80px',
     height: '80px',
     borderRadius: '50%',
-    background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)',
+    background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.1) 0%, rgba(34, 159, 255, 0.05) 100%)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -972,7 +986,7 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralStroke2,
   },
   onboardingDotActive: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#229FFF',
     width: '24px',
     borderRadius: '4px',
   },
@@ -1546,7 +1560,7 @@ export const ApproveHub: React.FC = () => {
 
         <div className={styles.progressBlock}>
           <div className={styles.progressHeader}>
-            <Trophy size={16} style={{ color: '#7C3AED' }} />
+            <Trophy size={16} style={{ color: '#229FFF' }} />
             <span>Твій прогрес</span>
           </div>
           <div className={styles.progressStats}>
@@ -1714,14 +1728,14 @@ export const ApproveHub: React.FC = () => {
                 // 1. No search results
                 <div className={styles.emptyState}>
                   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
-                    <circle cx="50" cy="50" r="22" stroke="#7C3AED" strokeWidth="3" fill="rgba(124, 58, 237, 0.05)" />
-                    <line x1="67" y1="67" x2="85" y2="85" stroke="#7C3AED" strokeWidth="4" strokeLinecap="round" />
-                    <circle cx="43" cy="48" r="3" fill="#7C3AED" />
-                    <circle cx="57" cy="48" r="3" fill="#7C3AED" />
-                    <path d="M43 58 Q50 54 57 58" stroke="#7C3AED" strokeWidth="2" fill="none" strokeLinecap="round" />
-                    <text x="20" y="30" fontSize="16" fill="#7C3AED" opacity="0.4">?</text>
-                    <text x="90" y="35" fontSize="20" fill="#7C3AED" opacity="0.6">?</text>
-                    <text x="100" y="70" fontSize="14" fill="#7C3AED" opacity="0.3">?</text>
+                    <circle cx="50" cy="50" r="22" stroke="#229FFF" strokeWidth="3" fill="rgba(34, 159, 255, 0.05)" />
+                    <line x1="67" y1="67" x2="85" y2="85" stroke="#229FFF" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="43" cy="48" r="3" fill="#229FFF" />
+                    <circle cx="57" cy="48" r="3" fill="#229FFF" />
+                    <path d="M43 58 Q50 54 57 58" stroke="#229FFF" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    <text x="20" y="30" fontSize="16" fill="#229FFF" opacity="0.4">?</text>
+                    <text x="90" y="35" fontSize="20" fill="#229FFF" opacity="0.6">?</text>
+                    <text x="100" y="70" fontSize="14" fill="#229FFF" opacity="0.3">?</text>
                   </svg>
                   <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
                     Хм, нічого не знайшли 🤔
@@ -1736,8 +1750,8 @@ export const ApproveHub: React.FC = () => {
                     style={{ 
                       marginTop: spacing.sm,
                       borderRadius: '8px',
-                      borderColor: '#7C3AED',
-                      color: '#7C3AED',
+                      borderColor: '#229FFF',
+                      color: '#229FFF',
                     }}
                   >
                     Очистити пошук
@@ -1747,8 +1761,8 @@ export const ApproveHub: React.FC = () => {
                 // 2. Category is empty
                 <div className={styles.emptyState}>
                   <svg width="130" height="130" viewBox="0 0 130 130" fill="none" style={{ marginBottom: spacing.lg }}>
-                    <rect x="30" y="45" width="70" height="55" rx="8" stroke="#7C3AED" strokeWidth="2.5" fill="rgba(124, 58, 237, 0.03)" />
-                    <path d="M30 55 L65 55 L70 45 L100 45" stroke="#7C3AED" strokeWidth="2.5" fill="none" />
+                    <rect x="30" y="45" width="70" height="55" rx="8" stroke="#229FFF" strokeWidth="2.5" fill="rgba(34, 159, 255, 0.03)" />
+                    <path d="M30 55 L65 55 L70 45 L100 45" stroke="#229FFF" strokeWidth="2.5" fill="none" />
                     <circle cx="50" cy="85" r="8" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeDasharray="3 2" />
                     <circle cx="75" cy="82" r="5" stroke="#D1D5DB" strokeWidth="1" fill="none" strokeDasharray="2 2" />
                     <path d="M20 75 Q35 73 45 75" stroke="#D1D5DB" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.5" />
@@ -1772,8 +1786,8 @@ export const ApproveHub: React.FC = () => {
                       style={{ 
                         marginTop: spacing.lg,
                         borderRadius: '8px',
-                        borderColor: '#7C3AED',
-                        color: '#7C3AED',
+                        borderColor: '#229FFF',
+                        color: '#229FFF',
                       }}
                     >
                       Показати всі документи ({tasks.length})
@@ -1974,9 +1988,9 @@ export const ApproveHub: React.FC = () => {
                           disabled={attachmentsLoading}
                           style={{
                             backgroundColor: 'transparent',
-                            color: '#7C3AED',
+                            color: '#229FFF',
                             borderRadius: '6px',
-                            ...ib('#7C3AED'),
+                            ...ib('#229FFF'),
                           }}
                         >
                           {attachmentsLoading ? 'Завантаження...' : 'Завантажити'}
@@ -1994,10 +2008,10 @@ export const ApproveHub: React.FC = () => {
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                            <File size={20} style={{ color: '#7C3AED' }} />
+                            <File size={20} style={{ color: '#229FFF' }} />
                             <span style={{
                               fontSize: '13px',
-                              color: attachmentsLoaded ? '#7C3AED' : tokens.colorNeutralForeground2,
+                              color: attachmentsLoaded ? '#229FFF' : tokens.colorNeutralForeground2,
                               textDecoration: attachmentsLoaded ? 'underline' : 'none',
                             }}>
                               {file.name}
@@ -2341,7 +2355,7 @@ export const ApproveHub: React.FC = () => {
             {onboardingStep === 0 && (
               <>
                 <div className={styles.onboardingIcon}>
-                  <Sparkles size={40} style={{ color: '#7C3AED' }} />
+                  <Sparkles size={40} style={{ color: '#229FFF' }} />
                 </div>
                 <div className={styles.onboardingTitle}>
                   Вітаємо в ApproveHub! 🎉
@@ -2364,10 +2378,10 @@ export const ApproveHub: React.FC = () => {
                 <div className={styles.onboardingTips}>
                   <div className={styles.onboardingTip}>
                     <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)' }}>
-                      <Check size={14} style={{ color: '#7C3AED' }} />
+                      <Check size={14} style={{ color: '#229FFF' }} />
                     </div>
                     <div>
-                      <strong style={{ color: '#7C3AED' }}>Візування / Підписання</strong> — документи, які ви можете затвердити або відхилити
+                      <strong style={{ color: '#229FFF' }}>Візування / Підписання</strong> — документи, які ви можете затвердити або відхилити
                     </div>
                   </div>
                   <div className={styles.onboardingTip}>
@@ -2393,14 +2407,56 @@ export const ApproveHub: React.FC = () => {
             {onboardingStep === 2 && (
               <>
                 <div className={styles.onboardingIcon}>
-                  <Trophy size={40} style={{ color: '#10B981' }} />
+                  <Sparkles size={40} style={{ color: '#229FFF' }} />
                 </div>
                 <div className={styles.onboardingTitle}>
-                  Готові до роботи! 💪
+                  Корисні можливості 🚀
                 </div>
-                <div className={styles.onboardingText}>
-                  Слідкуйте за своїм прогресом у боковій панелі.<br />
-                  Опрацьовуйте документи та підіймайтесь у рейтингу!
+                <div className={styles.onboardingTips}>
+                  <div className={styles.onboardingTip}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                      <Search size={14} style={{ color: '#229FFF' }} />
+                    </div>
+                    <div>
+                      <strong>Швидкий пошук</strong> — знаходьте документи та фільтруйте по категоріях
+                    </div>
+                  </div>
+                  <div className={styles.onboardingTip}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                      <Check size={14} style={{ color: '#229FFF' }} />
+                    </div>
+                    <div>
+                      <strong>Масове затвердження</strong> — оберіть кілька документів та затвердіть одразу
+                    </div>
+                  </div>
+                  <div className={styles.onboardingTip}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                      <FileText size={14} style={{ color: '#229FFF' }} />
+                    </div>
+                    <div>
+                      <strong>Детальна картка</strong> — клікніть на документ для перегляду деталей
+                    </div>
+                  </div>
+                  <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
+                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                      <Download size={14} style={{ color: '#229FFF' }} />
+                    </div>
+                    <div>
+                      <strong>Вкладення</strong> — завантажуйте файли прямо з детальної картки
+                    </div>
+                  </div>
+                </div>
+                <div style={{ 
+                  fontSize: '15px', 
+                  color: '#10B981', 
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: spacing.sm
+                }}>
+                  <Trophy size={20} />
+                  Готові до роботи!
                 </div>
               </>
             )}
@@ -2438,7 +2494,7 @@ export const ApproveHub: React.FC = () => {
                   }
                 }}
                 style={{
-                  background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
+                  backgroundColor: '#229FFF',
                   borderRadius: '8px',
                   minWidth: '120px',
                 }}
