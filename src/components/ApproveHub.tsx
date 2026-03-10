@@ -1298,6 +1298,7 @@ export const ApproveHub: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [demoEmptyInbox, setDemoEmptyInbox] = useState(false);
 
   // Animation & Onboarding
   const [removingTaskIds, setRemovingTaskIds] = useState<number[]>([]);
@@ -1667,10 +1668,24 @@ export const ApproveHub: React.FC = () => {
                 label="Обрати всі для затвердження"
                 checked={isAllSelected}
                 onChange={(_e, data) => handleSelectAll(!!data.checked)}
+                disabled={demoEmptyInbox}
               />
+              <div style={{ 
+                marginLeft: spacing.xl, 
+                paddingLeft: spacing.xl, 
+                borderLeftWidth: '1px',
+                borderLeftStyle: 'solid',
+                borderLeftColor: tokens.colorNeutralStroke2,
+              }}>
+                <Checkbox
+                  label="🎬 Демо: Inbox Zero"
+                  checked={demoEmptyInbox}
+                  onChange={(_e, data) => setDemoEmptyInbox(!!data.checked)}
+                />
+              </div>
             </div>
             <div className={styles.toolbarRight}>
-              {selectedCount > 0 && (
+              {selectedCount > 0 && !demoEmptyInbox && (
                 <Button
                   appearance="primary"
                   icon={<Check size={16} />}
@@ -1695,7 +1710,7 @@ export const ApproveHub: React.FC = () => {
                 </Dropdown>
               </div>
               <span className={styles.taskCount}>
-                {filteredTasks.length} {filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}
+                {demoEmptyInbox ? '0 документів' : `${filteredTasks.length} ${filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}`}
               </span>
             </div>
           </div>
@@ -1720,8 +1735,50 @@ export const ApproveHub: React.FC = () => {
             // INBOX VIEW
             <>
               <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
-                {filteredTasks.length === 0 ? (
-                  searchQuery.trim() ? (
+                {/* Demo: show Inbox Zero for "Доступи" filter */}
+                {activeFilter === 'access' ? (
+                  // Inbox Zero demo for Access filter
+                  <div className={styles.emptyState}>
+                    <svg width="140" height="140" viewBox="0 0 140 140" fill="none" style={{ marginBottom: spacing.lg }}>
+                      <rect x="45" y="70" width="50" height="55" rx="6" fill="url(#coffeeGradientDemo)" />
+                      <ellipse cx="70" cy="70" rx="25" ry="6" fill="#059669" />
+                      <rect x="90" y="90" width="8" height="25" rx="4" fill="#059669" />
+                      <path d="M55 60 Q 50 50 55 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <path d="M70 55 Q 65 45 70 35" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <path d="M85 60 Q 80 50 85 40" stroke="#10B981" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                      <circle cx="100" cy="50" r="18" fill="#10B981" />
+                      <path d="M93 50L98 55L107 44" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="25" cy="40" r="4" fill="rgba(34, 159, 255, 0.2)" />
+                      <circle cx="115" cy="100" r="5" fill="rgba(34, 159, 255, 0.2)" />
+                      <circle cx="30" cy="110" r="3" fill="rgba(16, 185, 129, 0.2)" />
+                      <defs>
+                        <linearGradient id="coffeeGradientDemo" x1="45" y1="70" x2="95" y2="125">
+                          <stop offset="0%" stopColor="#10B981" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs, fontSize: '18px' }}>
+                      Чудова робота! ✨
+                    </Text>
+                    <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.6' }}>
+                      Усі документи розглянуто.<br />
+                      Час для кави ☕
+                    </Text>
+                    <div style={{
+                      marginTop: spacing.xl,
+                      padding: spacing.md,
+                      background: 'rgba(16, 185, 129, 0.05)',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#059669',
+                      fontWeight: 500,
+                    }}>
+                      🎯 Сьогодні опрацьовано: {todayApproved} документів
+                    </div>
+                  </div>
+                ) : (filteredTasks.length === 0 || demoEmptyInbox) ? (
+                  searchQuery.trim() && !demoEmptyInbox ? (
                 // 1. No search results
                 <div className={styles.emptyState}>
                   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
@@ -1754,7 +1811,7 @@ export const ApproveHub: React.FC = () => {
                     Очистити пошук
                   </Button>
                 </div>
-              ) : tasks.length > 0 ? (
+              ) : (tasks.length > 0 && !demoEmptyInbox) ? (
                 // 2. Category is empty
                 <div className={styles.emptyState}>
                   <svg width="130" height="130" viewBox="0 0 130 130" fill="none" style={{ marginBottom: spacing.lg }}>
