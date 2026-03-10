@@ -45,6 +45,7 @@ import {
   Users,
   Settings,
   Shield,
+  Archive,
 } from 'lucide-react';
 
 // ============================================
@@ -615,6 +616,52 @@ const useStyles = makeStyles({
   },
 
   // ============================================
+  // ARCHIVE STATUS BADGES
+  // ============================================
+  archiveStatusApproved: {
+    fontSize: '11px',
+    fontWeight: 600,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+    color: '#059669',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    padding: `4px ${spacing.md}`,
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  archiveStatusRejected: {
+    fontSize: '11px',
+    fontWeight: 600,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+    color: '#DC2626',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    padding: `4px ${spacing.md}`,
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+  },
+  archiveProcessedDate: {
+    fontSize: '12px',
+    color: tokens.colorNeutralForeground3,
+  },
+  archiveRejectReason: {
+    fontSize: '13px',
+    color: '#DC2626',
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+    padding: spacing.md,
+    borderRadius: '8px',
+    marginTop: spacing.sm,
+    lineHeight: '1.4',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+
+  // ============================================
   // DETAIL PANEL
   // ============================================
   detailPanel: {
@@ -986,9 +1033,147 @@ interface Task {
   attachments: Attachment[];
 }
 
+interface ArchivedTask extends Task {
+  status: 'approved' | 'rejected';
+  processedAt: string;  // Дата/час опрацювання
+  processedDate: string; // Для фільтрації: 'today' | 'yesterday' | '2days'
+  rejectReason?: string;
+}
+
+// Archive date filter options
+const archiveDateFilters = [
+  { id: 'today', label: 'Сьогодні' },
+  { id: 'yesterday', label: 'Вчора' },
+  { id: '2days', label: 'За 2 дні' },
+];
+
 // ============================================
 // DATA
 // ============================================
+
+// Mock archived tasks
+const archivedTasks: ArchivedTask[] = [
+  {
+    id: 101,
+    type: 'Візування',
+    number: '№12340',
+    date: '05.03.2026',
+    urgent: false,
+    category: 'finance',
+    docType: 'Службова записка',
+    contractor: 'ТОВ "Бета-Сервіс"',
+    summary: 'Затвердження квартального бюджету на маркетингові активності.',
+    preparedBy: 'Петренко В.І.',
+    preparedByDept: 'Фінансовий відділ',
+    createdBy: 'Петренко В.І.',
+    createdByDept: 'Фінансовий відділ',
+    attachments: [{ name: 'Бюджет_Q1.xlsx', size: '245 KB' }],
+    status: 'approved',
+    processedAt: '09.03.2026, 10:15',
+    processedDate: 'today',
+  },
+  {
+    id: 102,
+    type: 'Підписання',
+    number: '№12338',
+    date: '04.03.2026',
+    urgent: false,
+    category: 'documents',
+    docType: 'Договір',
+    contractor: 'ПП "ТехноПостач"',
+    summary: 'Договір на постачання серверного обладнання для нового ЦОД.',
+    preparedBy: 'Сидоренко О.М.',
+    preparedByDept: 'IT департамент',
+    createdBy: 'Сидоренко О.М.',
+    createdByDept: 'IT департамент',
+    attachments: [
+      { name: 'Договір_ТехноПостач.pdf', size: '1.2 MB' },
+      { name: 'Специфікація_обладнання.pdf', size: '890 KB' },
+    ],
+    status: 'approved',
+    processedAt: '09.03.2026, 09:30',
+    processedDate: 'today',
+  },
+  {
+    id: 103,
+    type: 'Візування',
+    number: '№12335',
+    date: '03.03.2026',
+    urgent: true,
+    category: 'hr',
+    docType: 'Наказ',
+    contractor: '—',
+    summary: 'Преміювання співробітників відділу продажів за результатами лютого.',
+    preparedBy: 'Коваленко І.П.',
+    preparedByDept: 'Відділ кадрів',
+    createdBy: 'Коваленко І.П.',
+    createdByDept: 'Відділ кадрів',
+    attachments: [{ name: 'Наказ_премія.pdf', size: '156 KB' }],
+    status: 'rejected',
+    processedAt: '08.03.2026, 16:45',
+    processedDate: 'yesterday',
+    rejectReason: 'Необхідно погодити з фінансовим директором. Перевищено ліміт преміального фонду на 15%.',
+  },
+  {
+    id: 104,
+    type: 'По руху',
+    number: '№12330',
+    date: '02.03.2026',
+    urgent: false,
+    category: 'processes',
+    docType: 'Заявка',
+    contractor: 'Microsoft',
+    summary: 'Продовження ліцензій Microsoft 365 для корпоративних користувачів.',
+    preparedBy: 'Ткаченко Р.О.',
+    preparedByDept: 'IT департамент',
+    createdBy: 'Ткаченко Р.О.',
+    createdByDept: 'IT департамент',
+    attachments: [],
+    status: 'approved',
+    processedAt: '08.03.2026, 11:20',
+    processedDate: 'yesterday',
+  },
+  {
+    id: 105,
+    type: 'Підписання',
+    number: '№12325',
+    date: '01.03.2026',
+    urgent: false,
+    category: 'finance',
+    docType: 'Акт',
+    contractor: 'ТОВ "Логістик-Про"',
+    summary: 'Акт звірки взаєморозрахунків за лютий 2026 року.',
+    preparedBy: 'Мельник О.П.',
+    preparedByDept: 'Бухгалтерія',
+    createdBy: 'Мельник О.П.',
+    createdByDept: 'Бухгалтерія',
+    attachments: [{ name: 'Акт_звірки_лютий.pdf', size: '420 KB' }],
+    status: 'approved',
+    processedAt: '07.03.2026, 14:00',
+    processedDate: '2days',
+  },
+  {
+    id: 106,
+    type: 'Візування',
+    number: '№12320',
+    date: '28.02.2026',
+    urgent: false,
+    category: 'documents',
+    docType: 'Службова записка',
+    contractor: '—',
+    summary: 'Запит на виділення додаткового бюджету для участі у виставці IT-Forum 2026.',
+    preparedBy: 'Бондаренко К.С.',
+    preparedByDept: 'Відділ маркетингу',
+    createdBy: 'Бондаренко К.С.',
+    createdByDept: 'Відділ маркетингу',
+    attachments: [{ name: 'Кошторис_виставка.xlsx', size: '78 KB' }],
+    status: 'rejected',
+    processedAt: '07.03.2026, 10:30',
+    processedDate: '2days',
+    rejectReason: 'Участь у даній виставці не передбачена маркетинговим планом на Q1. Розглянути для Q2.',
+  },
+];
+
 const initialTasks: Task[] = [
   {
     id: 1,
@@ -1087,7 +1272,10 @@ export const ApproveHub: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const [currentArchivedTask, setCurrentArchivedTask] = useState<ArchivedTask | null>(null);
+  const [activeView, setActiveView] = useState<'inbox' | 'archive'>('inbox');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [archiveDateFilter, setArchiveDateFilter] = useState('today');
   const [sortBy, setSortBy] = useState('date-asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [rejectReason, setRejectReason] = useState('');
@@ -1266,6 +1454,33 @@ export const ApproveHub: React.FC = () => {
     });
   }, [tasks, activeFilter, searchQuery, sortBy]);
 
+  // Filtered archived tasks
+  const filteredArchivedTasks = useMemo(() => {
+    return archivedTasks.filter(task => {
+      const matchesFilter = activeFilter === 'all' || task.category === activeFilter;
+      const matchesDate = archiveDateFilter === '2days' || task.processedDate === archiveDateFilter || 
+        (archiveDateFilter === 'yesterday' && task.processedDate === 'today') ||
+        (archiveDateFilter === '2days');
+      const matchesSearch = !searchQuery.trim() ||
+        task.contractor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.preparedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.number.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // For "today" show only today, for "yesterday" show yesterday, for "2days" show all
+      let dateMatch = false;
+      if (archiveDateFilter === 'today') {
+        dateMatch = task.processedDate === 'today';
+      } else if (archiveDateFilter === 'yesterday') {
+        dateMatch = task.processedDate === 'today' || task.processedDate === 'yesterday';
+      } else {
+        dateMatch = true; // '2days' shows all
+      }
+      
+      return matchesFilter && dateMatch && matchesSearch;
+    });
+  }, [activeFilter, archiveDateFilter, searchQuery]);
+
   const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
   const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
   const selectedCount = selectedTasks.length;
@@ -1290,10 +1505,30 @@ export const ApproveHub: React.FC = () => {
         </div>
 
         <nav className={styles.sidebarNav}>
-          <div className={`${styles.navItem} ${styles.navItemActive}`}>
+          <div 
+            className={`${styles.navItem} ${activeView === 'inbox' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setActiveView('inbox');
+              setCurrentArchivedTask(null);
+            }}
+            style={{ cursor: 'pointer' }}
+          >
             <Inbox size={20} />
             <span>Затвердження</span>
-            <span className={styles.navBadge}>{tasks.length}</span>
+            {tasks.length > 0 && <span className={styles.navBadge}>{tasks.length}</span>}
+          </div>
+
+          <div 
+            className={`${styles.navItem} ${activeView === 'archive' ? styles.navItemActive : ''}`}
+            onClick={() => {
+              setActiveView('archive');
+              setCurrentTask(null);
+              setSelectedTasks([]);
+            }}
+            style={{ cursor: 'pointer' }}
+          >
+            <Archive size={20} />
+            <span>Архів</span>
           </div>
 
           <div className={`${styles.navItem} ${styles.navItemDisabled}`}>
@@ -1336,16 +1571,42 @@ export const ApproveHub: React.FC = () => {
           <div className={styles.heroDecor2} />
           <div className={styles.heroDecor3} />
           <div className={styles.heroContent}>
-            <div className={styles.heroTitle}>Доброго дня, Олександре! 👋</div>
-            <div className={styles.heroSubtitle}>
-              У вас {tasks.length} {tasks.length === 1 ? 'завдання' : 'завдань'} на затвердження
-            </div>
+            {activeView === 'inbox' ? (
+              <>
+                <div className={styles.heroTitle}>Доброго дня, Олександре! 👋</div>
+                <div className={styles.heroSubtitle}>
+                  У вас {tasks.length} {tasks.length === 1 ? 'завдання' : 'завдань'} на затвердження
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.heroTitle}>Архів документів 📋</div>
+                <div className={styles.heroSubtitle}>
+                  Опрацьовані документи за останні дні
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Filter Bar with Search and Help */}
         <div className={styles.filterBar}>
           <div className={styles.filterChips}>
+            {activeView === 'archive' && (
+              <>
+                {archiveDateFilters.map(dateFilter => (
+                  <button
+                    key={dateFilter.id}
+                    className={`${styles.filterChip} ${archiveDateFilter === dateFilter.id ? styles.filterChipActive : ''}`}
+                    onClick={() => setArchiveDateFilter(dateFilter.id)}
+                    style={{ marginRight: spacing.sm }}
+                  >
+                    {dateFilter.label}
+                  </button>
+                ))}
+                <div style={{ width: '1px', height: '24px', backgroundColor: tokens.colorNeutralStroke2, margin: `0 ${spacing.sm}` }} />
+              </>
+            )}
             {filterCategories.map(cat => {
               const IconComponent = cat.icon;
               return (
@@ -1387,51 +1648,69 @@ export const ApproveHub: React.FC = () => {
           </div>
         </div>
 
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <div className={styles.toolbarLeft}>
-            <Checkbox
-              label="Обрати всі для затвердження"
-              checked={isAllSelected}
-              onChange={(_e, data) => handleSelectAll(!!data.checked)}
-            />
-          </div>
-          <div className={styles.toolbarRight}>
-            {selectedCount > 0 && (
-              <Button
-                appearance="primary"
-                icon={<Check size={16} />}
-                onClick={handleApproveSelected}
-                style={{ backgroundColor: '#22C55E', borderRadius: '8px' }}
-              >
-                Затвердити {selectedCount} {selectedCount === 1 ? 'документ' : selectedCount < 5 ? 'документи' : 'документів'}
-              </Button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-              <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
-              <Dropdown
-                value={sortOptions.find(s => s.id === sortBy)?.label}
-                onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
-                style={{ minWidth: '220px' }}
-              >
-                {sortOptions.map(option => (
-                  <Option key={option.id} value={option.id}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Dropdown>
+        {/* Toolbar - different for inbox vs archive */}
+        {activeView === 'inbox' ? (
+          <div className={styles.toolbar}>
+            <div className={styles.toolbarLeft}>
+              <Checkbox
+                label="Обрати всі для затвердження"
+                checked={isAllSelected}
+                onChange={(_e, data) => handleSelectAll(!!data.checked)}
+              />
             </div>
-            <span className={styles.taskCount}>
-              {filteredTasks.length} {filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}
-            </span>
+            <div className={styles.toolbarRight}>
+              {selectedCount > 0 && (
+                <Button
+                  appearance="primary"
+                  icon={<Check size={16} />}
+                  onClick={handleApproveSelected}
+                  style={{ backgroundColor: '#22C55E', borderRadius: '8px' }}
+                >
+                  Затвердити {selectedCount} {selectedCount === 1 ? 'документ' : selectedCount < 5 ? 'документи' : 'документів'}
+                </Button>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
+                <Dropdown
+                  value={sortOptions.find(s => s.id === sortBy)?.label}
+                  onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
+                  style={{ minWidth: '220px' }}
+                >
+                  {sortOptions.map(option => (
+                    <Option key={option.id} value={option.id}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Dropdown>
+              </div>
+              <span className={styles.taskCount}>
+                {filteredTasks.length} {filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}
+              </span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={styles.toolbar}>
+            <div className={styles.toolbarLeft}>
+              <Text style={{ color: tokens.colorNeutralForeground2 }}>
+                Перегляд опрацьованих документів
+              </Text>
+            </div>
+            <div className={styles.toolbarRight}>
+              <span className={styles.taskCount}>
+                {filteredArchivedTasks.length} {filteredArchivedTasks.length === 1 ? 'документ' : filteredArchivedTasks.length < 5 ? 'документи' : 'документів'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className={styles.contentArea}>
-          <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
-            {filteredTasks.length === 0 ? (
-              searchQuery.trim() ? (
+          {activeView === 'inbox' ? (
+            // INBOX VIEW
+            <>
+              <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
+                {filteredTasks.length === 0 ? (
+                  searchQuery.trim() ? (
                 // 1. No search results
                 <div className={styles.emptyState}>
                   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" style={{ marginBottom: spacing.lg }}>
@@ -1798,6 +2077,156 @@ export const ApproveHub: React.FC = () => {
                 </div>
               )}
             </aside>
+          )}
+            </>
+          ) : (
+            // ARCHIVE VIEW
+            <>
+              <div className={`${styles.taskList} ${currentArchivedTask ? styles.taskListSplit : ''}`}>
+                {filteredArchivedTasks.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <Archive size={64} style={{ color: tokens.colorNeutralForeground3, marginBottom: spacing.lg }} />
+                    <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
+                      Архів порожній
+                    </Text>
+                    <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center' }}>
+                      За обраний період немає опрацьованих документів
+                    </Text>
+                  </div>
+                ) : (
+                  filteredArchivedTasks.map(task => (
+                    <article
+                      key={task.id}
+                      className={`${styles.taskCard} ${currentArchivedTask?.id === task.id ? styles.taskCardSelected : ''}`}
+                      onClick={() => setCurrentArchivedTask(task)}
+                    >
+                      <div className={styles.taskCardInner}>
+                        <div className={styles.taskBody} style={{ marginLeft: 0 }}>
+                          <div className={styles.taskHeader}>
+                            <div className={styles.taskBadgeContainer}>
+                              <span className={task.status === 'approved' ? styles.archiveStatusApproved : styles.archiveStatusRejected}>
+                                {task.status === 'approved' ? <Check size={14} /> : <X size={14} />}
+                                {task.status === 'approved' ? 'Затверджено' : 'Відхилено'}
+                              </span>
+                            </div>
+                            <span className={styles.archiveProcessedDate}>
+                              {task.processedAt}
+                            </span>
+                          </div>
+                          <div className={styles.taskTitle}>
+                            {task.number} — {task.summary.length > 55 ? task.summary.substring(0, 55) + '...' : task.summary}
+                          </div>
+                          <div className={styles.taskDesc}>{task.summary}</div>
+                          {task.status === 'rejected' && task.rejectReason && (
+                            <div className={styles.archiveRejectReason}>
+                              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                              <span>{task.rejectReason.length > 80 ? task.rejectReason.substring(0, 80) + '...' : task.rejectReason}</span>
+                            </div>
+                          )}
+                          <div className={styles.taskFooter}>
+                            <div className={styles.taskMeta}>
+                              <Avatar name={task.preparedBy} size={20} />
+                              <span className={styles.taskAuthorName}>{task.preparedBy}</span>
+                              <span className={styles.taskDepartment}>· {task.preparedByDept}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+
+              {/* Archive Detail Panel */}
+              {currentArchivedTask && (
+                <aside className={styles.detailPanel}>
+                  <div className={styles.detailHeader}>
+                    <Button appearance="subtle" icon={<ExternalLink size={20} />}>
+                      Відкрити в системі
+                    </Button>
+                    <Button appearance="subtle" icon={<X size={20} />} onClick={() => setCurrentArchivedTask(null)} />
+                  </div>
+
+                  <div className={styles.detailBody}>
+                    <div style={{ marginBottom: spacing.md }}>
+                      <span className={currentArchivedTask.status === 'approved' ? styles.archiveStatusApproved : styles.archiveStatusRejected}>
+                        {currentArchivedTask.status === 'approved' ? <Check size={14} /> : <X size={14} />}
+                        {currentArchivedTask.status === 'approved' ? 'Затверджено' : 'Відхилено'}
+                      </span>
+                    </div>
+                    <div className={styles.detailType}>
+                      {currentArchivedTask.type} {currentArchivedTask.number}
+                    </div>
+                    <div className={styles.detailTitle}>
+                      {currentArchivedTask.summary}
+                    </div>
+
+                    <div className={styles.detailGrid}>
+                      <div className={styles.detailField}>
+                        <div className={styles.detailFieldLabel}>Опрацьовано</div>
+                        <div className={styles.detailFieldValue}>{currentArchivedTask.processedAt}</div>
+                      </div>
+                      <div className={styles.detailField}>
+                        <div className={styles.detailFieldLabel}>Строк документа</div>
+                        <div className={styles.detailFieldValue}>{currentArchivedTask.date}</div>
+                      </div>
+                      <div className={styles.detailField}>
+                        <div className={styles.detailFieldLabel}>Вид документа</div>
+                        <div className={styles.detailFieldValue}>{currentArchivedTask.docType}</div>
+                      </div>
+                      <div className={styles.detailField}>
+                        <div className={styles.detailFieldLabel}>Контрагент</div>
+                        <div className={styles.detailFieldValue}>{currentArchivedTask.contractor}</div>
+                      </div>
+                    </div>
+
+                    {currentArchivedTask.status === 'rejected' && currentArchivedTask.rejectReason && (
+                      <div style={{ marginTop: spacing.lg }}>
+                        <div className={styles.detailFieldLabel} style={{ marginBottom: spacing.sm }}>Причина відхилення</div>
+                        <div className={styles.archiveRejectReason}>
+                          <AlertCircle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <span>{currentArchivedTask.rejectReason}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className={styles.detailSummary}>
+                      <div className={styles.detailFieldLabel} style={{ marginBottom: spacing.sm }}>Короткий зміст</div>
+                      <Text style={{ fontStyle: 'italic', lineHeight: '1.5' }}>
+                        {currentArchivedTask.summary}
+                      </Text>
+                    </div>
+
+                    <div style={{ marginTop: spacing.lg }}>
+                      <div className={styles.detailFieldLabel} style={{ marginBottom: spacing.md }}>Готував</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+                        <Avatar name={currentArchivedTask.preparedBy} size={32} />
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{currentArchivedTask.preparedBy}</div>
+                          <div style={{ fontSize: '12px', color: tokens.colorNeutralForeground3 }}>{currentArchivedTask.preparedByDept}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.detailFooterViewOnly}>
+                    <Button
+                      icon={<ExternalLink size={20} />}
+                      style={{
+                        backgroundColor: '#e6f2ff',
+                        color: '#0078d4',
+                        borderRadius: '8px',
+                        padding: '10px 24px',
+                        fontWeight: 600,
+                        ...ib('#0078d4'),
+                      }}
+                    >
+                      Відкрити в системі
+                    </Button>
+                  </div>
+                </aside>
+              )}
+            </>
           )}
         </div>
       </main>
