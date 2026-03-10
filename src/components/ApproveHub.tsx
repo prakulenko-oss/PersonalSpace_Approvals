@@ -1472,9 +1472,6 @@ export const ApproveHub: React.FC = () => {
   const filteredArchivedTasks = useMemo(() => {
     return archivedTasks.filter(task => {
       const matchesFilter = activeFilter === 'all' || task.category === activeFilter;
-      const matchesDate = archiveDateFilter === '2days' || task.processedDate === archiveDateFilter || 
-        (archiveDateFilter === 'yesterday' && task.processedDate === 'today') ||
-        (archiveDateFilter === '2days');
       const matchesSearch = !searchQuery.trim() ||
         task.contractor.toLowerCase().includes(searchQuery.toLowerCase()) ||
         task.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -2204,7 +2201,7 @@ export const ApproveHub: React.FC = () => {
                       </div>
                     )}
 
-                    <div className={styles.detailSummary}>
+                    <div style={{ marginTop: spacing.lg }}>
                       <div className={styles.detailFieldLabel} style={{ marginBottom: spacing.sm }}>Короткий зміст</div>
                       <Text style={{ fontStyle: 'italic', lineHeight: '1.5' }}>
                         {currentArchivedTask.summary}
