@@ -1182,14 +1182,6 @@ const archiveDateFilters = [
   { id: '2days', label: 'За 2 дні' },
 ];
 
-// Team request type filters
-const teamRequestFilters = [
-  { id: 'all', label: 'Всі', icon: LayoutGrid },
-  { id: 'vacation', label: 'Відпустки', icon: Sun },
-  { id: 'sick', label: 'Лікарняні', icon: Heart },
-  { id: 'business_trip', label: 'Відрядження', icon: Plane },
-];
-
 // Team request type labels
 const teamRequestTypeLabels: Record<string, string> = {
   vacation: 'Відпустка',
@@ -1464,7 +1456,6 @@ export const ApproveHub: React.FC = () => {
   const [currentTeamRequest, setCurrentTeamRequest] = useState<TeamRequest | null>(null);
   const [activeView, setActiveView] = useState<'inbox' | 'archive'>('inbox');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [activeTeamFilter, setActiveTeamFilter] = useState('all');
   const [archiveDateFilter, setArchiveDateFilter] = useState('today');
   const [sortBy, setSortBy] = useState('date-asc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -1687,13 +1678,12 @@ export const ApproveHub: React.FC = () => {
   // Filtered team requests
   const filteredTeamRequests = useMemo(() => {
     return teamRequests.filter(request => {
-      const matchesFilter = activeTeamFilter === 'all' || request.type === activeTeamFilter;
       const matchesSearch = !searchQuery.trim() ||
         request.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         request.employeePosition.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesFilter && matchesSearch;
+      return matchesSearch;
     });
-  }, [teamRequests, activeTeamFilter, searchQuery]);
+  }, [teamRequests, searchQuery]);
 
   const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
   const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
