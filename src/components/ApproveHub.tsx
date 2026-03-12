@@ -46,6 +46,9 @@ import {
   Settings,
   Shield,
   Archive,
+  Sun,
+  Heart,
+  Plane,
 } from 'lucide-react';
 
 // ============================================
@@ -83,7 +86,7 @@ const filterCategories = [
   { id: 'all',       label: 'Всі',       icon: LayoutGrid },
   { id: 'finance',   label: 'Фінанси',   icon: Wallet },
   { id: 'documents', label: 'Документи', icon: FileText },
-  { id: 'hr',        label: 'Кадри',     icon: Users },
+  { id: 'hr',        label: 'Люди',      icon: Users },
   { id: 'processes', label: 'Процеси',   icon: Settings },
   { id: 'access',    label: 'Доступи',   icon: Shield },
 ];
@@ -676,6 +679,108 @@ const useStyles = makeStyles({
   },
 
   // ============================================
+  // TEAM TABLE
+  // ============================================
+  teamTable: {
+    width: '100%',
+    borderCollapse: 'separate',
+    borderSpacing: 0,
+  },
+  teamTableHeader: {
+    backgroundColor: tokens.colorNeutralBackground2,
+  },
+  teamTableHeaderCell: {
+    padding: `${spacing.md} ${spacing.lg}`,
+    textAlign: 'left' as const,
+    fontSize: '12px',
+    fontWeight: 600,
+    color: tokens.colorNeutralForeground2,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.colorNeutralStroke2,
+  },
+  teamTableRow: {
+    backgroundColor: 'white',
+    transition: `all ${motion.fast} ${motion.easeOut}`,
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: 'rgba(34, 159, 255, 0.04)',
+    },
+  },
+  teamTableRowSelected: {
+    backgroundColor: 'rgba(34, 159, 255, 0.08)',
+  },
+  teamTableCell: {
+    padding: `${spacing.lg} ${spacing.lg}`,
+    borderBottomWidth: '1px',
+    borderBottomStyle: 'solid',
+    borderBottomColor: tokens.colorNeutralStroke2,
+    verticalAlign: 'middle' as const,
+  },
+  teamEmployee: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  teamEmployeeInfo: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
+  },
+  teamEmployeeName: {
+    fontWeight: 500,
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground1,
+  },
+  teamEmployeePosition: {
+    fontSize: '12px',
+    color: tokens.colorNeutralForeground3,
+  },
+  teamPeriod: {
+    fontSize: '14px',
+    color: tokens.colorNeutralForeground1,
+  },
+  teamDuration: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: tokens.colorNeutralForeground1,
+  },
+  teamActions: {
+    display: 'flex',
+    gap: spacing.sm,
+    opacity: 0,
+    transition: `opacity ${motion.fast} ${motion.easeOut}`,
+  },
+  teamActionsVisible: {
+    opacity: 1,
+  },
+  teamTypeBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: `4px ${spacing.md}`,
+    borderRadius: '8px',
+    fontSize: '11px',
+    fontWeight: 600,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  teamTypeBadgeVacation: {
+    backgroundColor: 'rgba(34, 159, 255, 0.1)',
+    color: '#229FFF',
+  },
+  teamTypeBadgeSick: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    color: '#EF4444',
+  },
+  teamTypeBadgeTrip: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    color: '#10B981',
+  },
+
+  // ============================================
   // DETAIL PANEL
   // ============================================
   detailPanel: {
@@ -1054,11 +1159,79 @@ interface ArchivedTask extends Task {
   rejectReason?: string;
 }
 
+// Team request interface
+interface TeamRequest {
+  id: number;
+  type: 'vacation' | 'sick' | 'business_trip';
+  employeeName: string;
+  employeePosition: string;
+  employeeAvatar?: string;
+  periodStart: string;
+  periodEnd: string;
+  duration: number;
+  daysLeft?: number;
+  daysTotal?: number;
+  comment?: string;
+}
+
 // Archive date filter options
 const archiveDateFilters = [
   { id: 'today', label: 'Сьогодні' },
   { id: 'yesterday', label: 'Вчора' },
   { id: '2days', label: 'За 2 дні' },
+];
+
+// Team request type filters
+const teamRequestFilters = [
+  { id: 'all', label: 'Всі', icon: LayoutGrid },
+  { id: 'vacation', label: 'Відпустки', icon: Sun },
+  { id: 'sick', label: 'Лікарняні', icon: Heart },
+  { id: 'business_trip', label: 'Відрядження', icon: Plane },
+];
+
+// Team request type labels
+const teamRequestTypeLabels: Record<string, string> = {
+  vacation: 'Відпустка',
+  sick: 'Лікарняний',
+  business_trip: 'Відрядження',
+};
+
+// Mock team requests
+const initialTeamRequests: TeamRequest[] = [
+  {
+    id: 201,
+    type: 'vacation',
+    employeeName: 'Плахтій Денис Ігорович',
+    employeePosition: 'Frontend Developer',
+    periodStart: '15.03.2026',
+    periodEnd: '18.03.2026',
+    duration: 4,
+    daysLeft: 18,
+    daysTotal: 24,
+    comment: 'Сімейні обставини',
+  },
+  {
+    id: 202,
+    type: 'vacation',
+    employeeName: 'Коваленко Марія Сергіївна',
+    employeePosition: 'Product Manager',
+    periodStart: '20.03.2026',
+    periodEnd: '22.03.2026',
+    duration: 3,
+    daysLeft: 20,
+    daysTotal: 24,
+    comment: 'Планова відпустка',
+  },
+  {
+    id: 203,
+    type: 'business_trip',
+    employeeName: 'Бондаренко Олексій Петрович',
+    employeePosition: 'Sales Manager',
+    periodStart: '17.03.2026',
+    periodEnd: '19.03.2026',
+    duration: 3,
+    comment: 'Зустріч з партнерами в Одесі',
+  },
 ];
 
 // ============================================
@@ -1287,8 +1460,10 @@ export const ApproveHub: React.FC = () => {
   const [selectedTasks, setSelectedTasks] = useState<number[]>([]);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [currentArchivedTask, setCurrentArchivedTask] = useState<ArchivedTask | null>(null);
+  const [currentTeamRequest, setCurrentTeamRequest] = useState<TeamRequest | null>(null);
   const [activeView, setActiveView] = useState<'inbox' | 'archive'>('inbox');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [activeTeamFilter, setActiveTeamFilter] = useState('all');
   const [archiveDateFilter, setArchiveDateFilter] = useState('today');
   const [sortBy, setSortBy] = useState('date-asc');
   const [searchQuery, setSearchQuery] = useState('');
@@ -1298,7 +1473,10 @@ export const ApproveHub: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const [hoveredTeamRow, setHoveredTeamRow] = useState<number | null>(null);
   const [demoEmptyInbox, setDemoEmptyInbox] = useState(false);
+  const [teamRequests, setTeamRequests] = useState<TeamRequest[]>(initialTeamRequests);
+  const [selectedTeamRequests, setSelectedTeamRequests] = useState<number[]>([]);
 
   // Animation & Onboarding
   const [removingTaskIds, setRemovingTaskIds] = useState<number[]>([]);
@@ -1315,12 +1493,22 @@ export const ApproveHub: React.FC = () => {
   const [todayApproved, setTodayApproved] = useState(12);
   const progressPercent = Math.min(100, (todayApproved / 20) * 100);
 
-  // Encouragement messages
+  // Progress rank message based on count
+  const getProgressRankMessage = (count: number): string => {
+    if (count > 20) return '🏆 Ти в Топ!';
+    if (count === 20) return '🎉 20! Ти герой погоджень!';
+    if (count >= 15) return '🚀 15 документів — ти машина!';
+    if (count >= 10) return '🔥 Десятка! Так тримати!';
+    if (count >= 5) return '☕ Розмірений темп — теж темп!';
+    return '🌱 Кожен документ на вагу золота!';
+  };
+
+  // Encouragement messages (popup when reaching milestone)
   const encouragements = [
     { threshold: 5,  message: 'Непогано! Вже 5 документів ✨' },
     { threshold: 10, message: 'Десятка! Так тримати! 🔥' },
     { threshold: 15, message: '15 документів — ти машина! 🚀' },
-    { threshold: 20, message: '20! Ти сьогодні герой! 🏆' },
+    { threshold: 20, message: '20! Ти герой погоджень! 🎉' },
   ];
 
   useEffect(() => {
@@ -1493,9 +1681,25 @@ export const ApproveHub: React.FC = () => {
     });
   }, [activeFilter, archiveDateFilter, searchQuery]);
 
+  // Filtered team requests
+  const filteredTeamRequests = useMemo(() => {
+    return teamRequests.filter(request => {
+      const matchesFilter = activeTeamFilter === 'all' || request.type === activeTeamFilter;
+      const matchesSearch = !searchQuery.trim() ||
+        request.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        request.employeePosition.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    });
+  }, [teamRequests, activeTeamFilter, searchQuery]);
+
   const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
   const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
   const selectedCount = selectedTasks.length;
+
+  // Team select all
+  const isAllTeamSelected = filteredTeamRequests.length > 0 && 
+    filteredTeamRequests.every(r => selectedTeamRequests.includes(r.id));
+  const selectedTeamCount = selectedTeamRequests.length;
 
   const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
@@ -1505,6 +1709,44 @@ export const ApproveHub: React.FC = () => {
     }
   }, [actionableTasks]);
 
+  const handleSelectAllTeam = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedTeamRequests(filteredTeamRequests.map(r => r.id));
+    } else {
+      setSelectedTeamRequests([]);
+    }
+  }, [filteredTeamRequests]);
+
+  const handleApproveTeamRequest = useCallback((e: React.MouseEvent, request: TeamRequest) => {
+    e.stopPropagation();
+    setTeamRequests(prev => prev.filter(r => r.id !== request.id));
+    setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+    if (currentTeamRequest?.id === request.id) {
+      setCurrentTeamRequest(null);
+    }
+    setTodayApproved(prev => prev + 1);
+    showToast('Затверджено ✓', `${teamRequestTypeLabels[request.type]} для ${request.employeeName.split(' ')[0]} — готово!`, 'success');
+  }, [currentTeamRequest, showToast]);
+
+  const handleRejectTeamRequest = useCallback((e: React.MouseEvent, request: TeamRequest) => {
+    e.stopPropagation();
+    setTeamRequests(prev => prev.filter(r => r.id !== request.id));
+    setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+    if (currentTeamRequest?.id === request.id) {
+      setCurrentTeamRequest(null);
+    }
+    showToast('Відхилено', `${teamRequestTypeLabels[request.type]} для ${request.employeeName.split(' ')[0]} відхилено`, 'warning');
+  }, [currentTeamRequest, showToast]);
+
+  const handleApproveSelectedTeam = useCallback(() => {
+    const count = selectedTeamRequests.length;
+    setTeamRequests(prev => prev.filter(r => !selectedTeamRequests.includes(r.id)));
+    setSelectedTeamRequests([]);
+    setCurrentTeamRequest(null);
+    setTodayApproved(prev => prev + count);
+    showToast('Затверджено ✓', `${count} ${count === 1 ? 'заявку' : count < 5 ? 'заявки' : 'заявок'} затверджено`, 'success');
+  }, [selectedTeamRequests, showToast]);
+
   return (
     <div className={styles.app}>
       <Toaster toasterId={toasterId} position="top-end" />
@@ -1513,7 +1755,7 @@ export const ApproveHub: React.FC = () => {
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarLogo}>✓</div>
-          <span className={styles.sidebarTitle}>ApproveHub</span>
+          <span className={styles.sidebarTitle}>Погоджуй легко</span>
         </div>
 
         <nav className={styles.sidebarNav}>
@@ -1522,12 +1764,13 @@ export const ApproveHub: React.FC = () => {
             onClick={() => {
               setActiveView('inbox');
               setCurrentArchivedTask(null);
+              setCurrentTeamRequest(null);
             }}
             style={{ cursor: 'pointer' }}
           >
             <Inbox size={20} />
             <span>Затвердження</span>
-            {tasks.length > 0 && <span className={styles.navBadge}>{tasks.length}</span>}
+            {(tasks.length + teamRequests.length) > 0 && <span className={activeView === 'inbox' ? styles.navBadge : styles.navBadgeInactive}>{tasks.length + teamRequests.length}</span>}
           </div>
 
           <div 
@@ -1535,7 +1778,9 @@ export const ApproveHub: React.FC = () => {
             onClick={() => {
               setActiveView('archive');
               setCurrentTask(null);
+              setCurrentTeamRequest(null);
               setSelectedTasks([]);
+              setSelectedTeamRequests([]);
             }}
             style={{ cursor: 'pointer' }}
           >
@@ -1563,14 +1808,14 @@ export const ApproveHub: React.FC = () => {
           </div>
           <div className={styles.progressStats}>
             <span className={styles.progressNumber}>{todayApproved}</span>
-            <span className={styles.progressLabel}>опрацьовано сьогодні</span>
+            <span className={styles.progressLabel}>опрацьовано за місяць</span>
           </div>
           <div className={styles.progressBar}>
             <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
           </div>
           <div className={styles.progressRank}>
             <span style={{ color: '#10B981' }}>●</span>
-            Ти в топ-5!
+            {getProgressRankMessage(todayApproved)}
           </div>
         </div>
       </aside>
@@ -1587,7 +1832,7 @@ export const ApproveHub: React.FC = () => {
               <>
                 <div className={styles.heroTitle}>Доброго дня, Олександре! 👋</div>
                 <div className={styles.heroSubtitle}>
-                  У вас {tasks.length} {tasks.length === 1 ? 'завдання' : 'завдань'} на затвердження
+                  У вас {tasks.length + teamRequests.length} {(tasks.length + teamRequests.length) === 1 ? 'завдання' : 'завдань'} на затвердження
                 </div>
               </>
             ) : (
@@ -1666,9 +1911,15 @@ export const ApproveHub: React.FC = () => {
             <div className={styles.toolbarLeft}>
               <Checkbox
                 label="Обрати всі для затвердження"
-                checked={isAllSelected}
-                onChange={(_e, data) => handleSelectAll(!!data.checked)}
-                disabled={demoEmptyInbox}
+                checked={activeFilter === 'hr' ? isAllTeamSelected : isAllSelected}
+                onChange={(_e, data) => {
+                  if (activeFilter === 'hr') {
+                    handleSelectAllTeam(!!data.checked);
+                  } else {
+                    handleSelectAll(!!data.checked);
+                  }
+                }}
+                disabled={demoEmptyInbox || (activeFilter === 'hr' ? filteredTeamRequests.length === 0 : actionableTasks.length === 0)}
               />
               <div style={{ 
                 marginLeft: spacing.xl, 
@@ -1685,32 +1936,42 @@ export const ApproveHub: React.FC = () => {
               </div>
             </div>
             <div className={styles.toolbarRight}>
-              {selectedCount > 0 && !demoEmptyInbox && (
+              {(selectedCount > 0 || selectedTeamCount > 0) && !demoEmptyInbox && (
                 <Button
                   appearance="primary"
                   icon={<Check size={16} />}
-                  onClick={handleApproveSelected}
+                  onClick={() => {
+                    if (selectedCount > 0) handleApproveSelected();
+                    if (selectedTeamCount > 0) handleApproveSelectedTeam();
+                  }}
                   style={{ backgroundColor: '#22C55E', borderRadius: '8px' }}
                 >
-                  Затвердити {selectedCount} {selectedCount === 1 ? 'документ' : selectedCount < 5 ? 'документи' : 'документів'}
+                  Затвердити {selectedCount + selectedTeamCount}
                 </Button>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
-                <Dropdown
-                  value={sortOptions.find(s => s.id === sortBy)?.label}
-                  onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
-                  style={{ minWidth: '220px' }}
-                >
-                  {sortOptions.map(option => (
-                    <Option key={option.id} value={option.id}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Dropdown>
-              </div>
+              {activeFilter !== 'hr' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                  <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
+                  <Dropdown
+                    value={sortOptions.find(s => s.id === sortBy)?.label}
+                    onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
+                    style={{ minWidth: '220px' }}
+                  >
+                    {sortOptions.map(option => (
+                      <Option key={option.id} value={option.id}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Dropdown>
+                </div>
+              )}
               <span className={styles.taskCount}>
-                {demoEmptyInbox ? '0 документів' : `${filteredTasks.length} ${filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}`}
+                {demoEmptyInbox ? '0' : activeFilter === 'hr' 
+                  ? `${filteredTeamRequests.length} ${filteredTeamRequests.length === 1 ? 'заявка' : filteredTeamRequests.length < 5 ? 'заявки' : 'заявок'}`
+                  : activeFilter === 'all'
+                    ? `${filteredTasks.length + filteredTeamRequests.length} завдань`
+                    : `${filteredTasks.length} ${filteredTasks.length === 1 ? 'документ' : filteredTasks.length < 5 ? 'документи' : 'документів'}`
+                }
               </span>
             </div>
           </div>
@@ -1734,9 +1995,105 @@ export const ApproveHub: React.FC = () => {
           {activeView === 'inbox' ? (
             // INBOX VIEW
             <>
-              <div className={`${styles.taskList} ${currentTask ? styles.taskListSplit : ''}`}>
-                {/* Demo: show Inbox Zero for "Доступи" filter */}
-                {activeFilter === 'access' ? (
+              <div className={`${styles.taskList} ${currentTask || currentTeamRequest ? styles.taskListSplit : ''}`} style={activeFilter === 'hr' ? { padding: 0 } : {}}>
+                {/* Filter: Люди (hr) - show only team table */}
+                {activeFilter === 'hr' ? (
+                  filteredTeamRequests.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <Text style={{ fontSize: '64px', marginBottom: spacing.lg }}>🏖️</Text>
+                      <Text weight="semibold" size={500} style={{ marginBottom: spacing.xs }}>
+                        Усі відпочивають за планом!
+                      </Text>
+                      <Text style={{ color: tokens.colorNeutralForeground2, textAlign: 'center', lineHeight: '1.6' }}>
+                        Наразі немає запитів від команди.<br />
+                        Час і вам випити кави ☕
+                      </Text>
+                    </div>
+                  ) : (
+                    <table className={styles.teamTable}>
+                      <thead className={styles.teamTableHeader}>
+                        <tr>
+                          <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
+                          <th className={styles.teamTableHeaderCell}>Співробітник</th>
+                          <th className={styles.teamTableHeaderCell}>Тип</th>
+                          <th className={styles.teamTableHeaderCell}>Період</th>
+                          <th className={styles.teamTableHeaderCell}>Тривалість</th>
+                          <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredTeamRequests.map(request => (
+                          <tr
+                            key={request.id}
+                            className={`${styles.teamTableRow} ${selectedTeamRequests.includes(request.id) ? styles.teamTableRowSelected : ''}`}
+                            onClick={() => setCurrentTeamRequest(request)}
+                            onMouseEnter={() => setHoveredTeamRow(request.id)}
+                            onMouseLeave={() => setHoveredTeamRow(null)}
+                          >
+                            <td className={styles.teamTableCell}>
+                              <Checkbox
+                                checked={selectedTeamRequests.includes(request.id)}
+                                onChange={(_e, data) => {
+                                  if (data.checked) {
+                                    setSelectedTeamRequests(prev => [...prev, request.id]);
+                                  } else {
+                                    setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+                                  }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <div className={styles.teamEmployee}>
+                                <Avatar name={request.employeeName} size={36} />
+                                <div className={styles.teamEmployeeInfo}>
+                                  <span className={styles.teamEmployeeName}>{request.employeeName}</span>
+                                  <span className={styles.teamEmployeePosition}>{request.employeePosition}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <span className={`${styles.teamTypeBadge} ${
+                                request.type === 'vacation' ? styles.teamTypeBadgeVacation :
+                                request.type === 'sick' ? styles.teamTypeBadgeSick :
+                                styles.teamTypeBadgeTrip
+                              }`}>
+                                {request.type === 'vacation' && <Sun size={12} />}
+                                {request.type === 'sick' && <Heart size={12} />}
+                                {request.type === 'business_trip' && <Plane size={12} />}
+                                {teamRequestTypeLabels[request.type]}
+                              </span>
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <span className={styles.teamPeriod}>{request.periodStart} — {request.periodEnd}</span>
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <span className={styles.teamDuration}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</span>
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
+                                <Button
+                                  appearance="primary"
+                                  icon={<Check size={16} />}
+                                  size="small"
+                                  onClick={(e) => handleApproveTeamRequest(e, request)}
+                                  style={{ backgroundColor: '#22C55E', minWidth: 'auto', padding: '4px 8px' }}
+                                />
+                                <Button
+                                  appearance="outline"
+                                  icon={<X size={16} />}
+                                  size="small"
+                                  onClick={(e) => handleRejectTeamRequest(e, request)}
+                                  style={{ color: '#EF4444', borderColor: '#EF4444', minWidth: 'auto', padding: '4px 8px' }}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )
+                ) : activeFilter === 'access' ? (
                   // Inbox Zero demo for Access filter
                   <div className={styles.emptyState}>
                     <svg width="140" height="140" viewBox="0 0 140 140" fill="none" style={{ marginBottom: spacing.lg }}>
@@ -1962,6 +2319,119 @@ export const ApproveHub: React.FC = () => {
                 );
               })
             )}
+
+            {/* Team Requests Section - show for 'all' filter */}
+            {activeFilter === 'all' && filteredTeamRequests.length > 0 && !demoEmptyInbox && (
+              <div style={{ marginTop: spacing.xl }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: spacing.sm, 
+                  marginBottom: spacing.md,
+                  paddingBottom: spacing.md,
+                  borderBottomWidth: '1px',
+                  borderBottomStyle: 'solid',
+                  borderBottomColor: tokens.colorNeutralStroke2,
+                }}>
+                  <Users size={18} style={{ color: '#229FFF' }} />
+                  <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
+                    Запити від команди
+                  </Text>
+                  <span style={{ 
+                    backgroundColor: 'rgba(34, 159, 255, 0.1)', 
+                    color: '#229FFF', 
+                    padding: '2px 8px', 
+                    borderRadius: '10px', 
+                    fontSize: '12px',
+                    fontWeight: 600,
+                  }}>
+                    {filteredTeamRequests.length}
+                  </span>
+                </div>
+                <table className={styles.teamTable}>
+                  <thead className={styles.teamTableHeader}>
+                    <tr>
+                      <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
+                      <th className={styles.teamTableHeaderCell}>Співробітник</th>
+                      <th className={styles.teamTableHeaderCell}>Тип</th>
+                      <th className={styles.teamTableHeaderCell}>Період</th>
+                      <th className={styles.teamTableHeaderCell}>Тривалість</th>
+                      <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTeamRequests.map(request => (
+                      <tr
+                        key={request.id}
+                        className={`${styles.teamTableRow} ${selectedTeamRequests.includes(request.id) ? styles.teamTableRowSelected : ''}`}
+                        onClick={() => setCurrentTeamRequest(request)}
+                        onMouseEnter={() => setHoveredTeamRow(request.id)}
+                        onMouseLeave={() => setHoveredTeamRow(null)}
+                      >
+                        <td className={styles.teamTableCell}>
+                          <Checkbox
+                            checked={selectedTeamRequests.includes(request.id)}
+                            onChange={(_e, data) => {
+                              if (data.checked) {
+                                setSelectedTeamRequests(prev => [...prev, request.id]);
+                              } else {
+                                setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                        <td className={styles.teamTableCell}>
+                          <div className={styles.teamEmployee}>
+                            <Avatar name={request.employeeName} size={36} />
+                            <div className={styles.teamEmployeeInfo}>
+                              <span className={styles.teamEmployeeName}>{request.employeeName}</span>
+                              <span className={styles.teamEmployeePosition}>{request.employeePosition}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className={styles.teamTableCell}>
+                          <span className={`${styles.teamTypeBadge} ${
+                            request.type === 'vacation' ? styles.teamTypeBadgeVacation :
+                            request.type === 'sick' ? styles.teamTypeBadgeSick :
+                            styles.teamTypeBadgeTrip
+                          }`}>
+                            {request.type === 'vacation' && <Sun size={12} />}
+                            {request.type === 'sick' && <Heart size={12} />}
+                            {request.type === 'business_trip' && <Plane size={12} />}
+                            {teamRequestTypeLabels[request.type]}
+                          </span>
+                        </td>
+                        <td className={styles.teamTableCell}>
+                          <span className={styles.teamPeriod}>{request.periodStart} — {request.periodEnd}</span>
+                        </td>
+                        <td className={styles.teamTableCell}>
+                          <span className={styles.teamDuration}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</span>
+                        </td>
+                        <td className={styles.teamTableCell}>
+                          <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
+                            <Button
+                              appearance="primary"
+                              icon={<Check size={16} />}
+                              size="small"
+                              onClick={(e) => handleApproveTeamRequest(e, request)}
+                              style={{ backgroundColor: '#22C55E', minWidth: 'auto', padding: '4px 8px' }}
+                            />
+                            <Button
+                              appearance="outline"
+                              icon={<X size={16} />}
+                              size="small"
+                              onClick={(e) => handleRejectTeamRequest(e, request)}
+                              style={{ color: '#EF4444', borderColor: '#EF4444', minWidth: 'auto', padding: '4px 8px' }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Detail Panel */}
@@ -2144,6 +2614,107 @@ export const ApproveHub: React.FC = () => {
                   </Button>
                 </div>
               )}
+            </aside>
+          )}
+
+          {/* Team Detail Panel */}
+          {currentTeamRequest && (
+            <aside className={styles.detailPanel}>
+              <div className={styles.detailHeader}>
+                <span className={`${styles.teamTypeBadge} ${
+                  currentTeamRequest.type === 'vacation' ? styles.teamTypeBadgeVacation :
+                  currentTeamRequest.type === 'sick' ? styles.teamTypeBadgeSick :
+                  styles.teamTypeBadgeTrip
+                }`}>
+                  {currentTeamRequest.type === 'vacation' && <Sun size={12} />}
+                  {currentTeamRequest.type === 'sick' && <Heart size={12} />}
+                  {currentTeamRequest.type === 'business_trip' && <Plane size={12} />}
+                  {teamRequestTypeLabels[currentTeamRequest.type]}
+                </span>
+                <Button appearance="subtle" icon={<X size={20} />} onClick={() => setCurrentTeamRequest(null)} />
+              </div>
+
+              <div className={styles.detailBody}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.xxl }}>
+                  <Avatar name={currentTeamRequest.employeeName} size={56} />
+                  <div>
+                    <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '4px' }}>{currentTeamRequest.employeeName}</div>
+                    <div style={{ fontSize: '14px', color: tokens.colorNeutralForeground3 }}>{currentTeamRequest.employeePosition}</div>
+                  </div>
+                </div>
+
+                <div className={styles.detailGrid}>
+                  <div className={styles.detailField}>
+                    <div className={styles.detailFieldLabel}>Початок</div>
+                    <div className={styles.detailFieldValue}>{currentTeamRequest.periodStart}</div>
+                  </div>
+                  <div className={styles.detailField}>
+                    <div className={styles.detailFieldLabel}>Кінець</div>
+                    <div className={styles.detailFieldValue}>{currentTeamRequest.periodEnd}</div>
+                  </div>
+                  <div className={styles.detailField}>
+                    <div className={styles.detailFieldLabel}>Тривалість</div>
+                    <div className={styles.detailFieldValue}>{currentTeamRequest.duration} {currentTeamRequest.duration === 1 ? 'день' : currentTeamRequest.duration < 5 ? 'дні' : 'днів'}</div>
+                  </div>
+                  {currentTeamRequest.daysLeft !== undefined && (
+                    <div className={styles.detailField}>
+                      <div className={styles.detailFieldLabel}>Залишок днів</div>
+                      <div className={styles.detailFieldValue}>{currentTeamRequest.daysLeft} з {currentTeamRequest.daysTotal}</div>
+                    </div>
+                  )}
+                </div>
+
+                {currentTeamRequest.comment && (
+                  <div style={{ marginTop: spacing.lg }}>
+                    <div className={styles.detailFieldLabel} style={{ marginBottom: spacing.sm }}>Коментар</div>
+                    <div style={{ 
+                      padding: spacing.lg, 
+                      backgroundColor: tokens.colorNeutralBackground2, 
+                      borderRadius: '8px',
+                      fontStyle: 'italic',
+                      color: tokens.colorNeutralForeground2,
+                      lineHeight: '1.5'
+                    }}>
+                      "{currentTeamRequest.comment}"
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.detailFooter}>
+                <Button
+                  icon={<Check size={20} />}
+                  onClick={(e) => handleApproveTeamRequest(e, currentTeamRequest)}
+                  onMouseEnter={() => setHoveredBtn('team-approve')}
+                  onMouseLeave={() => setHoveredBtn(null)}
+                  style={{
+                    backgroundColor: hoveredBtn === 'team-approve' ? '#22C55E' : '#f0fff4',
+                    color: hoveredBtn === 'team-approve' ? 'white' : '#22C55E',
+                    borderRadius: '8px',
+                    padding: '10px 24px',
+                    fontWeight: 600,
+                    ...ib('#22C55E'),
+                  }}
+                >
+                  Затвердити
+                </Button>
+                <Button
+                  icon={<X size={20} />}
+                  onClick={(e) => handleRejectTeamRequest(e, currentTeamRequest)}
+                  onMouseEnter={() => setHoveredBtn('team-reject')}
+                  onMouseLeave={() => setHoveredBtn(null)}
+                  style={{
+                    backgroundColor: hoveredBtn === 'team-reject' ? '#fee2e2' : 'transparent',
+                    color: '#e53e3e',
+                    borderRadius: '8px',
+                    padding: '10px 24px',
+                    fontWeight: 600,
+                    ...ib('#e53e3e'),
+                  }}
+                >
+                  Відхилити
+                </Button>
+              </div>
             </aside>
           )}
             </>
@@ -2412,7 +2983,7 @@ export const ApproveHub: React.FC = () => {
                   <Sparkles size={40} style={{ color: '#229FFF' }} />
                 </div>
                 <div className={styles.onboardingTitle}>
-                  Вітаємо в ApproveHub! 🎉
+                  Вітаємо в «Погоджуй легко»! 🎉
                 </div>
                 <div className={styles.onboardingText}>
                   Тут зібрані всі документи, що очікують на ваше затвердження.<br />
