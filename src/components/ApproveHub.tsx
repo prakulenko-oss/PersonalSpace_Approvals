@@ -1957,62 +1957,61 @@ export const ApproveHub: React.FC = () => {
                   Затвердити {selectedCount + selectedTeamCount}
                 </Button>
               )}
+              {/* View Mode Toggle - show for all filters */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                backgroundColor: tokens.colorNeutralBackground2,
+                borderRadius: '8px',
+                padding: '2px',
+              }}>
+                <Tooltip content="Картки" relationship="label">
+                  <Button
+                    appearance="subtle"
+                    icon={<LayoutGrid size={18} />}
+                    onClick={() => setViewMode('cards')}
+                    style={{
+                      backgroundColor: viewMode === 'cards' ? 'white' : 'transparent',
+                      color: viewMode === 'cards' ? '#229FFF' : tokens.colorNeutralForeground3,
+                      borderRadius: '6px',
+                      minWidth: '36px',
+                      padding: '6px',
+                      boxShadow: viewMode === 'cards' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip content="Компактний" relationship="label">
+                  <Button
+                    appearance="subtle"
+                    icon={<List size={18} />}
+                    onClick={() => setViewMode('compact')}
+                    style={{
+                      backgroundColor: viewMode === 'compact' ? 'white' : 'transparent',
+                      color: viewMode === 'compact' ? '#229FFF' : tokens.colorNeutralForeground3,
+                      borderRadius: '6px',
+                      minWidth: '36px',
+                      padding: '6px',
+                      boxShadow: viewMode === 'compact' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                    }}
+                  />
+                </Tooltip>
+              </div>
+              {/* Sorting - hide for hr filter */}
               {activeFilter !== 'hr' && (
-                <>
-                  {/* View Mode Toggle */}
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    backgroundColor: tokens.colorNeutralBackground2,
-                    borderRadius: '8px',
-                    padding: '2px',
-                  }}>
-                    <Tooltip content="Картки" relationship="label">
-                      <Button
-                        appearance="subtle"
-                        icon={<LayoutGrid size={18} />}
-                        onClick={() => setViewMode('cards')}
-                        style={{
-                          backgroundColor: viewMode === 'cards' ? 'white' : 'transparent',
-                          color: viewMode === 'cards' ? '#229FFF' : tokens.colorNeutralForeground3,
-                          borderRadius: '6px',
-                          minWidth: '36px',
-                          padding: '6px',
-                          boxShadow: viewMode === 'cards' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                        }}
-                      />
-                    </Tooltip>
-                    <Tooltip content="Компактний" relationship="label">
-                      <Button
-                        appearance="subtle"
-                        icon={<List size={18} />}
-                        onClick={() => setViewMode('compact')}
-                        style={{
-                          backgroundColor: viewMode === 'compact' ? 'white' : 'transparent',
-                          color: viewMode === 'compact' ? '#229FFF' : tokens.colorNeutralForeground3,
-                          borderRadius: '6px',
-                          minWidth: '36px',
-                          padding: '6px',
-                          boxShadow: viewMode === 'compact' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                        }}
-                      />
-                    </Tooltip>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                    <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
-                    <Dropdown
-                      value={sortOptions.find(s => s.id === sortBy)?.label}
-                      onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
-                      style={{ minWidth: '220px' }}
-                    >
-                      {sortOptions.map(option => (
-                        <Option key={option.id} value={option.id}>
-                          {option.label}
-                        </Option>
-                      ))}
-                    </Dropdown>
-                  </div>
-                </>
+                <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                  <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
+                  <Dropdown
+                    value={sortOptions.find(s => s.id === sortBy)?.label}
+                    onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
+                    style={{ minWidth: '220px' }}
+                  >
+                    {sortOptions.map(option => (
+                      <Option key={option.id} value={option.id}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Dropdown>
+                </div>
               )}
               <span className={styles.taskCount}>
                 {demoEmptyInbox ? '0' : activeFilter === 'hr' 
@@ -2045,7 +2044,7 @@ export const ApproveHub: React.FC = () => {
             // INBOX VIEW
             <>
               <div className={`${styles.taskList} ${currentTask || currentTeamRequest ? styles.taskListSplit : ''}`} style={activeFilter === 'hr' ? { padding: 0 } : {}}>
-                {/* Filter: Люди (hr) - show only team table */}
+                {/* Filter: Люди (hr) - show only team requests */}
                 {activeFilter === 'hr' ? (
                   filteredTeamRequests.length === 0 ? (
                     <div className={styles.emptyState}>
@@ -2058,13 +2057,14 @@ export const ApproveHub: React.FC = () => {
                         Час і вам випити кави ☕
                       </Text>
                     </div>
-                  ) : (
+                  ) : viewMode === 'compact' ? (
+                    // HR Compact View - Table
                     <table className={styles.teamTable}>
                       <thead className={styles.teamTableHeader}>
                         <tr>
                           <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
-                          <th className={styles.teamTableHeaderCell}>Співробітник</th>
                           <th className={styles.teamTableHeaderCell}>Тип</th>
+                          <th className={styles.teamTableHeaderCell}>Співробітник</th>
                           <th className={styles.teamTableHeaderCell}>Період</th>
                           <th className={styles.teamTableHeaderCell}>Тривалість</th>
                           <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
@@ -2074,7 +2074,7 @@ export const ApproveHub: React.FC = () => {
                         {filteredTeamRequests.map(request => (
                           <tr
                             key={request.id}
-                            className={`${styles.teamTableRow} ${selectedTeamRequests.includes(request.id) ? styles.teamTableRowSelected : ''}`}
+                            className={`${styles.teamTableRow} ${currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : ''}`}
                             onClick={() => setCurrentTeamRequest(request)}
                             onMouseEnter={() => setHoveredTeamRow(request.id)}
                             onMouseLeave={() => setHoveredTeamRow(null)}
@@ -2093,15 +2093,6 @@ export const ApproveHub: React.FC = () => {
                               />
                             </td>
                             <td className={styles.teamTableCell}>
-                              <div className={styles.teamEmployee}>
-                                <Avatar name={request.employeeName} size={36} />
-                                <div className={styles.teamEmployeeInfo}>
-                                  <span className={styles.teamEmployeeName}>{request.employeeName}</span>
-                                  <span className={styles.teamEmployeePosition}>{request.employeePosition}</span>
-                                </div>
-                              </div>
-                            </td>
-                            <td className={styles.teamTableCell}>
                               <span className={`${styles.teamTypeBadge} ${
                                 request.type === 'vacation' ? styles.teamTypeBadgeVacation :
                                 request.type === 'sick' ? styles.teamTypeBadgeSick :
@@ -2114,10 +2105,16 @@ export const ApproveHub: React.FC = () => {
                               </span>
                             </td>
                             <td className={styles.teamTableCell}>
-                              <span className={styles.teamPeriod}>{request.periodStart} — {request.periodEnd}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                                <Avatar name={request.employeeName} size={24} />
+                                <span style={{ fontWeight: 500 }}>{request.employeeName}</span>
+                              </div>
                             </td>
                             <td className={styles.teamTableCell}>
-                              <span className={styles.teamDuration}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</span>
+                              <span style={{ fontSize: '13px' }}>{request.periodStart} — {request.periodEnd}</span>
+                            </td>
+                            <td className={styles.teamTableCell}>
+                              <span style={{ fontSize: '13px' }}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</span>
                             </td>
                             <td className={styles.teamTableCell}>
                               <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
@@ -2141,6 +2138,108 @@ export const ApproveHub: React.FC = () => {
                         ))}
                       </tbody>
                     </table>
+                  ) : (
+                    // HR Cards View
+                    filteredTeamRequests.map(request => (
+                      <article
+                        key={request.id}
+                        className={`${styles.taskCard} ${currentTeamRequest?.id === request.id ? styles.taskCardSelected : ''}`}
+                        onClick={() => setCurrentTeamRequest(request)}
+                      >
+                        <div className={styles.taskCardInner}>
+                          <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
+                            <Checkbox
+                              checked={selectedTeamRequests.includes(request.id)}
+                              onChange={(_e, data) => {
+                                if (data.checked) {
+                                  setSelectedTeamRequests(prev => [...prev, request.id]);
+                                } else {
+                                  setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className={styles.taskBody}>
+                            <div className={styles.taskHeader}>
+                              <div className={styles.taskBadgeContainer}>
+                                <span className={`${styles.teamTypeBadge} ${
+                                  request.type === 'vacation' ? styles.teamTypeBadgeVacation :
+                                  request.type === 'sick' ? styles.teamTypeBadgeSick :
+                                  styles.teamTypeBadgeTrip
+                                }`}>
+                                  {request.type === 'vacation' && <Sun size={12} />}
+                                  {request.type === 'sick' && <Heart size={12} />}
+                                  {request.type === 'business_trip' && <Plane size={12} />}
+                                  {teamRequestTypeLabels[request.type]}
+                                </span>
+                              </div>
+                              <span className={styles.taskDate}>
+                                {request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}
+                              </span>
+                            </div>
+                            <div className={styles.taskTitle}>
+                              {request.employeeName}
+                            </div>
+                            <div className={styles.taskDesc}>
+                              {request.employeePosition} • {request.periodStart} — {request.periodEnd}
+                            </div>
+                            {request.comment && (
+                              <div style={{ 
+                                marginTop: spacing.sm, 
+                                fontSize: '13px', 
+                                color: tokens.colorNeutralForeground3,
+                                fontStyle: 'italic',
+                              }}>
+                                💬 "{request.comment}"
+                              </div>
+                            )}
+                            <div className={styles.taskFooter}>
+                              <div className={styles.taskMeta}>
+                                <Avatar name={request.employeeName} size={20} />
+                                <span className={styles.taskAuthorName}>{request.employeeName.split(' ')[0]}</span>
+                                {request.daysLeft !== undefined && (
+                                  <span className={styles.taskDepartment}>· Залишок: {request.daysLeft} з {request.daysTotal} днів</span>
+                                )}
+                              </div>
+                              <div className={styles.taskCardActions}>
+                                <Button
+                                  size="small"
+                                  icon={<Check size={16} />}
+                                  onClick={(e) => handleApproveTeamRequest(e, request)}
+                                  onMouseEnter={() => setHoveredBtn(`hr-card-approve-${request.id}`)}
+                                  onMouseLeave={() => setHoveredBtn(null)}
+                                  style={{
+                                    backgroundColor: hoveredBtn === `hr-card-approve-${request.id}` ? '#22C55E' : '#f0fff4',
+                                    color: hoveredBtn === `hr-card-approve-${request.id}` ? 'white' : '#22C55E',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    ...ib('#22C55E'),
+                                  }}
+                                >
+                                  Затвердити
+                                </Button>
+                                <Button
+                                  size="small"
+                                  icon={<X size={16} />}
+                                  onClick={(e) => handleRejectTeamRequest(e, request)}
+                                  onMouseEnter={() => setHoveredBtn(`hr-card-reject-${request.id}`)}
+                                  onMouseLeave={() => setHoveredBtn(null)}
+                                  style={{
+                                    backgroundColor: hoveredBtn === `hr-card-reject-${request.id}` ? '#fee2e2' : 'rgba(239, 68, 68, 0.05)',
+                                    color: '#EF4444',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    ...ib('#EF4444'),
+                                  }}
+                                >
+                                  Відхилити
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))
                   )
                 ) : activeFilter === 'access' ? (
                   // Inbox Zero demo for Access filter
