@@ -2312,11 +2312,7 @@ export const ApproveHub: React.FC = () => {
               <div style={{ 
                 marginLeft: spacing.xl, 
                 paddingLeft: spacing.xl, 
-                borderLeftWidth: '1px',
- 
-                borderLeftStyle: 'solid' as const,
- 
-                borderLeftColor: tokens.colorNeutralStroke2,
+                borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
               }}>
                 <Checkbox
                   label="🎬 Демо: Inbox Zero"
@@ -2464,11 +2460,11 @@ export const ApproveHub: React.FC = () => {
                             <TableCell style={{ width: '40px', padding: '16px' }}>
                               <Checkbox
                                 checked={selectedTeamRequests.includes(request.id)}
-                                onChange={(_e: React.ChangeEvent<HTMLInputElement>, data: { checked: boolean | 'mixed' }) => {
+                                onChange={(_, data) => {
                                   if (data.checked) {
-                                    setSelectedTeamRequests((prev: number[]) => [...prev, request.id]);
+                                    setSelectedTeamRequests(prev => [...prev, request.id]);
                                   } else {
-                                    setSelectedTeamRequests((prev: number[]) => prev.filter((id: number) => id !== request.id));
+                                    setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
                                   }
                                 }}
                                 onClick={(e: React.MouseEvent) => e.stopPropagation()}
@@ -2885,11 +2881,7 @@ export const ApproveHub: React.FC = () => {
                       gap: spacing.sm, 
                       marginBottom: spacing.md,
                       paddingBottom: spacing.md,
-                      borderBottomWidth: '1px',
-
-                      borderBottomStyle: 'solid' as const,
-
-                      borderBottomColor: tokens.colorNeutralStroke2,
+                      borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
                     }}>
                       <Users size={18} style={{ color: '#229FFF' }} />
                       <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
@@ -2929,11 +2921,11 @@ export const ApproveHub: React.FC = () => {
                           <TableCell style={{ width: '40px', padding: '16px' }}>
                             <Checkbox
                               checked={selectedTeamRequests.includes(request.id)}
-                              onChange={(_e: React.ChangeEvent<HTMLInputElement>, data: { checked: boolean | 'mixed' }) => {
+                              onChange={(_, data) => {
                                 if (data.checked) {
-                                  setSelectedTeamRequests((prev: number[]) => [...prev, request.id]);
+                                  setSelectedTeamRequests(prev => [...prev, request.id]);
                                 } else {
-                                  setSelectedTeamRequests((prev: number[]) => prev.filter((id: number) => id !== request.id));
+                                  setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
                                 }
                               }}
                               onClick={(e: React.MouseEvent) => e.stopPropagation()}
@@ -3107,11 +3099,7 @@ export const ApproveHub: React.FC = () => {
                   gap: spacing.sm, 
                   marginBottom: spacing.md,
                   paddingBottom: spacing.md,
-                  borderBottomWidth: '1px',
-
-                  borderBottomStyle: 'solid' as const,
-
-                  borderBottomColor: tokens.colorNeutralStroke2,
+                  borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
                 }}>
                   <Users size={18} style={{ color: '#229FFF' }} />
                   <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
