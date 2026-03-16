@@ -1,5 +1,5 @@
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
-import  ApproveHub  from './components/ApproveHub';
+import { ApproveHub } from './components/ApproveHub';
 
 function App() {
   return (
