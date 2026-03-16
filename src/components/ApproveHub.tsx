@@ -160,11 +160,7 @@ const useStyles = makeStyles({
   sidebar: {
     width: '240px',
     backgroundColor: 'white',
-    borderRightWidth: '1px',
-
-    borderRightStyle: 'solid' as const,
-
-    borderRightColor: tokens.colorNeutralStroke2,
+    borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -266,11 +262,7 @@ const useStyles = makeStyles({
     padding: spacing.lg,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
     borderRadius: '12px',
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: tokens.colorNeutralStroke2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   progressHeader: {
     display: 'flex',
@@ -415,11 +407,7 @@ const useStyles = makeStyles({
     gap: spacing.xs,
     padding: `${spacing.sm} ${spacing.lg}`,
     borderRadius: '20px',
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: tokens.colorNeutralStroke2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     backgroundColor: 'white',
     cursor: 'pointer',
     fontSize: '13px',
@@ -428,36 +416,18 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      borderTopColor: '#229FFF',
-
-      borderRightColor: '#229FFF',
-
-      borderBottomColor: '#229FFF',
-
-      borderLeftColor: '#229FFF',
+      borderColor: '#229FFF',
       color: colors.brand,
     },
   },
   filterChipActive: {
     backgroundColor: colors.brand,
-    borderTopColor: '#229FFF',
-
-    borderRightColor: '#229FFF',
-
-    borderBottomColor: '#229FFF',
-
-    borderLeftColor: '#229FFF',
+    borderColor: '#229FFF',
     color: 'white',
     boxShadow: `0 2px 4px ${colors.brandBg}`,
     ':hover': {
       backgroundColor: '#1E8FE5',
-      borderTopColor: '#1E8FE5',
-
-      borderRightColor: '#1E8FE5',
-
-      borderBottomColor: '#1E8FE5',
-
-      borderLeftColor: '#1E8FE5',
+      borderColor: '#1E8FE5',
       color: 'white',
     },
   },
@@ -515,11 +485,7 @@ const useStyles = makeStyles({
     marginBottom: spacing.md,
     backgroundColor: 'white',
     borderRadius: '12px',
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: tokens.colorNeutralStroke2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     overflow: 'hidden',
     cursor: 'pointer',
     transition: `all ${motion.normal} ${motion.easeOut}`,
@@ -532,20 +498,7 @@ const useStyles = makeStyles({
     },
   },
   taskCardSelected: {
-    borderTopWidth: '2px',
-
-    borderRightWidth: '2px',
-
-    borderBottomWidth: '2px',
-
-    borderLeftWidth: '2px',
-    borderTopColor: '#229FFF',
-
-    borderRightColor: '#229FFF',
-
-    borderBottomColor: '#229FFF',
-
-    borderLeftColor: '#229FFF',
+    border: '2px solid #229FFF',
     boxShadow: elevation.shadow8,
   },
   taskCardRemoving: {
@@ -586,9 +539,7 @@ const useStyles = makeStyles({
     letterSpacing: '0.5px',
     color: colors.brand,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.1) 0%, rgba(34, 159, 255, 0.05) 100%)',
-    borderWidth: '1px',
-    borderStyle: 'solid' as const,
-    borderColor: 'rgba(34, 159, 255, 0.2)',
+    border: '1px solid rgba(34, 159, 255, 0.2)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
@@ -784,22 +735,14 @@ const useStyles = makeStyles({
   detailPanel: {
     width: '45%',
     backgroundColor: 'white',
-    borderLeftWidth: '1px',
-
-    borderLeftStyle: 'solid' as const,
-
-    borderLeftColor: tokens.colorNeutralStroke2,
+    borderLeft: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     flexDirection: 'column',
     boxShadow: elevation.shadow8,
   },
   detailHeader: {
     padding: `${spacing.md} ${spacing.xl}`,
-    borderBottomWidth: '1px',
-
-    borderBottomStyle: 'solid' as const,
-
-    borderBottomColor: tokens.colorNeutralStroke2,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -828,11 +771,7 @@ const useStyles = makeStyles({
     gap: `${spacing.lg} ${spacing.xxl}`,
     marginBottom: spacing.xl,
     paddingBottom: spacing.xl,
-    borderBottomWidth: '1px',
-
-    borderBottomStyle: 'solid' as const,
-
-    borderBottomColor: tokens.colorNeutralStroke2,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   detailField: {},
   detailFieldFull: {
@@ -882,22 +821,14 @@ const useStyles = makeStyles({
   },
   detailFooter: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTopWidth: '1px',
-
-    borderTopStyle: 'solid' as const,
-
-    borderTopColor: tokens.colorNeutralStroke2,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: spacing.md,
   },
   detailFooterViewOnly: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTopWidth: '1px',
-
-    borderTopStyle: 'solid' as const,
-
-    borderTopColor: tokens.colorNeutralStroke2,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     display: 'flex',
     justifyContent: 'center',
   },
@@ -907,11 +838,7 @@ const useStyles = makeStyles({
   // ============================================
   attachmentsBlock: {
     marginBottom: spacing.lg,
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: tokens.colorNeutralStroke2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: spacing.sm,
     overflow: 'hidden',
   },
@@ -921,11 +848,7 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     padding: `${spacing.md} ${spacing.lg}`,
     backgroundColor: tokens.colorNeutralBackground3,
-    borderBottomWidth: '1px',
-
-    borderBottomStyle: 'solid' as const,
-
-    borderBottomColor: tokens.colorNeutralStroke2,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   attachmentsList: {
     padding: `${spacing.sm} 0`,
@@ -1135,7 +1058,7 @@ const useStyles = makeStyles({
   btnApprove: {
     backgroundColor: colors.approve,
     color: 'white',
-    borderStyle: 'none' as const,
+    border: 'none',
     ...shorthands.borderRadius('8px'),
     ':hover': {
       backgroundColor: colors.approveHover,
@@ -1148,11 +1071,7 @@ const useStyles = makeStyles({
   btnApproveGhost: {
     backgroundColor: colors.approveBg,
     color: colors.approve,
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: colors.approve,
+    border: `1px solid ${colors.approve}`,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
     ':hover': {
@@ -1163,7 +1082,7 @@ const useStyles = makeStyles({
   btnReject: {
     backgroundColor: colors.reject,
     color: 'white',
-    borderStyle: 'none' as const,
+    border: 'none',
     ...shorthands.borderRadius('8px'),
     ':hover': {
       backgroundColor: colors.rejectHover,
@@ -1173,17 +1092,13 @@ const useStyles = makeStyles({
   btnRejectDisabled: {
     backgroundColor: '#E5E7EB',
     color: '#9CA3AF',
-    borderStyle: 'none' as const,
+    border: 'none',
     ...shorthands.borderRadius('8px'),
   },
   btnRejectGhost: {
     backgroundColor: colors.rejectBgSubtle,
     color: colors.reject,
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: colors.reject,
+    border: `1px solid ${colors.reject}`,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
     ':hover': {
@@ -1200,13 +1115,7 @@ const useStyles = makeStyles({
   },
   btnBrandOutline: {
     ...shorthands.borderRadius('8px'),
-    borderTopColor: colors.brand,
-
-    borderRightColor: colors.brand,
-
-    borderBottomColor: colors.brand,
-
-    borderLeftColor: colors.brand,
+    borderColor: colors.brand,
     color: colors.brand,
     ':hover': {
       backgroundColor: colors.brandBgSubtle,
@@ -1219,11 +1128,7 @@ const useStyles = makeStyles({
   btnOpenSystem: {
     backgroundColor: colors.openSystemBg,
     color: colors.openSystem,
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: colors.openSystem,
+    border: `1px solid ${colors.openSystem}`,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
     paddingTop: '10px', paddingBottom: '10px', paddingLeft: '24px', paddingRight: '24px',
@@ -1242,21 +1147,13 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     gap: spacing.sm,
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTopWidth: '1px',
-
-    borderTopStyle: 'solid' as const,
-
-    borderTopColor: tokens.colorNeutralStroke2,
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   pageBtn: {
     minWidth: '36px',
     height: '36px',
     ...shorthands.borderRadius('8px'),
-    borderWidth: '1px',
-
-    borderStyle: 'solid' as const,
-
-    borderColor: tokens.colorNeutralStroke2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
     backgroundColor: 'white',
     cursor: 'pointer',
     display: 'flex',
@@ -1273,13 +1170,7 @@ const useStyles = makeStyles({
   pageBtnActive: {
     backgroundColor: colors.brand,
     color: 'white',
-    borderTopColor: colors.brand,
-
-    borderRightColor: colors.brand,
-
-    borderBottomColor: colors.brand,
-
-    borderLeftColor: colors.brand,
+    borderColor: colors.brand,
     ':hover': {
       backgroundColor: colors.brandHover,
     },
@@ -2272,7 +2163,7 @@ export const ApproveHub: React.FC = () => {
                 contentBefore={<Search size={18} />}
                 placeholder="Швидкий пошук..."
                 value={searchQuery}
-                onChange={(_e, data) => setSearchQuery(data.value)}
+                onChange={(_e: unknown, data: { value: string }) => setSearchQuery(data.value)}
               />
             </div>
           </div>
@@ -2291,7 +2182,7 @@ export const ApproveHub: React.FC = () => {
                       ? isAllSelected && isAllTeamSelected
                       : isAllSelected
                 }
-                onChange={(_e, data) => {
+                onChange={(_e: unknown, data: { checked: boolean | 'mixed' }) => {
                   if (activeFilter === 'hr') {
                     handleSelectAllTeam(!!data.checked);
                   } else if (activeFilter === 'all') {
@@ -2317,7 +2208,7 @@ export const ApproveHub: React.FC = () => {
                 <Checkbox
                   label="🎬 Демо: Inbox Zero"
                   checked={demoEmptyInbox}
-                  onChange={(_e, data) => setDemoEmptyInbox(!!data.checked)}
+                  onChange={(_e: unknown, data: { checked: boolean | 'mixed' }) => setDemoEmptyInbox(!!data.checked)}
                 />
               </div>
             </div>
@@ -2380,7 +2271,7 @@ export const ApproveHub: React.FC = () => {
                   <ArrowUpDown size={16} style={{ color: tokens.colorNeutralForeground3 }} />
                   <Dropdown
                     value={sortOptions.find(s => s.id === sortBy)?.label}
-                    onOptionSelect={(_e, data) => setSortBy(data.optionValue as string)}
+                    onOptionSelect={(_e: unknown, data: { optionValue?: string }) => setSortBy(data.optionValue as string)}
                     style={{ minWidth: '220px' }}
                   >
                     {sortOptions.map(option => (
@@ -2527,7 +2418,7 @@ export const ApproveHub: React.FC = () => {
                           <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
                             <Checkbox
                               checked={selectedTeamRequests.includes(request.id)}
-                              onChange={(_e, data) => {
+                              onChange={(_e: unknown, data: { checked: boolean | "mixed" }) => {
                                 if (data.checked) {
                                   setSelectedTeamRequests(prev => [...prev, request.id]);
                                 } else {
@@ -3127,7 +3018,7 @@ export const ApproveHub: React.FC = () => {
                       <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedTeamRequests.includes(request.id)}
-                          onChange={(_e, data) => {
+                          onChange={(_e: unknown, data: { checked: boolean | 'mixed' }) => {
                             if (data.checked) {
                               setSelectedTeamRequests(prev => [...prev, request.id]);
                             } else {
@@ -3591,7 +3482,7 @@ export const ApproveHub: React.FC = () => {
       {/* Reject Modal */}
       <Dialog
         open={showRejectModal && !!currentTask}
-        onOpenChange={(_e, data) => { if (!data.open) handleCloseRejectModal(); }}
+        onOpenChange={(_e: unknown, data: { open: boolean }) => { if (!data.open) handleCloseRejectModal(); }}
       >
         <DialogSurface style={{ maxWidth: '480px' }}>
           <DialogBody>
@@ -3632,7 +3523,7 @@ export const ApproveHub: React.FC = () => {
               <Textarea
                 placeholder="Опишіть причину відхилення документа..."
                 value={rejectReason}
-                onChange={(_e, data) => {
+                onChange={(_e: unknown, data: { value: string }) => {
                   if (data.value.length <= 500) {
                     setRejectReason(data.value);
                   }
@@ -3662,7 +3553,7 @@ export const ApproveHub: React.FC = () => {
       {/* Bulk Approve Modal */}
       <Dialog
         open={showBulkApproveModal}
-        onOpenChange={(_e, data) => { if (!data.open) setShowBulkApproveModal(false); }}
+        onOpenChange={(_e: unknown, data: { open: boolean }) => { if (!data.open) setShowBulkApproveModal(false); }}
       >
         <DialogSurface style={{ maxWidth: '440px' }}>
           <DialogBody>
