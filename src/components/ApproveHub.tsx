@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   makeStyles,
+  shorthands,
   tokens,
   Button,
   Checkbox,
@@ -17,8 +18,32 @@ import {
   Dropdown,
   Option,
   Tooltip,
+  Dialog,
+  DialogTrigger,
+  DialogSurface,
+  DialogBody,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Badge,
+  CounterBadge,
+  ProgressBar,
+  Spinner,
+  ToggleButton,
+  TabList,
+  Tab,
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableCellLayout,
+  TableSelectionCell,
+  Card,
+  CardHeader,
 } from '@fluentui/react-components';
-import type { ToastIntent } from '@fluentui/react-components';
+import type { ToastIntent, SelectTabData, SelectTabEvent } from '@fluentui/react-components';
 import {
   Search,
   ExternalLink,
@@ -31,7 +56,6 @@ import {
   Paperclip,
   Download,
   File,
-  Loader2,
   Eye,
   AlertCircle,
   Flame,
@@ -78,6 +102,32 @@ const motion = {
   easeOut: 'cubic-bezier(0.33, 1, 0.68, 1)',
 } as const;
 
+// ============================================
+// SEMANTIC COLORS (single source of truth)
+// ============================================
+const colors = {
+  brand:          '#229FFF',
+  brandHover:     '#1E8FE5',
+  brandBg:        'rgba(34, 159, 255, 0.1)',
+  brandBgSubtle:  'rgba(34, 159, 255, 0.04)',
+  approve:        '#22C55E',
+  approveHover:   '#16a34a',
+  approveBg:      '#f0fff4',
+  reject:         '#EF4444',
+  rejectHover:    '#dc2626',
+  rejectBg:       '#fee2e2',
+  rejectBgSubtle: 'rgba(239, 68, 68, 0.05)',
+  urgent:         '#EF4444',
+  success:        '#10B981',
+  successDark:    '#059669',
+  warning:        '#F59E0B',
+  warningBg:      '#FEF3C7',
+  gradientStart:  '#7C3AED',
+  gradientEnd:    '#2563EB',
+  openSystem:     '#0078d4',
+  openSystemBg:   '#e6f2ff',
+} as const;
+
 // Document type categories
 const ACTIONABLE_TYPES = ['Візування', 'Підписання'];
 const isActionable = (type: string) => ACTIONABLE_TYPES.includes(type);
@@ -100,16 +150,6 @@ const sortOptions = [
   { id: 'author',    label: 'За автором (А → Я)' },
 ];
 
-// ─── inline border helper (використовується в style={} пропах) ───────────────
-const ib = (color: string, width = '1px'): React.CSSProperties => ({
-  borderTopWidth:    width, borderBottomWidth:    width,
-  borderLeftWidth:   width, borderRightWidth:     width,
-  borderTopStyle:   'solid', borderBottomStyle:   'solid',
-  borderLeftStyle:  'solid', borderRightStyle:    'solid',
-  borderTopColor:   color,  borderBottomColor:   color,
-  borderLeftColor:  color,  borderRightColor:    color,
-});
-
 const useStyles = makeStyles({
   // ============================================
   // APP LAYOUT
@@ -126,9 +166,7 @@ const useStyles = makeStyles({
   sidebar: {
     width: '240px',
     backgroundColor: 'white',
-    borderRightWidth: '1px',
-    borderRightStyle: 'solid',
-    borderRightColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderRight('1px', 'solid', tokens.colorNeutralStroke2),
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -142,7 +180,7 @@ const useStyles = makeStyles({
   sidebarLogo: {
     width: '36px',
     height: '36px',
-    background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
+    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientEnd} 100%)`,
     borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
@@ -150,7 +188,7 @@ const useStyles = makeStyles({
     color: 'white',
     fontWeight: 700,
     fontSize: '18px',
-    boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+    boxShadow: `0 2px 8px rgba(124, 58, 237, 0.3)`,
   },
   sidebarTitle: {
     fontSize: '17px',
@@ -178,7 +216,7 @@ const useStyles = makeStyles({
     },
   },
   navItemActive: {
-    backgroundColor: '#229FFF',
+    backgroundColor: colors.brand,
     color: 'white',
     fontWeight: 600,
     ':hover': {
@@ -205,7 +243,7 @@ const useStyles = makeStyles({
   },
   navBadgeInactive: {
     marginLeft: 'auto',
-    backgroundColor: '#229FFF',
+    backgroundColor: colors.brand,
     color: 'white',
     fontSize: '12px',
     fontWeight: 600,
@@ -230,18 +268,7 @@ const useStyles = makeStyles({
     padding: spacing.lg,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
     borderRadius: '12px',
-    borderTopWidth:    '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth:   '1px',
-    borderRightWidth:  '1px',
-    borderTopStyle:    'solid',
-    borderBottomStyle: 'solid',
-    borderLeftStyle:   'solid',
-    borderRightStyle:  'solid',
-    borderTopColor:    tokens.colorNeutralStroke2,
-    borderBottomColor: tokens.colorNeutralStroke2,
-    borderLeftColor:   tokens.colorNeutralStroke2,
-    borderRightColor:  tokens.colorNeutralStroke2,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
   },
   progressHeader: {
     display: 'flex',
@@ -261,7 +288,7 @@ const useStyles = makeStyles({
   progressNumber: {
     fontSize: '28px',
     fontWeight: 700,
-    color: '#229FFF',
+    color: colors.brand,
     lineHeight: 1,
   },
   progressLabel: {
@@ -277,13 +304,13 @@ const useStyles = makeStyles({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#229FFF',
+    backgroundColor: colors.brand,
     borderRadius: '3px',
   },
   progressRank: {
     fontSize: '12px',
     fontWeight: 500,
-    color: '#10B981',
+    color: colors.success,
     display: 'flex',
     alignItems: 'center',
     gap: spacing.xs,
@@ -305,7 +332,7 @@ const useStyles = makeStyles({
   // HERO HEADER
   // ============================================
   heroHeader: {
-    background: 'linear-gradient(135deg, #7C3AED 0%, #2563EB 100%)',
+    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientEnd} 100%)`,
     padding: `${spacing.xxl} ${spacing.xxxl}`,
     margin: `${spacing.xl} ${spacing.xxl}`,
     color: 'white',
@@ -386,18 +413,7 @@ const useStyles = makeStyles({
     gap: spacing.xs,
     padding: `${spacing.sm} ${spacing.lg}`,
     borderRadius: '20px',
-    borderTopWidth:    '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth:   '1px',
-    borderRightWidth:  '1px',
-    borderTopStyle:    'solid',
-    borderBottomStyle: 'solid',
-    borderLeftStyle:   'solid',
-    borderRightStyle:  'solid',
-    borderTopColor:    tokens.colorNeutralStroke2,
-    borderBottomColor: tokens.colorNeutralStroke2,
-    borderLeftColor:   tokens.colorNeutralStroke2,
-    borderRightColor:  tokens.colorNeutralStroke2,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     backgroundColor: 'white',
     cursor: 'pointer',
     fontSize: '13px',
@@ -406,27 +422,18 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      borderTopColor:    '#229FFF',
-      borderBottomColor: '#229FFF',
-      borderLeftColor:   '#229FFF',
-      borderRightColor:  '#229FFF',
-      color: '#229FFF',
+      ...shorthands.borderColor('#229FFF'),
+      color: colors.brand,
     },
   },
   filterChipActive: {
-    backgroundColor: '#229FFF',
-    borderTopColor:    '#229FFF',
-    borderBottomColor: '#229FFF',
-    borderLeftColor:   '#229FFF',
-    borderRightColor:  '#229FFF',
+    backgroundColor: colors.brand,
+    ...shorthands.borderColor('#229FFF'),
     color: 'white',
-    boxShadow: '0 2px 4px rgba(34, 159, 255, 0.3)',
+    boxShadow: `0 2px 4px ${colors.brandBg}`,
     ':hover': {
       backgroundColor: '#1E8FE5',
-      borderTopColor:    '#1E8FE5',
-      borderBottomColor: '#1E8FE5',
-      borderLeftColor:   '#1E8FE5',
-      borderRightColor:  '#1E8FE5',
+      ...shorthands.borderColor('#1E8FE5'),
       color: 'white',
     },
   },
@@ -484,18 +491,7 @@ const useStyles = makeStyles({
     marginBottom: spacing.md,
     backgroundColor: 'white',
     borderRadius: '12px',
-    borderTopWidth:    '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth:   '1px',
-    borderRightWidth:  '1px',
-    borderTopStyle:    'solid',
-    borderBottomStyle: 'solid',
-    borderLeftStyle:   'solid',
-    borderRightStyle:  'solid',
-    borderTopColor:    tokens.colorNeutralStroke2,
-    borderBottomColor: tokens.colorNeutralStroke2,
-    borderLeftColor:   tokens.colorNeutralStroke2,
-    borderRightColor:  tokens.colorNeutralStroke2,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     overflow: 'hidden',
     cursor: 'pointer',
     transition: `all ${motion.normal} ${motion.easeOut}`,
@@ -508,14 +504,8 @@ const useStyles = makeStyles({
     },
   },
   taskCardSelected: {
-    borderTopWidth:    '2px',
-    borderBottomWidth: '2px',
-    borderLeftWidth:   '2px',
-    borderRightWidth:  '2px',
-    borderTopColor:    '#229FFF',
-    borderBottomColor: '#229FFF',
-    borderLeftColor:   '#229FFF',
-    borderRightColor:  '#229FFF',
+    ...shorthands.borderWidth('2px'),
+    ...shorthands.borderColor('#229FFF'),
     boxShadow: elevation.shadow8,
   },
   taskCardRemoving: {
@@ -554,20 +544,9 @@ const useStyles = makeStyles({
     fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
-    color: '#229FFF',
+    color: colors.brand,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.1) 0%, rgba(34, 159, 255, 0.05) 100%)',
-    borderTopWidth:    '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth:   '1px',
-    borderRightWidth:  '1px',
-    borderTopStyle:    'solid',
-    borderBottomStyle: 'solid',
-    borderLeftStyle:   'solid',
-    borderRightStyle:  'solid',
-    borderTopColor:    'rgba(34, 159, 255, 0.2)',
-    borderBottomColor: 'rgba(34, 159, 255, 0.2)',
-    borderLeftColor:   'rgba(34, 159, 255, 0.2)',
-    borderRightColor:  'rgba(34, 159, 255, 0.2)',
+    ...shorthands.border('1px', 'solid', 'rgba(34, 159, 255, 0.2)'),
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
@@ -595,7 +574,7 @@ const useStyles = makeStyles({
     gap: spacing.xs,
   },
   taskDateUrgent: {
-    color: '#EF4444',
+    color: colors.reject,
     fontWeight: 600,
   },
   taskTitle: {
@@ -641,7 +620,7 @@ const useStyles = makeStyles({
     fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
-    color: '#059669',
+    color: colors.successDark,
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
@@ -655,7 +634,7 @@ const useStyles = makeStyles({
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
     color: '#DC2626',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: colors.brandBg,
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
@@ -680,45 +659,21 @@ const useStyles = makeStyles({
   },
 
   // ============================================
-  // TEAM TABLE
+  // TEAM TABLE (Fluent Table overrides for original spacing)
   // ============================================
   teamTable: {
     width: '100%',
-    borderCollapse: 'separate',
-    borderSpacing: 0,
-  },
-  teamTableHeader: {
-    backgroundColor: tokens.colorNeutralBackground2,
-  },
-  teamTableHeaderCell: {
-    padding: `${spacing.md} ${spacing.lg}`,
-    textAlign: 'left' as const,
-    fontSize: '12px',
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground2,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: tokens.colorNeutralStroke2,
   },
   teamTableRow: {
     backgroundColor: 'white',
     transition: `all ${motion.fast} ${motion.easeOut}`,
     cursor: 'pointer',
     ':hover': {
-      backgroundColor: 'rgba(34, 159, 255, 0.04)',
+      backgroundColor: colors.brandBgSubtle,
     },
   },
   teamTableRowSelected: {
     backgroundColor: 'rgba(34, 159, 255, 0.08)',
-  },
-  teamTableCell: {
-    padding: `${spacing.lg} ${spacing.lg}`,
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: tokens.colorNeutralStroke2,
-    verticalAlign: 'middle' as const,
   },
   teamEmployee: {
     display: 'flex',
@@ -770,15 +725,15 @@ const useStyles = makeStyles({
   },
   teamTypeBadgeVacation: {
     backgroundColor: 'rgba(34, 159, 255, 0.1)',
-    color: '#229FFF',
+    color: colors.brand,
   },
   teamTypeBadgeSick: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    color: '#EF4444',
+    backgroundColor: colors.brandBg,
+    color: colors.reject,
   },
   teamTypeBadgeTrip: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: '#10B981',
+    color: colors.success,
   },
 
   // ============================================
@@ -787,18 +742,14 @@ const useStyles = makeStyles({
   detailPanel: {
     width: '45%',
     backgroundColor: 'white',
-    borderLeftWidth:  '1px',
-    borderLeftStyle:  'solid',
-    borderLeftColor:  tokens.colorNeutralStroke2,
+    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke2),
     display: 'flex',
     flexDirection: 'column',
     boxShadow: elevation.shadow8,
   },
   detailHeader: {
     padding: `${spacing.md} ${spacing.xl}`,
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -811,7 +762,7 @@ const useStyles = makeStyles({
   detailType: {
     fontSize: '16px',
     fontWeight: 600,
-    color: '#229FFF',
+    color: colors.brand,
     marginBottom: spacing.sm,
   },
   detailTitle: {
@@ -827,9 +778,7 @@ const useStyles = makeStyles({
     gap: `${spacing.lg} ${spacing.xxl}`,
     marginBottom: spacing.xl,
     paddingBottom: spacing.xl,
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
   },
   detailField: {},
   detailFieldFull: {
@@ -879,18 +828,14 @@ const useStyles = makeStyles({
   },
   detailFooter: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTopWidth: '1px',
-    borderTopStyle: 'solid',
-    borderTopColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: spacing.md,
   },
   detailFooterViewOnly: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    borderTopWidth: '1px',
-    borderTopStyle: 'solid',
-    borderTopColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
     display: 'flex',
     justifyContent: 'center',
   },
@@ -900,18 +845,7 @@ const useStyles = makeStyles({
   // ============================================
   attachmentsBlock: {
     marginBottom: spacing.lg,
-    borderTopWidth:    '1px',
-    borderBottomWidth: '1px',
-    borderLeftWidth:   '1px',
-    borderRightWidth:  '1px',
-    borderTopStyle:    'solid',
-    borderBottomStyle: 'solid',
-    borderLeftStyle:   'solid',
-    borderRightStyle:  'solid',
-    borderTopColor:    tokens.colorNeutralStroke2,
-    borderBottomColor: tokens.colorNeutralStroke2,
-    borderLeftColor:   tokens.colorNeutralStroke2,
-    borderRightColor:  tokens.colorNeutralStroke2,
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     borderRadius: spacing.sm,
     overflow: 'hidden',
   },
@@ -921,9 +855,7 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     padding: `${spacing.md} ${spacing.lg}`,
     backgroundColor: tokens.colorNeutralBackground3,
-    borderBottomWidth: '1px',
-    borderBottomStyle: 'solid',
-    borderBottomColor: tokens.colorNeutralStroke2,
+    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
   },
   attachmentsList: {
     padding: `${spacing.sm} 0`,
@@ -1092,7 +1024,7 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralStroke2,
   },
   onboardingDotActive: {
-    backgroundColor: '#229FFF',
+    backgroundColor: colors.brand,
     width: '24px',
     borderRadius: '4px',
   },
@@ -1125,6 +1057,92 @@ const useStyles = makeStyles({
     animationName: 'slideIn',
     animationDuration: '300ms',
     animationTimingFunction: 'ease-out',
+  },
+
+  // ============================================
+  // BUTTON VARIANTS (replacing inline style overrides)
+  // ============================================
+  btnApprove: {
+    backgroundColor: colors.approve,
+    color: 'white',
+    ...shorthands.border('none'),
+    ...shorthands.borderRadius('8px'),
+    ':hover': {
+      backgroundColor: colors.approveHover,
+      color: 'white',
+    },
+    ':active': {
+      backgroundColor: '#15803d',
+    },
+  },
+  btnApproveGhost: {
+    backgroundColor: colors.approveBg,
+    color: colors.approve,
+    ...shorthands.border('1px', 'solid', colors.approve),
+    ...shorthands.borderRadius('8px'),
+    fontWeight: 600,
+    ':hover': {
+      backgroundColor: colors.approve,
+      color: 'white',
+    },
+  },
+  btnReject: {
+    backgroundColor: colors.reject,
+    color: 'white',
+    ...shorthands.border('none'),
+    ...shorthands.borderRadius('8px'),
+    ':hover': {
+      backgroundColor: colors.rejectHover,
+      color: 'white',
+    },
+  },
+  btnRejectDisabled: {
+    backgroundColor: '#E5E7EB',
+    color: '#9CA3AF',
+    ...shorthands.border('none'),
+    ...shorthands.borderRadius('8px'),
+  },
+  btnRejectGhost: {
+    backgroundColor: colors.rejectBgSubtle,
+    color: colors.reject,
+    ...shorthands.border('1px', 'solid', colors.reject),
+    ...shorthands.borderRadius('8px'),
+    fontWeight: 600,
+    ':hover': {
+      backgroundColor: colors.rejectBg,
+      color: colors.reject,
+    },
+  },
+  btnBrand: {
+    backgroundColor: colors.brand,
+    ...shorthands.borderRadius('8px'),
+    ':hover': {
+      backgroundColor: colors.brandHover,
+    },
+  },
+  btnBrandOutline: {
+    ...shorthands.borderRadius('8px'),
+    ...shorthands.borderColor(colors.brand),
+    color: colors.brand,
+    ':hover': {
+      backgroundColor: colors.brandBgSubtle,
+    },
+  },
+  btnCompactAction: {
+    minWidth: 'auto',
+    ...shorthands.padding('4px', '8px'),
+  },
+  btnOpenSystem: {
+    backgroundColor: colors.openSystemBg,
+    color: colors.openSystem,
+    ...shorthands.border('1px', 'solid', colors.openSystem),
+    ...shorthands.borderRadius('8px'),
+    fontWeight: 600,
+    ...shorthands.padding('10px', '24px'),
+    ':hover': {
+      backgroundColor: colors.openSystem,
+      color: 'white',
+    },
   },
 });
 
@@ -1464,7 +1482,6 @@ export const ApproveHub: React.FC = () => {
   const [attachmentsLoaded, setAttachmentsLoaded] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showBulkApproveModal, setShowBulkApproveModal] = useState(false);
-  const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
   const [hoveredTeamRow, setHoveredTeamRow] = useState<number | null>(null);
   const [hoveredTaskRow, setHoveredTaskRow] = useState<number | null>(null);
   const [demoEmptyInbox, setDemoEmptyInbox] = useState(false);
@@ -1752,21 +1769,30 @@ export const ApproveHub: React.FC = () => {
         </div>
 
         <nav className={styles.sidebarNav}>
-          <div 
+          <Button 
+            appearance="subtle"
             className={`${styles.navItem} ${activeView === 'inbox' ? styles.navItemActive : ''}`}
             onClick={() => {
               setActiveView('inbox');
               setCurrentArchivedTask(null);
               setCurrentTeamRequest(null);
             }}
-            style={{ cursor: 'pointer' }}
+            icon={<Inbox size={20} />}
           >
-            <Inbox size={20} />
-            <span>Затвердження</span>
-            {(tasks.length + teamRequests.length) > 0 && <span className={activeView === 'inbox' ? styles.navBadge : styles.navBadgeInactive}>{tasks.length + teamRequests.length}</span>}
-          </div>
+            <span className="nm">Затвердження</span>
+            {(tasks.length + teamRequests.length) > 0 && (
+              <CounterBadge
+                count={tasks.length + teamRequests.length}
+                appearance="filled"
+                color={activeView === 'inbox' ? 'brand' : 'informative'}
+                size="small"
+                style={{ marginLeft: 'auto' }}
+              />
+            )}
+          </Button>
 
-          <div 
+          <Button 
+            appearance="subtle"
             className={`${styles.navItem} ${activeView === 'archive' ? styles.navItemActive : ''}`}
             onClick={() => {
               setActiveView('archive');
@@ -1775,23 +1801,30 @@ export const ApproveHub: React.FC = () => {
               setSelectedTasks([]);
               setSelectedTeamRequests([]);
             }}
-            style={{ cursor: 'pointer' }}
+            icon={<Archive size={20} />}
           >
-            <Archive size={20} />
-            <span>Архів</span>
-          </div>
+            <span className="nm">Архів</span>
+          </Button>
 
-          <div className={`${styles.navItem} ${styles.navItemDisabled}`}>
-            <Key size={20} />
-            <span>Доступи</span>
+          <Button 
+            appearance="subtle" 
+            disabled
+            className={`${styles.navItem} ${styles.navItemDisabled}`}
+            icon={<Key size={20} />}
+          >
+            <span className="nm">Доступи</span>
             <span className={styles.comingSoon}>скоро</span>
-          </div>
+          </Button>
 
-          <div className={`${styles.navItem} ${styles.navItemDisabled}`}>
-            <FileEdit size={20} />
-            <span>Заявки</span>
+          <Button 
+            appearance="subtle" 
+            disabled
+            className={`${styles.navItem} ${styles.navItemDisabled}`}
+            icon={<FileEdit size={20} />}
+          >
+            <span className="nm">Заявки</span>
             <span className={styles.comingSoon}>скоро</span>
-          </div>
+          </Button>
         </nav>
 
         <div className={styles.progressBlock}>
@@ -1803,9 +1836,12 @@ export const ApproveHub: React.FC = () => {
             <span className={styles.progressNumber}>{todayApproved}</span>
             <span className={styles.progressLabel}>опрацьовано за місяць</span>
           </div>
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${progressPercent}%` }} />
-          </div>
+          <ProgressBar
+            value={progressPercent / 100}
+            thickness="large"
+            style={{ marginBottom: spacing.sm }}
+            color="brand"
+          />
           <div className={styles.progressRank}>
             <span style={{ color: '#10B981' }}>●</span>
             {getProgressRankMessage(todayApproved)}
@@ -1845,14 +1881,17 @@ export const ApproveHub: React.FC = () => {
             {activeView === 'archive' && (
               <>
                 {archiveDateFilters.map(dateFilter => (
-                  <button
+                  <ToggleButton
                     key={dateFilter.id}
-                    className={`${styles.filterChip} ${archiveDateFilter === dateFilter.id ? styles.filterChipActive : ''}`}
+                    checked={archiveDateFilter === dateFilter.id}
                     onClick={() => setArchiveDateFilter(dateFilter.id)}
+                    appearance="subtle"
+                    size="small"
+                    className={`${styles.filterChip} ${archiveDateFilter === dateFilter.id ? styles.filterChipActive : ''}`}
                     style={{ marginRight: spacing.sm }}
                   >
                     {dateFilter.label}
-                  </button>
+                  </ToggleButton>
                 ))}
                 <div style={{ width: '1px', height: '24px', backgroundColor: tokens.colorNeutralStroke2, margin: `0 ${spacing.sm}` }} />
               </>
@@ -1860,14 +1899,17 @@ export const ApproveHub: React.FC = () => {
             {filterCategories.map(cat => {
               const IconComponent = cat.icon;
               return (
-                <button
+                <ToggleButton
                   key={cat.id}
-                  className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
+                  checked={activeFilter === cat.id}
                   onClick={() => setActiveFilter(cat.id)}
+                  appearance="subtle"
+                  size="small"
+                  icon={<IconComponent size={14} />}
+                  className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
                 >
-                  <IconComponent size={14} />
                   {cat.label}
-                </button>
+                </ToggleButton>
               );
             })}
           </div>
@@ -1932,9 +1974,7 @@ export const ApproveHub: React.FC = () => {
               <div style={{ 
                 marginLeft: spacing.xl, 
                 paddingLeft: spacing.xl, 
-                borderLeftWidth: '1px',
-                borderLeftStyle: 'solid',
-                borderLeftColor: tokens.colorNeutralStroke2,
+                ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke2),
               }}>
                 <Checkbox
                   label="🎬 Демо: Inbox Zero"
@@ -1952,7 +1992,7 @@ export const ApproveHub: React.FC = () => {
                     if (selectedCount > 0) handleApproveSelected();
                     if (selectedTeamCount > 0) handleApproveSelectedTeam();
                   }}
-                  style={{ backgroundColor: '#22C55E', borderRadius: '8px' }}
+                  className={styles.btnApprove}
                 >
                   Затвердити {selectedCount + selectedTeamCount}
                 </Button>
@@ -2058,41 +2098,39 @@ export const ApproveHub: React.FC = () => {
                       </Text>
                     </div>
                   ) : viewMode === 'compact' ? (
-                    // HR Compact View - Table
-                    <table className={styles.teamTable}>
-                      <thead className={styles.teamTableHeader}>
-                        <tr>
-                          <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
-                          <th className={styles.teamTableHeaderCell}>Тип</th>
-                          <th className={styles.teamTableHeaderCell}>Співробітник</th>
-                          <th className={styles.teamTableHeaderCell}>Період</th>
-                          <th className={styles.teamTableHeaderCell}>Тривалість</th>
-                          <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    // HR Compact View - Fluent Table
+                    <Table className={styles.teamTable}>
+                      <TableHeader>
+                        <TableRow>
+                          <TableSelectionCell style={{ width: '40px' }} />
+                          <TableHeaderCell style={{ padding: "16px" }}>Тип</TableHeaderCell>
+                          <TableHeaderCell style={{ padding: "16px" }}>Співробітник</TableHeaderCell>
+                          <TableHeaderCell style={{ padding: "16px" }}>Період</TableHeaderCell>
+                          <TableHeaderCell style={{ padding: "16px" }}>Тривалість</TableHeaderCell>
+                          <TableHeaderCell style={{ width: '100px', padding: '16px' }} />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {filteredTeamRequests.map(request => (
-                          <tr
+                          <TableRow
                             key={request.id}
                             className={`${styles.teamTableRow} ${currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : ''}`}
                             onClick={() => setCurrentTeamRequest(request)}
                             onMouseEnter={() => setHoveredTeamRow(request.id)}
                             onMouseLeave={() => setHoveredTeamRow(null)}
                           >
-                            <td className={styles.teamTableCell}>
-                              <Checkbox
-                                checked={selectedTeamRequests.includes(request.id)}
-                                onChange={(_e, data) => {
-                                  if (data.checked) {
-                                    setSelectedTeamRequests(prev => [...prev, request.id]);
-                                  } else {
-                                    setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
-                                  }
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </td>
-                            <td className={styles.teamTableCell}>
+                            <TableSelectionCell
+                              checked={selectedTeamRequests.includes(request.id)}
+                              onChange={(_e, data) => {
+                                if (data.checked) {
+                                  setSelectedTeamRequests(prev => [...prev, request.id]);
+                                } else {
+                                  setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+                                }
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <TableCell style={{ padding: "16px" }}>
                               <span className={`${styles.teamTypeBadge} ${
                                 request.type === 'vacation' ? styles.teamTypeBadgeVacation :
                                 request.type === 'sick' ? styles.teamTypeBadgeSick :
@@ -2103,41 +2141,40 @@ export const ApproveHub: React.FC = () => {
                                 {request.type === 'business_trip' && <Plane size={12} />}
                                 {teamRequestTypeLabels[request.type]}
                               </span>
-                            </td>
-                            <td className={styles.teamTableCell}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                                <Avatar name={request.employeeName} size={24} />
-                                <span style={{ fontWeight: 500 }}>{request.employeeName}</span>
-                              </div>
-                            </td>
-                            <td className={styles.teamTableCell}>
-                              <span style={{ fontSize: '13px' }}>{request.periodStart} — {request.periodEnd}</span>
-                            </td>
-                            <td className={styles.teamTableCell}>
-                              <span style={{ fontSize: '13px' }}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</span>
-                            </td>
-                            <td className={styles.teamTableCell}>
+                            </TableCell>
+                            <TableCell style={{ padding: "16px" }}>
+                              <TableCellLayout media={<Avatar name={request.employeeName} size={24} />}>
+                                {request.employeeName}
+                              </TableCellLayout>
+                            </TableCell>
+                            <TableCell style={{ padding: "16px" }}>
+                              <Text size={200}>{request.periodStart} — {request.periodEnd}</Text>
+                            </TableCell>
+                            <TableCell style={{ padding: "16px" }}>
+                              <Text size={200}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</Text>
+                            </TableCell>
+                            <TableCell style={{ padding: "16px" }}>
                               <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
                                 <Button
                                   appearance="primary"
                                   icon={<Check size={16} />}
                                   size="small"
                                   onClick={(e) => handleApproveTeamRequest(e, request)}
-                                  style={{ backgroundColor: '#22C55E', minWidth: 'auto', padding: '4px 8px' }}
+                                  className={`${styles.btnApprove} ${styles.btnCompactAction}`}
                                 />
                                 <Button
                                   appearance="outline"
                                   icon={<X size={16} />}
                                   size="small"
                                   onClick={(e) => handleRejectTeamRequest(e, request)}
-                                  style={{ color: '#EF4444', borderColor: '#EF4444', minWidth: 'auto', padding: '4px 8px' }}
+                                  className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
                                 />
                               </div>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   ) : (
                     // HR Cards View
                     filteredTeamRequests.map(request => (
@@ -2206,15 +2243,7 @@ export const ApproveHub: React.FC = () => {
                                   size="small"
                                   icon={<Check size={16} />}
                                   onClick={(e) => handleApproveTeamRequest(e, request)}
-                                  onMouseEnter={() => setHoveredBtn(`hr-card-approve-${request.id}`)}
-                                  onMouseLeave={() => setHoveredBtn(null)}
-                                  style={{
-                                    backgroundColor: hoveredBtn === `hr-card-approve-${request.id}` ? '#22C55E' : '#f0fff4',
-                                    color: hoveredBtn === `hr-card-approve-${request.id}` ? 'white' : '#22C55E',
-                                    borderRadius: '8px',
-                                    fontWeight: 600,
-                                    ...ib('#22C55E'),
-                                  }}
+                                  className={styles.btnApproveGhost}
                                 >
                                   Затвердити
                                 </Button>
@@ -2222,15 +2251,7 @@ export const ApproveHub: React.FC = () => {
                                   size="small"
                                   icon={<X size={16} />}
                                   onClick={(e) => handleRejectTeamRequest(e, request)}
-                                  onMouseEnter={() => setHoveredBtn(`hr-card-reject-${request.id}`)}
-                                  onMouseLeave={() => setHoveredBtn(null)}
-                                  style={{
-                                    backgroundColor: hoveredBtn === `hr-card-reject-${request.id}` ? '#fee2e2' : 'rgba(239, 68, 68, 0.05)',
-                                    color: '#EF4444',
-                                    borderRadius: '8px',
-                                    fontWeight: 600,
-                                    ...ib('#EF4444'),
-                                  }}
+                                  className={styles.btnRejectGhost}
                                 >
                                   Відхилити
                                 </Button>
@@ -2295,12 +2316,8 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     appearance="outline"
                     onClick={() => setSearchQuery('')}
-                    style={{ 
-                      marginTop: spacing.sm,
-                      borderRadius: '8px',
-                      borderColor: '#229FFF',
-                      color: '#229FFF',
-                    }}
+                    className={styles.btnBrandOutline}
+                    style={{ marginTop: spacing.sm }}
                   >
                     Очистити пошук
                   </Button>
@@ -2331,12 +2348,8 @@ export const ApproveHub: React.FC = () => {
                     <Button
                       appearance="outline"
                       onClick={() => setActiveFilter('all')}
-                      style={{ 
-                        marginTop: spacing.lg,
-                        borderRadius: '8px',
-                        borderColor: '#229FFF',
-                        color: '#229FFF',
-                      }}
+                      className={styles.btnBrandOutline}
+                      style={{ marginTop: spacing.lg }}
                     >
                       Показати всі документи ({tasks.length})
                     </Button>
@@ -2376,26 +2389,26 @@ export const ApproveHub: React.FC = () => {
             ) : viewMode === 'compact' ? (
               // COMPACT VIEW - Table
               <>
-              <table className={styles.teamTable}>
-                <thead className={styles.teamTableHeader}>
-                  <tr>
-                    <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
-                    <th className={styles.teamTableHeaderCell}>Тип</th>
-                    <th className={styles.teamTableHeaderCell}>Документ</th>
-                    <th className={styles.teamTableHeaderCell}>Контрагент</th>
-                    <th className={styles.teamTableHeaderCell}>Автор</th>
-                    <th className={styles.teamTableHeaderCell}>Строк</th>
-                    <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className={styles.teamTable}>
+                <TableHeader>
+                  <TableRow>
+                    <TableSelectionCell style={{ width: '40px' }} />
+                    <TableHeaderCell style={{ padding: "16px", width: '120px' }}>Тип</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px", width: '35%' }}>Документ</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px" }}>Контрагент</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px", width: '150px' }}>Автор</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px", width: '100px' }}>Строк</TableHeaderCell>
+                    <TableHeaderCell style={{ width: '100px', padding: '16px' }} />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {filteredTasks.map(task => {
                     const canApprove = isActionable(task.type);
                     const isChecked = selectedTasks.includes(task.id);
                     const isRemoving = removingTaskIds.includes(task.id);
 
                     return (
-                      <tr
+                      <TableRow
                         key={task.id}
                         className={`${styles.teamTableRow} ${currentTask?.id === task.id ? styles.teamTableRowSelected : ''} ${isRemoving ? styles.taskCardRemoving : ''}`}
                         onClick={() => !isRemoving && handleTaskClick(task)}
@@ -2403,46 +2416,45 @@ export const ApproveHub: React.FC = () => {
                         onMouseLeave={() => setHoveredTaskRow(null)}
                         style={{ pointerEvents: isRemoving ? 'none' : 'auto' }}
                       >
-                        <td className={styles.teamTableCell}>
-                          <Checkbox
-                            checked={isChecked}
-                            disabled={!canApprove}
-                            onChange={() => toggleTaskSelection(task.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </td>
-                        <td className={styles.teamTableCell}>
-                          <span className={`${styles.teamTypeBadge} ${canApprove ? styles.teamTypeBadgeVacation : styles.teamTypeBadgeSick}`}
+                        <TableSelectionCell
+                          checked={isChecked}
+                          disabled={!canApprove}
+                          onChange={() => toggleTaskSelection(task.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <TableCell style={{ padding: "16px" }}>
+                          <span className={`${styles.teamTypeBadge} ${canApprove ? styles.teamTypeBadgeVacation : ''}`}
                             style={canApprove ? {} : { backgroundColor: 'rgba(156, 163, 175, 0.1)', color: '#6B7280' }}>
                             {canApprove ? <Check size={12} /> : <Eye size={12} />}
                             {task.type}
                           </span>
-                        </td>
-                        <td className={styles.teamTableCell}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                            {task.urgent && <Flame size={14} style={{ color: '#EF4444', flexShrink: 0 }} />}
-                            <span style={{ fontWeight: 500 }}>
-                              {task.number} — {task.summary.length > 40 ? task.summary.substring(0, 40) + '...' : task.summary}
-                            </span>
-                          </div>
-                        </td>
-                        <td className={styles.teamTableCell}>
-                          <span style={{ color: tokens.colorNeutralForeground2 }}>
+                        </TableCell>
+                        <TableCell style={{ padding: "16px" }}>
+                          <TableCellLayout>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+                              {task.urgent && <Flame size={14} style={{ color: colors.reject, flexShrink: 0 }} />}
+                              <Text weight="medium">
+                                {task.number} — {task.summary.length > 40 ? task.summary.substring(0, 40) + '...' : task.summary}
+                              </Text>
+                            </div>
+                          </TableCellLayout>
+                        </TableCell>
+                        <TableCell style={{ padding: "16px" }}>
+                          <Text style={{ color: tokens.colorNeutralForeground2 }}>
                             {task.contractor.length > 20 ? task.contractor.substring(0, 20) + '...' : task.contractor}
-                          </span>
-                        </td>
-                        <td className={styles.teamTableCell}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                            <Avatar name={task.preparedBy} size={24} />
-                            <span style={{ fontSize: '13px' }}>{task.preparedBy}</span>
-                          </div>
-                        </td>
-                        <td className={styles.teamTableCell}>
-                          <span className={task.urgent ? styles.taskDateUrgent : ''} style={{ fontSize: '13px' }}>
+                          </Text>
+                        </TableCell>
+                        <TableCell style={{ padding: "16px" }}>
+                          <TableCellLayout media={<Avatar name={task.preparedBy} size={24} />}>
+                            <Text size={200}>{task.preparedBy}</Text>
+                          </TableCellLayout>
+                        </TableCell>
+                        <TableCell style={{ padding: "16px" }}>
+                          <Text size={200} className={task.urgent ? styles.taskDateUrgent : ''}>
                             {task.date}
-                          </span>
-                        </td>
-                        <td className={styles.teamTableCell}>
+                          </Text>
+                        </TableCell>
+                        <TableCell style={{ padding: "16px" }}>
                           <div className={`${styles.teamActions} ${hoveredTaskRow === task.id || currentTask?.id === task.id ? styles.teamActionsVisible : ''}`}>
                             {canApprove ? (
                               <>
@@ -2451,14 +2463,14 @@ export const ApproveHub: React.FC = () => {
                                   icon={<Check size={16} />}
                                   size="small"
                                   onClick={(e) => handleApproveTask(e, task)}
-                                  style={{ backgroundColor: '#22C55E', minWidth: 'auto', padding: '4px 8px' }}
+                                  className={`${styles.btnApprove} ${styles.btnCompactAction}`}
                                 />
                                 <Button
                                   appearance="outline"
                                   icon={<X size={16} />}
                                   size="small"
                                   onClick={(e) => { e.stopPropagation(); setCurrentTask(task); handleOpenRejectModal(); }}
-                                  style={{ color: '#EF4444', borderColor: '#EF4444', minWidth: 'auto', padding: '4px 8px' }}
+                                  className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
                                 />
                               </>
                             ) : (
@@ -2467,16 +2479,16 @@ export const ApproveHub: React.FC = () => {
                                 icon={<Eye size={16} />}
                                 size="small"
                                 onClick={(e) => { e.stopPropagation(); handleTaskClick(task); }}
-                                style={{ minWidth: 'auto', padding: '4px 8px' }}
+                                className={styles.btnCompactAction}
                               />
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
 
               {/* Team Requests Table in Compact View */}
               {(activeFilter === 'all' || activeFilter === 'hr') && filteredTeamRequests.length > 0 && (
@@ -2488,9 +2500,7 @@ export const ApproveHub: React.FC = () => {
                       gap: spacing.sm, 
                       marginBottom: spacing.md,
                       paddingBottom: spacing.md,
-                      borderBottomWidth: '1px',
-                      borderBottomStyle: 'solid',
-                      borderBottomColor: tokens.colorNeutralStroke2,
+                      ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
                     }}>
                       <Users size={18} style={{ color: '#229FFF' }} />
                       <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
@@ -2498,7 +2508,7 @@ export const ApproveHub: React.FC = () => {
                       </Text>
                       <span style={{ 
                         backgroundColor: 'rgba(34, 159, 255, 0.1)', 
-                        color: '#229FFF', 
+                        color: colors.brand, 
                         padding: '2px 8px', 
                         borderRadius: '10px', 
                         fontSize: '12px',
@@ -2508,40 +2518,37 @@ export const ApproveHub: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  <table className={styles.teamTable}>
-                    <thead className={styles.teamTableHeader}>
-                      <tr>
-                        <th className={styles.teamTableHeaderCell} style={{ width: '40px' }}></th>
-                        <th className={styles.teamTableHeaderCell}>Тип</th>
-                        <th className={styles.teamTableHeaderCell}>Співробітник</th>
-                        <th className={styles.teamTableHeaderCell}>Період</th>
-                        <th className={styles.teamTableHeaderCell}>Тривалість</th>
-                        <th className={styles.teamTableHeaderCell} style={{ width: '100px' }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  <Table className={styles.teamTable}>
+                    <TableHeader>
+                      <TableRow>
+                        <TableSelectionCell style={{ width: '40px' }} />
+                        <TableHeaderCell style={{ padding: "16px" }}>Тип</TableHeaderCell>
+                        <TableHeaderCell style={{ padding: "16px" }}>Співробітник</TableHeaderCell>
+                        <TableHeaderCell style={{ padding: "16px" }}>Період</TableHeaderCell>
+                        <TableHeaderCell style={{ padding: "16px" }}>Тривалість</TableHeaderCell>
+                        <TableHeaderCell style={{ width: '100px', padding: '16px' }} />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {filteredTeamRequests.map(request => (
-                        <tr
+                        <TableRow
                           key={`team-${request.id}`}
                           className={`${styles.teamTableRow} ${currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : ''}`}
                           onClick={() => setCurrentTeamRequest(request)}
-                          onMouseEnter={() => setHoveredTeamRow(request.id)}
-                          onMouseLeave={() => setHoveredTeamRow(null)}
+                          
                         >
-                          <td className={styles.teamTableCell}>
-                            <Checkbox
-                              checked={selectedTeamRequests.includes(request.id)}
-                              onChange={(_e, data) => {
-                                if (data.checked) {
-                                  setSelectedTeamRequests(prev => [...prev, request.id]);
-                                } else {
-                                  setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
-                                }
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </td>
-                          <td className={styles.teamTableCell}>
+                          <TableSelectionCell
+                            checked={selectedTeamRequests.includes(request.id)}
+                            onChange={(_e, data) => {
+                              if (data.checked) {
+                                setSelectedTeamRequests(prev => [...prev, request.id]);
+                              } else {
+                                setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <TableCell style={{ padding: "16px" }}>
                             <span className={`${styles.teamTypeBadge} ${
                               request.type === 'vacation' ? styles.teamTypeBadgeVacation :
                               request.type === 'sick' ? styles.teamTypeBadgeSick :
@@ -2552,43 +2559,42 @@ export const ApproveHub: React.FC = () => {
                               {request.type === 'business_trip' && <Plane size={12} />}
                               {teamRequestTypeLabels[request.type]}
                             </span>
-                          </td>
-                          <td className={styles.teamTableCell}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-                              <Avatar name={request.employeeName} size={24} />
-                              <span style={{ fontWeight: 500 }}>{request.employeeName}</span>
-                            </div>
-                          </td>
-                          <td className={styles.teamTableCell}>
-                            <span style={{ fontSize: '13px' }}>{request.periodStart} — {request.periodEnd}</span>
-                          </td>
-                          <td className={styles.teamTableCell}>
-                            <span style={{ fontSize: '13px' }}>
+                          </TableCell>
+                          <TableCell style={{ padding: "16px" }}>
+                            <TableCellLayout media={<Avatar name={request.employeeName} size={24} />}>
+                              {request.employeeName}
+                            </TableCellLayout>
+                          </TableCell>
+                          <TableCell style={{ padding: "16px" }}>
+                            <Text size={200}>{request.periodStart} — {request.periodEnd}</Text>
+                          </TableCell>
+                          <TableCell style={{ padding: "16px" }}>
+                            <Text size={200}>
                               {request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}
-                            </span>
-                          </td>
-                          <td className={styles.teamTableCell}>
+                            </Text>
+                          </TableCell>
+                          <TableCell style={{ padding: "16px" }}>
                             <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
                               <Button
                                 appearance="primary"
                                 icon={<Check size={16} />}
                                 size="small"
                                 onClick={(e) => handleApproveTeamRequest(e, request)}
-                                style={{ backgroundColor: '#22C55E', minWidth: 'auto', padding: '4px 8px' }}
+                                className={`${styles.btnApprove} ${styles.btnCompactAction}`}
                               />
                               <Button
                                 appearance="outline"
                                 icon={<X size={16} />}
                                 size="small"
                                 onClick={(e) => handleRejectTeamRequest(e, request)}
-                                style={{ color: '#EF4444', borderColor: '#EF4444', minWidth: 'auto', padding: '4px 8px' }}
+                                className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
                               />
                             </div>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </>
@@ -2644,15 +2650,7 @@ export const ApproveHub: React.FC = () => {
                                 size="small"
                                 icon={<Check size={16} />}
                                 onClick={(e) => handleApproveTask(e, task)}
-                                onMouseEnter={() => setHoveredBtn(`card-${task.id}`)}
-                                onMouseLeave={() => setHoveredBtn(null)}
-                                style={{
-                                  backgroundColor: hoveredBtn === `card-${task.id}` ? '#22C55E' : '#f0fff4',
-                                  color: hoveredBtn === `card-${task.id}` ? 'white' : '#22C55E',
-                                  borderRadius: '8px',
-                                  fontWeight: 600,
-                                  ...ib('#22C55E'),
-                                }}
+                                className={styles.btnApproveGhost}
                               >
                                 Затвердити
                               </Button>
@@ -2675,9 +2673,7 @@ export const ApproveHub: React.FC = () => {
                   gap: spacing.sm, 
                   marginBottom: spacing.md,
                   paddingBottom: spacing.md,
-                  borderBottomWidth: '1px',
-                  borderBottomStyle: 'solid',
-                  borderBottomColor: tokens.colorNeutralStroke2,
+                  ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
                 }}>
                   <Users size={18} style={{ color: '#229FFF' }} />
                   <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
@@ -2685,7 +2681,7 @@ export const ApproveHub: React.FC = () => {
                   </Text>
                   <span style={{ 
                     backgroundColor: 'rgba(34, 159, 255, 0.1)', 
-                    color: '#229FFF', 
+                    color: colors.brand, 
                     padding: '2px 8px', 
                     borderRadius: '10px', 
                     fontSize: '12px',
@@ -2761,15 +2757,7 @@ export const ApproveHub: React.FC = () => {
                               size="small"
                               icon={<Check size={16} />}
                               onClick={(e) => handleApproveTeamRequest(e, request)}
-                              onMouseEnter={() => setHoveredBtn(`team-card-approve-${request.id}`)}
-                              onMouseLeave={() => setHoveredBtn(null)}
-                              style={{
-                                backgroundColor: hoveredBtn === `team-card-approve-${request.id}` ? '#22C55E' : '#f0fff4',
-                                color: hoveredBtn === `team-card-approve-${request.id}` ? 'white' : '#22C55E',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                ...ib('#22C55E'),
-                              }}
+                              className={styles.btnApproveGhost}
                             >
                               Затвердити
                             </Button>
@@ -2777,15 +2765,7 @@ export const ApproveHub: React.FC = () => {
                               size="small"
                               icon={<X size={16} />}
                               onClick={(e) => handleRejectTeamRequest(e, request)}
-                              onMouseEnter={() => setHoveredBtn(`team-card-reject-${request.id}`)}
-                              onMouseLeave={() => setHoveredBtn(null)}
-                              style={{
-                                backgroundColor: hoveredBtn === `team-card-reject-${request.id}` ? '#fee2e2' : 'rgba(239, 68, 68, 0.05)',
-                                color: '#EF4444',
-                                borderRadius: '8px',
-                                fontWeight: 600,
-                                ...ib('#EF4444'),
-                              }}
+                              className={styles.btnRejectGhost}
                             >
                               Відхилити
                             </Button>
@@ -2871,16 +2851,11 @@ export const ApproveHub: React.FC = () => {
                         <Button
                           size="small"
                           icon={attachmentsLoading
-                            ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                            ? <Spinner size="tiny" />
                             : <Download size={16} />}
                           onClick={handleLoadAttachments}
                           disabled={attachmentsLoading}
-                          style={{
-                            backgroundColor: 'transparent',
-                            color: '#229FFF',
-                            borderRadius: '6px',
-                            ...ib('#229FFF'),
-                          }}
+                          className={styles.btnBrandOutline}
                         >
                           {attachmentsLoading ? 'Завантаження...' : 'Завантажити'}
                         </Button>
@@ -2930,32 +2905,16 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     icon={<Check size={20} />}
                     onClick={handleApprove}
-                    onMouseEnter={() => setHoveredBtn('detail-approve')}
-                    onMouseLeave={() => setHoveredBtn(null)}
-                    style={{
-                      backgroundColor: hoveredBtn === 'detail-approve' ? '#22C55E' : '#f0fff4',
-                      color: hoveredBtn === 'detail-approve' ? 'white' : '#22C55E',
-                      borderRadius: '8px',
-                      padding: '10px 24px',
-                      fontWeight: 600,
-                      ...ib('#22C55E'),
-                    }}
+                    className={styles.btnApproveGhost}
+                    style={{ padding: '10px 24px' }}
                   >
                     Затвердити
                   </Button>
                   <Button
                     icon={<X size={20} />}
                     onClick={handleOpenRejectModal}
-                    onMouseEnter={() => setHoveredBtn('detail-reject')}
-                    onMouseLeave={() => setHoveredBtn(null)}
-                    style={{
-                      backgroundColor: hoveredBtn === 'detail-reject' ? '#fee2e2' : 'transparent',
-                      color: '#e53e3e',
-                      borderRadius: '8px',
-                      padding: '10px 24px',
-                      fontWeight: 600,
-                      ...ib('#e53e3e'),
-                    }}
+                    className={styles.btnRejectGhost}
+                    style={{ padding: '10px 24px' }}
                   >
                     Відхилити
                   </Button>
@@ -2964,16 +2923,7 @@ export const ApproveHub: React.FC = () => {
                 <div className={styles.detailFooterViewOnly}>
                   <Button
                     icon={<ExternalLink size={20} />}
-                    onMouseEnter={() => setHoveredBtn('open-system')}
-                    onMouseLeave={() => setHoveredBtn(null)}
-                    style={{
-                      backgroundColor: hoveredBtn === 'open-system' ? '#0078d4' : '#e6f2ff',
-                      color: hoveredBtn === 'open-system' ? 'white' : '#0078d4',
-                      borderRadius: '8px',
-                      padding: '10px 24px',
-                      fontWeight: 600,
-                      ...ib('#0078d4'),
-                    }}
+                    className={styles.btnOpenSystem}
                   >
                     Відкрити в системі
                   </Button>
@@ -3050,32 +3000,16 @@ export const ApproveHub: React.FC = () => {
                 <Button
                   icon={<Check size={20} />}
                   onClick={(e) => handleApproveTeamRequest(e, currentTeamRequest)}
-                  onMouseEnter={() => setHoveredBtn('team-approve')}
-                  onMouseLeave={() => setHoveredBtn(null)}
-                  style={{
-                    backgroundColor: hoveredBtn === 'team-approve' ? '#22C55E' : '#f0fff4',
-                    color: hoveredBtn === 'team-approve' ? 'white' : '#22C55E',
-                    borderRadius: '8px',
-                    padding: '10px 24px',
-                    fontWeight: 600,
-                    ...ib('#22C55E'),
-                  }}
+                  className={styles.btnApproveGhost}
+                  style={{ padding: '10px 24px' }}
                 >
                   Затвердити
                 </Button>
                 <Button
                   icon={<X size={20} />}
                   onClick={(e) => handleRejectTeamRequest(e, currentTeamRequest)}
-                  onMouseEnter={() => setHoveredBtn('team-reject')}
-                  onMouseLeave={() => setHoveredBtn(null)}
-                  style={{
-                    backgroundColor: hoveredBtn === 'team-reject' ? '#fee2e2' : 'transparent',
-                    color: '#e53e3e',
-                    borderRadius: '8px',
-                    padding: '10px 24px',
-                    fontWeight: 600,
-                    ...ib('#e53e3e'),
-                  }}
+                  className={styles.btnRejectGhost}
+                  style={{ padding: '10px 24px' }}
                 >
                   Відхилити
                 </Button>
@@ -3216,14 +3150,7 @@ export const ApproveHub: React.FC = () => {
                   <div className={styles.detailFooterViewOnly}>
                     <Button
                       icon={<ExternalLink size={20} />}
-                      style={{
-                        backgroundColor: '#e6f2ff',
-                        color: '#0078d4',
-                        borderRadius: '8px',
-                        padding: '10px 24px',
-                        fontWeight: 600,
-                        ...ib('#0078d4'),
-                      }}
+                      className={styles.btnOpenSystem}
                     >
                       Відкрити в системі
                     </Button>
@@ -3236,46 +3163,45 @@ export const ApproveHub: React.FC = () => {
       </main>
 
       {/* Reject Modal */}
-      {showRejectModal && currentTask && (
-        <div className={styles.modalOverlay} onClick={handleCloseRejectModal}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button
-              onClick={handleCloseRejectModal}
-              style={{
-                position: 'absolute',
-                top: spacing.lg,
-                right: spacing.lg,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-              }}
+      <Dialog
+        open={showRejectModal && !!currentTask}
+        onOpenChange={(_e, data) => { if (!data.open) handleCloseRejectModal(); }}
+      >
+        <DialogSurface style={{ maxWidth: '480px' }}>
+          <DialogBody>
+            <DialogTitle
+              action={
+                <Button appearance="subtle" icon={<X size={20} />} onClick={handleCloseRejectModal} />
+              }
             >
-              <X size={20} />
-            </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg }}>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                backgroundColor: '#FEE2E2',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-                <AlertCircle size={24} style={{ color: '#DC2626' }} />
-              </div>
-              <div>
-                <div className={styles.modalHeader}>Відхилення документа</div>
-                <div style={{ fontSize: '14px', color: tokens.colorNeutralForeground2 }}>
-                  {currentTask.type} {currentTask.number}
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FEE2E2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <AlertCircle size={20} style={{ color: '#DC2626' }} />
+                </div>
+                <div>
+                  <div>Відхилення документа</div>
+                  {currentTask && (
+                    <Text size={200} style={{ color: tokens.colorNeutralForeground2, fontWeight: 400 }}>
+                      {currentTask.type} {currentTask.number}
+                    </Text>
+                  )}
                 </div>
               </div>
-            </div>
-
-            <div style={{ marginBottom: spacing.lg }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: tokens.colorNeutralForeground2, marginBottom: spacing.sm }}>
-                Причина відхилення <span style={{ color: '#EF4444' }}>*</span>
+            </DialogTitle>
+            <DialogContent>
+              <div style={{ marginBottom: spacing.sm }}>
+                <Text size={200} weight="semibold" style={{ color: tokens.colorNeutralForeground2 }}>
+                  Причина відхилення <span style={{ color: '#EF4444' }}>*</span>
+                </Text>
               </div>
               <Textarea
                 placeholder="Опишіть причину відхилення документа..."
@@ -3290,177 +3216,179 @@ export const ApproveHub: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: spacing.xs, fontSize: '12px', color: tokens.colorNeutralForeground3 }}>
                 {rejectReason.length}/500
               </div>
-            </div>
-
-            <div className={styles.modalFooter}>
-              <Button appearance="secondary" onClick={handleCloseRejectModal} style={{ borderRadius: '8px' }}>
-                Скасувати
-              </Button>
+            </DialogContent>
+            <DialogActions>
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="secondary" style={{ borderRadius: '8px' }}>Скасувати</Button>
+              </DialogTrigger>
               <Button
                 onClick={handleRejectConfirm}
                 disabled={!rejectReason.trim()}
-                style={{
-                  backgroundColor: !rejectReason.trim() ? '#E5E7EB' : '#EF4444',
-                  color: !rejectReason.trim() ? '#9CA3AF' : 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                }}
+                className={!rejectReason.trim() ? styles.btnRejectDisabled : styles.btnReject}
               >
                 Відхилити документ
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
 
       {/* Bulk Approve Modal */}
-      {showBulkApproveModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowBulkApproveModal(false)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>Масове затвердження</div>
-            <div style={{ color: tokens.colorNeutralForeground2, marginBottom: spacing.lg }}>
-              Ви впевнені, що хочете затвердити {selectedTasks.length} документів?
-            </div>
-            <div className={styles.modalFooter}>
-              <Button appearance="secondary" onClick={() => setShowBulkApproveModal(false)} style={{ borderRadius: '8px' }}>
-                Скасувати
-              </Button>
+      <Dialog
+        open={showBulkApproveModal}
+        onOpenChange={(_e, data) => { if (!data.open) setShowBulkApproveModal(false); }}
+      >
+        <DialogSurface style={{ maxWidth: '440px' }}>
+          <DialogBody>
+            <DialogTitle>Масове затвердження</DialogTitle>
+            <DialogContent>
+              <Text style={{ color: tokens.colorNeutralForeground2 }}>
+                Ви впевнені, що хочете затвердити {selectedTasks.length} документів?
+              </Text>
+            </DialogContent>
+            <DialogActions>
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="secondary" style={{ borderRadius: '8px' }}>Скасувати</Button>
+              </DialogTrigger>
               <Button
                 onClick={handleConfirmBulkApprove}
-                style={{ backgroundColor: '#22C55E', color: 'white', border: 'none', borderRadius: '8px' }}
+                className={styles.btnApprove}
               >
                 Затвердити всі ({selectedTasks.length})
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
 
       {/* Onboarding Modal */}
-      {showOnboarding && (
-        <div className={styles.onboardingOverlay}>
-          <div className={styles.onboardingCard}>
-            <div className={styles.onboardingDecor} />
+      <Dialog
+        open={showOnboarding}
+        modalType="alert"
+      >
+        <DialogSurface style={{ maxWidth: '500px', borderRadius: '20px', overflow: 'hidden' }}>
+          <div className={styles.onboardingDecor} />
+          <DialogBody style={{ padding: spacing.xxxl }}>
+            <DialogContent style={{ textAlign: 'center' }}>
+              {onboardingStep === 0 && (
+                <>
+                  <div className={styles.onboardingIcon}>
+                    <Sparkles size={40} style={{ color: '#229FFF' }} />
+                  </div>
+                  <div className={styles.onboardingTitle}>
+                    Вітаємо в «Погоджуй легко»! 🎉
+                  </div>
+                  <div className={styles.onboardingText}>
+                    Тут зібрані всі документи, що очікують на ваше затвердження.<br />
+                    Більше не потрібно перемикатися між системами!
+                  </div>
+                </>
+              )}
 
-            {onboardingStep === 0 && (
-              <>
-                <div className={styles.onboardingIcon}>
-                  <Sparkles size={40} style={{ color: '#229FFF' }} />
-                </div>
-                <div className={styles.onboardingTitle}>
-                  Вітаємо в «Погоджуй легко»! 🎉
-                </div>
-                <div className={styles.onboardingText}>
-                  Тут зібрані всі документи, що очікують на ваше затвердження.<br />
-                  Більше не потрібно перемикатися між системами!
-                </div>
-              </>
-            )}
+              {onboardingStep === 1 && (
+                <>
+                  <div className={styles.onboardingIcon}>
+                    <Lightbulb size={40} style={{ color: '#F59E0B' }} />
+                  </div>
+                  <div className={styles.onboardingTitle}>
+                    Як це працює?
+                  </div>
+                  <div className={styles.onboardingTips}>
+                    <div className={styles.onboardingTip}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)' }}>
+                        <Check size={14} style={{ color: '#229FFF' }} />
+                      </div>
+                      <div>
+                        <strong style={{ color: '#229FFF' }}>Візування / Підписання</strong> — документи, які ви можете затвердити або відхилити
+                      </div>
+                    </div>
+                    <div className={styles.onboardingTip}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: tokens.colorNeutralBackground3 }}>
+                        <Eye size={14} style={{ color: tokens.colorNeutralForeground2 }} />
+                      </div>
+                      <div>
+                        <strong>По руху / Розгляд</strong> — документи для ознайомлення, дії в оригінальній системі
+                      </div>
+                    </div>
+                    <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
+                        <Flame size={14} style={{ color: '#EF4444' }} />
+                      </div>
+                      <div>
+                        <strong style={{ color: '#EF4444' }}>Терміново</strong> — протерміновані документи
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
 
-            {onboardingStep === 1 && (
-              <>
-                <div className={styles.onboardingIcon}>
-                  <Lightbulb size={40} style={{ color: '#F59E0B' }} />
-                </div>
-                <div className={styles.onboardingTitle}>
-                  Як це працює?
-                </div>
-                <div className={styles.onboardingTips}>
-                  <div className={styles.onboardingTip}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(124, 58, 237, 0.1)' }}>
-                      <Check size={14} style={{ color: '#229FFF' }} />
+              {onboardingStep === 2 && (
+                <>
+                  <div className={styles.onboardingIcon}>
+                    <Sparkles size={40} style={{ color: '#229FFF' }} />
+                  </div>
+                  <div className={styles.onboardingTitle}>
+                    Корисні можливості 🚀
+                  </div>
+                  <div className={styles.onboardingTips}>
+                    <div className={styles.onboardingTip}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                        <Search size={14} style={{ color: '#229FFF' }} />
+                      </div>
+                      <div>
+                        <strong>Швидкий пошук</strong> — знаходьте документи та фільтруйте по категоріях
+                      </div>
                     </div>
-                    <div>
-                      <strong style={{ color: '#229FFF' }}>Візування / Підписання</strong> — документи, які ви можете затвердити або відхилити
+                    <div className={styles.onboardingTip}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                        <Check size={14} style={{ color: '#229FFF' }} />
+                      </div>
+                      <div>
+                        <strong>Масове затвердження</strong> — оберіть кілька документів та затвердіть одразу
+                      </div>
+                    </div>
+                    <div className={styles.onboardingTip}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                        <FileText size={14} style={{ color: '#229FFF' }} />
+                      </div>
+                      <div>
+                        <strong>Детальна картка</strong> — клікніть на документ для перегляду деталей
+                      </div>
+                    </div>
+                    <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
+                      <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
+                        <Download size={14} style={{ color: '#229FFF' }} />
+                      </div>
+                      <div>
+                        <strong>Вкладення</strong> — завантажуйте файли прямо з детальної картки
+                      </div>
                     </div>
                   </div>
-                  <div className={styles.onboardingTip}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: tokens.colorNeutralBackground3 }}>
-                      <Eye size={14} style={{ color: tokens.colorNeutralForeground2 }} />
-                    </div>
-                    <div>
-                      <strong>По руху / Розгляд</strong> — документи для ознайомлення, дії в оригінальній системі
-                    </div>
+                  <div style={{ 
+                    fontSize: '15px', 
+                    color: colors.success, 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: spacing.sm
+                  }}>
+                    <Trophy size={20} />
+                    Готові до роботи!
                   </div>
-                  <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}>
-                      <Flame size={14} style={{ color: '#EF4444' }} />
-                    </div>
-                    <div>
-                      <strong style={{ color: '#EF4444' }}>Терміново</strong> — протерміновані документи
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
 
-            {onboardingStep === 2 && (
-              <>
-                <div className={styles.onboardingIcon}>
-                  <Sparkles size={40} style={{ color: '#229FFF' }} />
-                </div>
-                <div className={styles.onboardingTitle}>
-                  Корисні можливості 🚀
-                </div>
-                <div className={styles.onboardingTips}>
-                  <div className={styles.onboardingTip}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
-                      <Search size={14} style={{ color: '#229FFF' }} />
-                    </div>
-                    <div>
-                      <strong>Швидкий пошук</strong> — знаходьте документи та фільтруйте по категоріях
-                    </div>
-                  </div>
-                  <div className={styles.onboardingTip}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
-                      <Check size={14} style={{ color: '#229FFF' }} />
-                    </div>
-                    <div>
-                      <strong>Масове затвердження</strong> — оберіть кілька документів та затвердіть одразу
-                    </div>
-                  </div>
-                  <div className={styles.onboardingTip}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
-                      <FileText size={14} style={{ color: '#229FFF' }} />
-                    </div>
-                    <div>
-                      <strong>Детальна картка</strong> — клікніть на документ для перегляду деталей
-                    </div>
-                  </div>
-                  <div className={styles.onboardingTip} style={{ marginBottom: 0 }}>
-                    <div className={styles.onboardingTipIcon} style={{ backgroundColor: 'rgba(34, 159, 255, 0.1)' }}>
-                      <Download size={14} style={{ color: '#229FFF' }} />
-                    </div>
-                    <div>
-                      <strong>Вкладення</strong> — завантажуйте файли прямо з детальної картки
-                    </div>
-                  </div>
-                </div>
-                <div style={{ 
-                  fontSize: '15px', 
-                  color: '#10B981', 
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: spacing.sm
-                }}>
-                  <Trophy size={20} />
-                  Готові до роботи!
-                </div>
-              </>
-            )}
-
-            <div className={styles.onboardingSteps}>
-              {[0, 1, 2].map(step => (
-                <div
-                  key={step}
-                  className={`${styles.onboardingDot} ${onboardingStep === step ? styles.onboardingDotActive : ''}`}
-                />
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: spacing.md, justifyContent: 'center' }}>
+              <div className={styles.onboardingSteps}>
+                {[0, 1, 2].map(step => (
+                  <div
+                    key={step}
+                    className={`${styles.onboardingDot} ${onboardingStep === step ? styles.onboardingDotActive : ''}`}
+                  />
+                ))}
+              </div>
+            </DialogContent>
+            <DialogActions style={{ justifyContent: 'center' }}>
               {onboardingStep > 0 && (
                 <Button
                   appearance="outline"
@@ -3484,17 +3412,17 @@ export const ApproveHub: React.FC = () => {
                   }
                 }}
                 style={{
-                  backgroundColor: '#229FFF',
+                  backgroundColor: colors.brand,
                   borderRadius: '8px',
                   minWidth: '120px',
                 }}
               >
                 {onboardingStep < 2 ? 'Далі' : 'Почати роботу'}
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
 
       {/* Encouragement Popup */}
       {encouragementMessage && (
