@@ -1144,6 +1144,65 @@ const useStyles = makeStyles({
       color: 'white',
     },
   },
+
+  // ============================================
+  // PAGINATION
+  // ============================================
+  pagination: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: `${spacing.lg} ${spacing.xxl}`,
+    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+  },
+  pageBtn: {
+    minWidth: '36px',
+    height: '36px',
+    ...shorthands.borderRadius('8px'),
+    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    backgroundColor: 'white',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '13px',
+    fontWeight: 500,
+    color: tokens.colorNeutralForeground2,
+    transition: `all ${motion.fast} ${motion.easeOut}`,
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground3,
+    },
+  },
+  pageBtnActive: {
+    backgroundColor: colors.brand,
+    color: 'white',
+    ...shorthands.borderColor(colors.brand),
+    ':hover': {
+      backgroundColor: colors.brandHover,
+    },
+  },
+  pageBtnDisabled: {
+    opacity: 0.4,
+    cursor: 'not-allowed',
+    ':hover': {
+      backgroundColor: 'white',
+    },
+  },
+  pageInfo: {
+    fontSize: '13px',
+    color: tokens.colorNeutralForeground3,
+    ...shorthands.padding('0', spacing.md),
+  },
+
+  // ============================================
+  // 2-COLUMN CARDS GRID
+  // ============================================
+  cardsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: spacing.md,
+  },
 });
 
 // ============================================
@@ -1456,6 +1515,166 @@ const initialTasks: Task[] = [
     createdByDept: 'Фінансовий відділ',
     attachments: [{ name: 'Бюджет_Q2.xlsx', size: '890 KB' }],
   },
+  {
+    id: 6,
+    type: 'Візування',
+    number: '№0201',
+    date: '14.02.2026',
+    urgent: false,
+    category: 'finance',
+    docType: 'Рахунок',
+    contractor: 'ТОВ "Глобал-Сервіс"',
+    summary: 'Оплата послуг консалтингу за січень 2026.',
+    preparedBy: 'Литвиненко Г.А.',
+    preparedByDept: 'Фінансовий відділ',
+    createdBy: 'Литвиненко Г.А.',
+    createdByDept: 'Фінансовий відділ',
+    attachments: [{ name: 'Рахунок_012.pdf', size: '180 KB' }],
+  },
+  {
+    id: 7,
+    type: 'Підписання',
+    number: '№0202',
+    date: '15.02.2026',
+    urgent: false,
+    category: 'documents',
+    docType: 'Договір',
+    contractor: 'ПП "Інфо-Тех"',
+    summary: 'Договір на обслуговування серверної інфраструктури на 2026 рік.',
+    preparedBy: 'Гончаренко Д.В.',
+    preparedByDept: 'IT департамент',
+    createdBy: 'Гончаренко Д.В.',
+    createdByDept: 'IT департамент',
+    attachments: [{ name: 'Договір_ІнфоТех.pdf', size: '2.1 MB' }, { name: 'SLA_додаток.pdf', size: '450 KB' }],
+  },
+  {
+    id: 8,
+    type: 'Візування',
+    number: '№0203',
+    date: '09.02.2026',
+    urgent: true,
+    category: 'hr',
+    docType: 'Наказ',
+    contractor: '—',
+    summary: 'Переведення співробітника між підрозділами — Ковальчук О.С.',
+    preparedBy: 'Шевченко Т.М.',
+    preparedByDept: 'Відділ кадрів',
+    createdBy: 'Шевченко Т.М.',
+    createdByDept: 'Відділ кадрів',
+    attachments: [{ name: 'Наказ_переведення.pdf', size: '95 KB' }],
+  },
+  {
+    id: 9,
+    type: 'По руху',
+    number: '№0204',
+    date: '16.02.2026',
+    urgent: false,
+    category: 'processes',
+    docType: 'Заявка',
+    contractor: 'AWS',
+    summary: 'Розширення хмарної інфраструктури — додаткові EC2 інстанси.',
+    preparedBy: 'Кравченко Р.І.',
+    preparedByDept: 'IT департамент',
+    createdBy: 'Кравченко Р.І.',
+    createdByDept: 'IT департамент',
+    attachments: [],
+  },
+  {
+    id: 10,
+    type: 'Підписання',
+    number: '№0205',
+    date: '13.02.2026',
+    urgent: false,
+    category: 'finance',
+    docType: 'Акт',
+    contractor: 'ТОВ "Логістик-Про"',
+    summary: 'Акт звірки взаєморозрахунків за Q4 2025.',
+    preparedBy: 'Федоренко Н.В.',
+    preparedByDept: 'Бухгалтерія',
+    createdBy: 'Федоренко Н.В.',
+    createdByDept: 'Бухгалтерія',
+    attachments: [{ name: 'Акт_звірки_Q4.pdf', size: '520 KB' }],
+  },
+  {
+    id: 11,
+    type: 'Візування',
+    number: '№0206',
+    date: '17.02.2026',
+    urgent: false,
+    category: 'documents',
+    docType: 'Службова записка',
+    contractor: '—',
+    summary: 'Запит на оновлення корпоративної політики інформаційної безпеки.',
+    preparedBy: 'Романенко В.В.',
+    preparedByDept: 'Служба безпеки',
+    createdBy: 'Романенко В.В.',
+    createdByDept: 'Служба безпеки',
+    attachments: [{ name: 'Політика_ІБ_v2.pdf', size: '1.8 MB' }],
+  },
+  {
+    id: 12,
+    type: 'Розгляд',
+    number: '№0207',
+    date: '18.02.2026',
+    urgent: false,
+    category: 'access',
+    docType: 'Заявка',
+    contractor: 'Salesforce',
+    summary: 'Запит на доступ до CRM-системи для нових менеджерів з продажу.',
+    preparedBy: 'Тарасенко А.О.',
+    preparedByDept: 'Відділ продажів',
+    createdBy: 'Тарасенко А.О.',
+    createdByDept: 'Відділ продажів',
+    attachments: [],
+  },
+  {
+    id: 13,
+    type: 'Візування',
+    number: '№0208',
+    date: '07.02.2026',
+    urgent: true,
+    category: 'finance',
+    docType: 'Бюджет',
+    contractor: '—',
+    summary: 'Додатковий бюджет на маркетингову кампанію весна 2026.',
+    preparedBy: 'Захарченко К.І.',
+    preparedByDept: 'Відділ маркетингу',
+    createdBy: 'Захарченко К.І.',
+    createdByDept: 'Відділ маркетингу',
+    attachments: [{ name: 'Кошторис_маркетинг.xlsx', size: '340 KB' }],
+  },
+  {
+    id: 14,
+    type: 'Підписання',
+    number: '№0209',
+    date: '19.02.2026',
+    urgent: false,
+    category: 'documents',
+    docType: 'Договір',
+    contractor: 'ТОВ "Медіа-Груп"',
+    summary: 'Договір на розміщення корпоративної реклами в соціальних мережах.',
+    preparedBy: 'Яременко Л.С.',
+    preparedByDept: 'Відділ маркетингу',
+    createdBy: 'Яременко Л.С.',
+    createdByDept: 'Відділ маркетингу',
+    attachments: [{ name: 'Договір_МедіаГруп.pdf', size: '980 KB' }],
+  },
+  {
+    id: 15,
+    type: 'Візування',
+    number: '№0210',
+    date: '20.02.2026',
+    urgent: false,
+    category: 'processes',
+    docType: 'Регламент',
+    contractor: '—',
+    summary: 'Затвердження нового регламенту погодження закупівель понад 100 000 грн.',
+    preparedBy: 'Даниленко П.М.',
+    preparedByDept: 'Юридичний відділ',
+    createdBy: 'Даниленко П.М.',
+    createdByDept: 'Юридичний відділ',
+    attachments: [{ name: 'Регламент_закупівлі_v3.pdf', size: '1.5 MB' }],
+  },
 ];
 
 // ============================================
@@ -1500,6 +1719,11 @@ export const ApproveHub: React.FC = () => {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [encouragementMessage, setEncouragementMessage] = useState<string | null>(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const CARDS_PER_PAGE = 6;
+  const ROWS_PER_PAGE = 10;
+
   // Stats
   const [todayApproved, setTodayApproved] = useState(12);
   const progressPercent = Math.min(100, (todayApproved / 20) * 100);
@@ -1529,6 +1753,11 @@ export const ApproveHub: React.FC = () => {
       setTimeout(() => setEncouragementMessage(null), 3000);
     }
   }, [todayApproved]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter, searchQuery, sortBy, viewMode, activeView, archiveDateFilter]);
 
   const showToast = useCallback((title: string, body: string, intent: ToastIntent = 'success') => {
     dispatchToast(
@@ -1705,6 +1934,13 @@ export const ApproveHub: React.FC = () => {
   const actionableTasks = filteredTasks.filter(t => isActionable(t.type));
   const isAllSelected = actionableTasks.length > 0 && actionableTasks.every(t => selectedTasks.includes(t.id));
   const selectedCount = selectedTasks.length;
+
+  // Pagination
+  const itemsPerPage = viewMode === 'cards' ? CARDS_PER_PAGE : ROWS_PER_PAGE;
+  const totalPages = Math.max(1, Math.ceil(filteredTasks.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTasks = filteredTasks.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+  const showPagination = filteredTasks.length > itemsPerPage;
 
   // Team select all
   const isAllTeamSelected = filteredTeamRequests.length > 0 && 
@@ -2394,15 +2630,15 @@ export const ApproveHub: React.FC = () => {
                   <TableRow>
                     <TableSelectionCell style={{ width: '40px' }} />
                     <TableHeaderCell style={{ padding: "16px", width: '120px' }}>Тип</TableHeaderCell>
-                    <TableHeaderCell style={{ padding: "16px", width: '35%' }}>Документ</TableHeaderCell>
-                    <TableHeaderCell style={{ padding: "16px" }}>Контрагент</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px" }}>Документ</TableHeaderCell>
+                    <TableHeaderCell style={{ padding: "16px", width: '170px' }}>Контрагент</TableHeaderCell>
                     <TableHeaderCell style={{ padding: "16px", width: '150px' }}>Автор</TableHeaderCell>
                     <TableHeaderCell style={{ padding: "16px", width: '100px' }}>Строк</TableHeaderCell>
                     <TableHeaderCell style={{ width: '100px', padding: '16px' }} />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTasks.map(task => {
+                  {paginatedTasks.map(task => {
                     const canApprove = isActionable(task.type);
                     const isChecked = selectedTasks.includes(task.id);
                     const isRemoving = removingTaskIds.includes(task.id);
@@ -2416,12 +2652,15 @@ export const ApproveHub: React.FC = () => {
                         onMouseLeave={() => setHoveredTaskRow(null)}
                         style={{ pointerEvents: isRemoving ? 'none' : 'auto' }}
                       >
-                        <TableSelectionCell
-                          checked={isChecked}
-                          disabled={!canApprove}
-                          onChange={() => toggleTaskSelection(task.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        {canApprove ? (
+                          <TableSelectionCell
+                            checked={isChecked}
+                            onChange={() => toggleTaskSelection(task.id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <TableCell style={{ width: '40px', padding: '16px' }} />
+                        )}
                         <TableCell style={{ padding: "16px" }}>
                           <span className={`${styles.teamTypeBadge} ${canApprove ? styles.teamTypeBadgeVacation : ''}`}
                             style={canApprove ? {} : { backgroundColor: 'rgba(156, 163, 175, 0.1)', color: '#6B7280' }}>
@@ -2489,6 +2728,42 @@ export const ApproveHub: React.FC = () => {
                   })}
                 </TableBody>
               </Table>
+
+              {/* Pagination for compact view */}
+              {showPagination && (
+                <div className={styles.pagination}>
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    className={`${styles.pageBtn} ${safePage <= 1 ? styles.pageBtnDisabled : ''}`}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                  >
+                    ←
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <Button
+                      key={page}
+                      appearance="subtle"
+                      size="small"
+                      className={`${styles.pageBtn} ${page === safePage ? styles.pageBtnActive : ''}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    className={`${styles.pageBtn} ${safePage >= totalPages ? styles.pageBtnDisabled : ''}`}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                  >
+                    →
+                  </Button>
+                  <span className={styles.pageInfo}>{safePage} з {totalPages}</span>
+                </div>
+              )}
 
               {/* Team Requests Table in Compact View */}
               {(activeFilter === 'all' || activeFilter === 'hr') && filteredTeamRequests.length > 0 && (
@@ -2599,8 +2874,10 @@ export const ApproveHub: React.FC = () => {
               )}
             </>
             ) : (
-              // CARDS VIEW
-              filteredTasks.map(task => {
+              // CARDS VIEW — 2-column grid with pagination
+              <>
+              <div className={styles.cardsGrid}>
+              {paginatedTasks.map(task => {
                 const isSelected = currentTask?.id === task.id;
                 const canApprove = isActionable(task.type);
                 const isChecked = selectedTasks.includes(task.id);
@@ -2615,11 +2892,14 @@ export const ApproveHub: React.FC = () => {
                   >
                     <div className={styles.taskCardInner}>
                       <div className={styles.taskCheckbox} onClick={e => e.stopPropagation()}>
-                        <Checkbox
-                          checked={isChecked}
-                          disabled={!canApprove}
-                          onChange={() => toggleTaskSelection(task.id)}
-                        />
+                        {canApprove ? (
+                          <Checkbox
+                            checked={isChecked}
+                            onChange={() => toggleTaskSelection(task.id)}
+                          />
+                        ) : (
+                          <div style={{ width: '16px' }} />
+                        )}
                       </div>
                       <div className={styles.taskBody}>
                         <div className={styles.taskHeader}>
@@ -2661,7 +2941,45 @@ export const ApproveHub: React.FC = () => {
                     </div>
                   </article>
                 );
-              })
+              })}
+              </div>
+
+              {/* Pagination for cards view */}
+              {showPagination && (
+                <div className={styles.pagination}>
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    className={`${styles.pageBtn} ${safePage <= 1 ? styles.pageBtnDisabled : ''}`}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={safePage <= 1}
+                  >
+                    ←
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <Button
+                      key={page}
+                      appearance="subtle"
+                      size="small"
+                      className={`${styles.pageBtn} ${page === safePage ? styles.pageBtnActive : ''}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button
+                    appearance="subtle"
+                    size="small"
+                    className={`${styles.pageBtn} ${safePage >= totalPages ? styles.pageBtnDisabled : ''}`}
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={safePage >= totalPages}
+                  >
+                    →
+                  </Button>
+                  <span className={styles.pageInfo}>{safePage} з {totalPages}</span>
+                </div>
+              )}
+            </>
             )}
 
             {/* Team Requests Section - show for 'all' filter */}
