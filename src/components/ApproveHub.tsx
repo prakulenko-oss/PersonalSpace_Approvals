@@ -25,13 +25,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Badge,
   CounterBadge,
   ProgressBar,
   Spinner,
   ToggleButton,
-  TabList,
-  Tab,
   Table,
   TableHeader,
   TableHeaderCell,
@@ -39,11 +36,8 @@ import {
   TableRow,
   TableCell,
   TableCellLayout,
-  TableSelectionCell,
-  Card,
-  CardHeader,
 } from '@fluentui/react-components';
-import type { ToastIntent, SelectTabData, SelectTabEvent } from '@fluentui/react-components';
+import type { ToastIntent } from '@fluentui/react-components';
 import {
   Search,
   ExternalLink,
@@ -166,7 +160,11 @@ const useStyles = makeStyles({
   sidebar: {
     width: '240px',
     backgroundColor: 'white',
-    ...shorthands.borderRight('1px', 'solid', tokens.colorNeutralStroke2),
+    borderRightWidth: '1px',
+
+    borderRightStyle: 'solid' as const,
+
+    borderRightColor: tokens.colorNeutralStroke2,
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -268,7 +266,11 @@ const useStyles = makeStyles({
     padding: spacing.lg,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.03) 0%, rgba(37, 99, 235, 0.05) 100%)',
     borderRadius: '12px',
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: tokens.colorNeutralStroke2,
   },
   progressHeader: {
     display: 'flex',
@@ -413,7 +415,11 @@ const useStyles = makeStyles({
     gap: spacing.xs,
     padding: `${spacing.sm} ${spacing.lg}`,
     borderRadius: '20px',
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: tokens.colorNeutralStroke2,
     backgroundColor: 'white',
     cursor: 'pointer',
     fontSize: '13px',
@@ -422,18 +428,36 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      ...shorthands.borderColor('#229FFF'),
+      borderTopColor: '#229FFF',
+
+      borderRightColor: '#229FFF',
+
+      borderBottomColor: '#229FFF',
+
+      borderLeftColor: '#229FFF',
       color: colors.brand,
     },
   },
   filterChipActive: {
     backgroundColor: colors.brand,
-    ...shorthands.borderColor('#229FFF'),
+    borderTopColor: '#229FFF',
+
+    borderRightColor: '#229FFF',
+
+    borderBottomColor: '#229FFF',
+
+    borderLeftColor: '#229FFF',
     color: 'white',
     boxShadow: `0 2px 4px ${colors.brandBg}`,
     ':hover': {
       backgroundColor: '#1E8FE5',
-      ...shorthands.borderColor('#1E8FE5'),
+      borderTopColor: '#1E8FE5',
+
+      borderRightColor: '#1E8FE5',
+
+      borderBottomColor: '#1E8FE5',
+
+      borderLeftColor: '#1E8FE5',
       color: 'white',
     },
   },
@@ -491,7 +515,11 @@ const useStyles = makeStyles({
     marginBottom: spacing.md,
     backgroundColor: 'white',
     borderRadius: '12px',
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: tokens.colorNeutralStroke2,
     overflow: 'hidden',
     cursor: 'pointer',
     transition: `all ${motion.normal} ${motion.easeOut}`,
@@ -504,8 +532,20 @@ const useStyles = makeStyles({
     },
   },
   taskCardSelected: {
-    ...shorthands.borderWidth('2px'),
-    ...shorthands.borderColor('#229FFF'),
+    borderTopWidth: '2px',
+
+    borderRightWidth: '2px',
+
+    borderBottomWidth: '2px',
+
+    borderLeftWidth: '2px',
+    borderTopColor: '#229FFF',
+
+    borderRightColor: '#229FFF',
+
+    borderBottomColor: '#229FFF',
+
+    borderLeftColor: '#229FFF',
     boxShadow: elevation.shadow8,
   },
   taskCardRemoving: {
@@ -546,7 +586,9 @@ const useStyles = makeStyles({
     letterSpacing: '0.5px',
     color: colors.brand,
     background: 'linear-gradient(135deg, rgba(34, 159, 255, 0.1) 0%, rgba(34, 159, 255, 0.05) 100%)',
-    ...shorthands.border('1px', 'solid', 'rgba(34, 159, 255, 0.2)'),
+    borderWidth: '1px',
+    borderStyle: 'solid' as const,
+    borderColor: 'rgba(34, 159, 255, 0.2)',
     padding: `4px ${spacing.md}`,
     borderRadius: '8px',
     display: 'flex',
@@ -742,14 +784,22 @@ const useStyles = makeStyles({
   detailPanel: {
     width: '45%',
     backgroundColor: 'white',
-    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke2),
+    borderLeftWidth: '1px',
+
+    borderLeftStyle: 'solid' as const,
+
+    borderLeftColor: tokens.colorNeutralStroke2,
     display: 'flex',
     flexDirection: 'column',
     boxShadow: elevation.shadow8,
   },
   detailHeader: {
     padding: `${spacing.md} ${spacing.xl}`,
-    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
+    borderBottomWidth: '1px',
+
+    borderBottomStyle: 'solid' as const,
+
+    borderBottomColor: tokens.colorNeutralStroke2,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -778,7 +828,11 @@ const useStyles = makeStyles({
     gap: `${spacing.lg} ${spacing.xxl}`,
     marginBottom: spacing.xl,
     paddingBottom: spacing.xl,
-    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
+    borderBottomWidth: '1px',
+
+    borderBottomStyle: 'solid' as const,
+
+    borderBottomColor: tokens.colorNeutralStroke2,
   },
   detailField: {},
   detailFieldFull: {
@@ -828,14 +882,22 @@ const useStyles = makeStyles({
   },
   detailFooter: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+    borderTopWidth: '1px',
+
+    borderTopStyle: 'solid' as const,
+
+    borderTopColor: tokens.colorNeutralStroke2,
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: spacing.md,
   },
   detailFooterViewOnly: {
     padding: `${spacing.lg} ${spacing.xxl}`,
-    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+    borderTopWidth: '1px',
+
+    borderTopStyle: 'solid' as const,
+
+    borderTopColor: tokens.colorNeutralStroke2,
     display: 'flex',
     justifyContent: 'center',
   },
@@ -845,7 +907,11 @@ const useStyles = makeStyles({
   // ============================================
   attachmentsBlock: {
     marginBottom: spacing.lg,
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: tokens.colorNeutralStroke2,
     borderRadius: spacing.sm,
     overflow: 'hidden',
   },
@@ -855,7 +921,11 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     padding: `${spacing.md} ${spacing.lg}`,
     backgroundColor: tokens.colorNeutralBackground3,
-    ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
+    borderBottomWidth: '1px',
+
+    borderBottomStyle: 'solid' as const,
+
+    borderBottomColor: tokens.colorNeutralStroke2,
   },
   attachmentsList: {
     padding: `${spacing.sm} 0`,
@@ -1065,7 +1135,7 @@ const useStyles = makeStyles({
   btnApprove: {
     backgroundColor: colors.approve,
     color: 'white',
-    ...shorthands.border('none'),
+    borderStyle: 'none' as const,
     ...shorthands.borderRadius('8px'),
     ':hover': {
       backgroundColor: colors.approveHover,
@@ -1078,7 +1148,11 @@ const useStyles = makeStyles({
   btnApproveGhost: {
     backgroundColor: colors.approveBg,
     color: colors.approve,
-    ...shorthands.border('1px', 'solid', colors.approve),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: colors.approve,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
     ':hover': {
@@ -1089,7 +1163,7 @@ const useStyles = makeStyles({
   btnReject: {
     backgroundColor: colors.reject,
     color: 'white',
-    ...shorthands.border('none'),
+    borderStyle: 'none' as const,
     ...shorthands.borderRadius('8px'),
     ':hover': {
       backgroundColor: colors.rejectHover,
@@ -1099,13 +1173,17 @@ const useStyles = makeStyles({
   btnRejectDisabled: {
     backgroundColor: '#E5E7EB',
     color: '#9CA3AF',
-    ...shorthands.border('none'),
+    borderStyle: 'none' as const,
     ...shorthands.borderRadius('8px'),
   },
   btnRejectGhost: {
     backgroundColor: colors.rejectBgSubtle,
     color: colors.reject,
-    ...shorthands.border('1px', 'solid', colors.reject),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: colors.reject,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
     ':hover': {
@@ -1122,7 +1200,13 @@ const useStyles = makeStyles({
   },
   btnBrandOutline: {
     ...shorthands.borderRadius('8px'),
-    ...shorthands.borderColor(colors.brand),
+    borderTopColor: colors.brand,
+
+    borderRightColor: colors.brand,
+
+    borderBottomColor: colors.brand,
+
+    borderLeftColor: colors.brand,
     color: colors.brand,
     ':hover': {
       backgroundColor: colors.brandBgSubtle,
@@ -1130,15 +1214,19 @@ const useStyles = makeStyles({
   },
   btnCompactAction: {
     minWidth: 'auto',
-    ...shorthands.padding('4px', '8px'),
+    paddingTop: '4px', paddingBottom: '4px', paddingLeft: '8px', paddingRight: '8px',
   },
   btnOpenSystem: {
     backgroundColor: colors.openSystemBg,
     color: colors.openSystem,
-    ...shorthands.border('1px', 'solid', colors.openSystem),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: colors.openSystem,
     ...shorthands.borderRadius('8px'),
     fontWeight: 600,
-    ...shorthands.padding('10px', '24px'),
+    paddingTop: '10px', paddingBottom: '10px', paddingLeft: '24px', paddingRight: '24px',
     ':hover': {
       backgroundColor: colors.openSystem,
       color: 'white',
@@ -1154,13 +1242,21 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     gap: spacing.sm,
     padding: `${spacing.lg} ${spacing.xxl}`,
-    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+    borderTopWidth: '1px',
+
+    borderTopStyle: 'solid' as const,
+
+    borderTopColor: tokens.colorNeutralStroke2,
   },
   pageBtn: {
     minWidth: '36px',
     height: '36px',
     ...shorthands.borderRadius('8px'),
-    ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
+    borderWidth: '1px',
+
+    borderStyle: 'solid' as const,
+
+    borderColor: tokens.colorNeutralStroke2,
     backgroundColor: 'white',
     cursor: 'pointer',
     display: 'flex',
@@ -1177,7 +1273,13 @@ const useStyles = makeStyles({
   pageBtnActive: {
     backgroundColor: colors.brand,
     color: 'white',
-    ...shorthands.borderColor(colors.brand),
+    borderTopColor: colors.brand,
+
+    borderRightColor: colors.brand,
+
+    borderBottomColor: colors.brand,
+
+    borderLeftColor: colors.brand,
     ':hover': {
       backgroundColor: colors.brandHover,
     },
@@ -1192,7 +1294,7 @@ const useStyles = makeStyles({
   pageInfo: {
     fontSize: '13px',
     color: tokens.colorNeutralForeground3,
-    ...shorthands.padding('0', spacing.md),
+    paddingTop: '0', paddingBottom: '0', paddingLeft: 'spacing.md', paddingRight: 'spacing.md',
   },
 
   // ============================================
@@ -2210,7 +2312,11 @@ export const ApproveHub: React.FC = () => {
               <div style={{ 
                 marginLeft: spacing.xl, 
                 paddingLeft: spacing.xl, 
-                ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke2),
+                borderLeftWidth: '1px',
+ 
+                borderLeftStyle: 'solid' as const,
+ 
+                borderLeftColor: tokens.colorNeutralStroke2,
               }}>
                 <Checkbox
                   label="🎬 Демо: Inbox Zero"
@@ -2338,7 +2444,7 @@ export const ApproveHub: React.FC = () => {
                     <Table className={styles.teamTable}>
                       <TableHeader>
                         <TableRow>
-                          <TableSelectionCell style={{ width: '40px' }} />
+                          <TableHeaderCell style={{ width: '40px', padding: '16px' }} />
                           <TableHeaderCell style={{ padding: "16px" }}>Тип</TableHeaderCell>
                           <TableHeaderCell style={{ padding: "16px" }}>Співробітник</TableHeaderCell>
                           <TableHeaderCell style={{ padding: "16px" }}>Період</TableHeaderCell>
@@ -2355,17 +2461,19 @@ export const ApproveHub: React.FC = () => {
                             onMouseEnter={() => setHoveredTeamRow(request.id)}
                             onMouseLeave={() => setHoveredTeamRow(null)}
                           >
-                            <TableSelectionCell
-                              checked={selectedTeamRequests.includes(request.id)}
-                              onChange={(_e, data) => {
-                                if (data.checked) {
-                                  setSelectedTeamRequests(prev => [...prev, request.id]);
-                                } else {
-                                  setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
-                                }
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
+                            <TableCell style={{ width: '40px', padding: '16px' }}>
+                              <Checkbox
+                                checked={selectedTeamRequests.includes(request.id)}
+                                onChange={(_e: React.ChangeEvent<HTMLInputElement>, data: { checked: boolean | 'mixed' }) => {
+                                  if (data.checked) {
+                                    setSelectedTeamRequests((prev: number[]) => [...prev, request.id]);
+                                  } else {
+                                    setSelectedTeamRequests((prev: number[]) => prev.filter((id: number) => id !== request.id));
+                                  }
+                                }}
+                                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                              />
+                            </TableCell>
                             <TableCell style={{ padding: "16px" }}>
                               <span className={`${styles.teamTypeBadge} ${
                                 request.type === 'vacation' ? styles.teamTypeBadgeVacation :
@@ -2628,7 +2736,7 @@ export const ApproveHub: React.FC = () => {
               <Table className={styles.teamTable}>
                 <TableHeader>
                   <TableRow>
-                    <TableSelectionCell style={{ width: '40px' }} />
+                    <TableHeaderCell style={{ width: '40px', padding: '16px' }} />
                     <TableHeaderCell style={{ padding: "16px", width: '120px' }}>Тип</TableHeaderCell>
                     <TableHeaderCell style={{ padding: "16px" }}>Документ</TableHeaderCell>
                     <TableHeaderCell style={{ padding: "16px", width: '170px' }}>Контрагент</TableHeaderCell>
@@ -2653,11 +2761,13 @@ export const ApproveHub: React.FC = () => {
                         style={{ pointerEvents: isRemoving ? 'none' : 'auto' }}
                       >
                         {canApprove ? (
-                          <TableSelectionCell
-                            checked={isChecked}
-                            onChange={() => toggleTaskSelection(task.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                          <TableCell style={{ width: '40px', padding: '16px' }}>
+                            <Checkbox
+                              checked={isChecked}
+                              onChange={() => toggleTaskSelection(task.id)}
+                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            />
+                          </TableCell>
                         ) : (
                           <TableCell style={{ width: '40px', padding: '16px' }} />
                         )}
@@ -2775,7 +2885,11 @@ export const ApproveHub: React.FC = () => {
                       gap: spacing.sm, 
                       marginBottom: spacing.md,
                       paddingBottom: spacing.md,
-                      ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
+                      borderBottomWidth: '1px',
+
+                      borderBottomStyle: 'solid' as const,
+
+                      borderBottomColor: tokens.colorNeutralStroke2,
                     }}>
                       <Users size={18} style={{ color: '#229FFF' }} />
                       <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
@@ -2796,7 +2910,7 @@ export const ApproveHub: React.FC = () => {
                   <Table className={styles.teamTable}>
                     <TableHeader>
                       <TableRow>
-                        <TableSelectionCell style={{ width: '40px' }} />
+                        <TableHeaderCell style={{ width: '40px', padding: '16px' }} />
                         <TableHeaderCell style={{ padding: "16px" }}>Тип</TableHeaderCell>
                         <TableHeaderCell style={{ padding: "16px" }}>Співробітник</TableHeaderCell>
                         <TableHeaderCell style={{ padding: "16px" }}>Період</TableHeaderCell>
@@ -2812,17 +2926,19 @@ export const ApproveHub: React.FC = () => {
                           onClick={() => setCurrentTeamRequest(request)}
                           
                         >
-                          <TableSelectionCell
-                            checked={selectedTeamRequests.includes(request.id)}
-                            onChange={(_e, data) => {
-                              if (data.checked) {
-                                setSelectedTeamRequests(prev => [...prev, request.id]);
-                              } else {
-                                setSelectedTeamRequests(prev => prev.filter(id => id !== request.id));
-                              }
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                          <TableCell style={{ width: '40px', padding: '16px' }}>
+                            <Checkbox
+                              checked={selectedTeamRequests.includes(request.id)}
+                              onChange={(_e: React.ChangeEvent<HTMLInputElement>, data: { checked: boolean | 'mixed' }) => {
+                                if (data.checked) {
+                                  setSelectedTeamRequests((prev: number[]) => [...prev, request.id]);
+                                } else {
+                                  setSelectedTeamRequests((prev: number[]) => prev.filter((id: number) => id !== request.id));
+                                }
+                              }}
+                              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            />
+                          </TableCell>
                           <TableCell style={{ padding: "16px" }}>
                             <span className={`${styles.teamTypeBadge} ${
                               request.type === 'vacation' ? styles.teamTypeBadgeVacation :
@@ -2991,7 +3107,11 @@ export const ApproveHub: React.FC = () => {
                   gap: spacing.sm, 
                   marginBottom: spacing.md,
                   paddingBottom: spacing.md,
-                  ...shorthands.borderBottom('1px', 'solid', tokens.colorNeutralStroke2),
+                  borderBottomWidth: '1px',
+
+                  borderBottomStyle: 'solid' as const,
+
+                  borderBottomColor: tokens.colorNeutralStroke2,
                 }}>
                   <Users size={18} style={{ color: '#229FFF' }} />
                   <Text weight="semibold" style={{ color: tokens.colorNeutralForeground1 }}>
