@@ -416,18 +416,18 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap' as const,
     transition: `all ${motion.fast} ${motion.easeOut}`,
     ':hover': {
-      borderColor: '#229FFF',
+      border: `1px solid ${colors.brand}`,
       color: colors.brand,
     },
   },
   filterChipActive: {
     backgroundColor: colors.brand,
-    borderColor: '#229FFF',
+    border: `1px solid ${colors.brand}`,
     color: 'white',
     boxShadow: `0 2px 4px ${colors.brandBg}`,
     ':hover': {
       backgroundColor: '#1E8FE5',
-      borderColor: '#1E8FE5',
+      border: '1px solid #1E8FE5',
       color: 'white',
     },
   },
@@ -1115,7 +1115,7 @@ const useStyles = makeStyles({
   },
   btnBrandOutline: {
     ...shorthands.borderRadius('8px'),
-    borderColor: colors.brand,
+    border: `1px solid ${colors.brand}`,
     color: colors.brand,
     ':hover': {
       backgroundColor: colors.brandBgSubtle,
@@ -1170,7 +1170,7 @@ const useStyles = makeStyles({
   pageBtnActive: {
     backgroundColor: colors.brand,
     color: 'white',
-    borderColor: colors.brand,
+    border: `1px solid ${colors.brand}`,
     ':hover': {
       backgroundColor: colors.brandHover,
     },
