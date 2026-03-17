@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   makeStyles,
   shorthands,
+  mergeClasses,
   tokens,
   Button,
   Checkbox,
@@ -2000,7 +2001,7 @@ export const ApproveHub: React.FC = () => {
         <nav className={styles.sidebarNav}>
           <Button 
             appearance="subtle"
-            className={`${styles.navItem} ${activeView === 'inbox' ? styles.navItemActive : ''}`}
+            className={mergeClasses(styles.navItem, activeView === 'inbox' ? styles.navItemActive : undefined)}
             onClick={() => {
               setActiveView('inbox');
               setCurrentArchivedTask(null);
@@ -2022,7 +2023,7 @@ export const ApproveHub: React.FC = () => {
 
           <Button 
             appearance="subtle"
-            className={`${styles.navItem} ${activeView === 'archive' ? styles.navItemActive : ''}`}
+            className={mergeClasses(styles.navItem, activeView === 'archive' ? styles.navItemActive : undefined)}
             onClick={() => {
               setActiveView('archive');
               setCurrentTask(null);
@@ -2038,7 +2039,7 @@ export const ApproveHub: React.FC = () => {
           <Button 
             appearance="subtle" 
             disabled
-            className={`${styles.navItem} ${styles.navItemDisabled}`}
+            className={mergeClasses(styles.navItem, styles.navItemDisabled)}
             icon={<Key size={20} />}
           >
             <span className="nm">Доступи</span>
@@ -2048,7 +2049,7 @@ export const ApproveHub: React.FC = () => {
           <Button 
             appearance="subtle" 
             disabled
-            className={`${styles.navItem} ${styles.navItemDisabled}`}
+            className={mergeClasses(styles.navItem, styles.navItemDisabled)}
             icon={<FileEdit size={20} />}
           >
             <span className="nm">Заявки</span>
@@ -2116,7 +2117,7 @@ export const ApproveHub: React.FC = () => {
                     onClick={() => setArchiveDateFilter(dateFilter.id)}
                     appearance="subtle"
                     size="small"
-                    className={`${styles.filterChip} ${archiveDateFilter === dateFilter.id ? styles.filterChipActive : ''}`}
+                    className={mergeClasses(styles.filterChip, archiveDateFilter === dateFilter.id ? styles.filterChipActive : undefined)}
                     style={{ marginRight: spacing.sm }}
                   >
                     {dateFilter.label}
@@ -2135,7 +2136,7 @@ export const ApproveHub: React.FC = () => {
                   appearance="subtle"
                   size="small"
                   icon={<IconComponent size={14} />}
-                  className={`${styles.filterChip} ${activeFilter === cat.id ? styles.filterChipActive : ''}`}
+                  className={mergeClasses(styles.filterChip, activeFilter === cat.id ? styles.filterChipActive : undefined)}
                 >
                   {cat.label}
                 </ToggleButton>
@@ -2312,7 +2313,7 @@ export const ApproveHub: React.FC = () => {
           {activeView === 'inbox' ? (
             // INBOX VIEW
             <>
-              <div className={`${styles.taskList} ${currentTask || currentTeamRequest ? styles.taskListSplit : ''}`} style={activeFilter === 'hr' ? { padding: 0 } : {}}>
+              <div className={mergeClasses(styles.taskList, currentTask || currentTeamRequest ? styles.taskListSplit : undefined)} style={activeFilter === 'hr' ? { padding: 0 } : {}}>
                 {/* Filter: Люди (hr) - show only team requests */}
                 {activeFilter === 'hr' ? (
                   filteredTeamRequests.length === 0 ? (
@@ -2343,7 +2344,7 @@ export const ApproveHub: React.FC = () => {
                         {filteredTeamRequests.map(request => (
                           <TableRow
                             key={request.id}
-                            className={`${styles.teamTableRow} ${currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : ''}`}
+                            className={mergeClasses(styles.teamTableRow, currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : undefined)}
                             onClick={() => setCurrentTeamRequest(request)}
                             onMouseEnter={() => setHoveredTeamRow(request.id)}
                             onMouseLeave={() => setHoveredTeamRow(null)}
@@ -2385,20 +2386,20 @@ export const ApproveHub: React.FC = () => {
                               <Text size={200}>{request.duration} {request.duration === 1 ? 'день' : request.duration < 5 ? 'дні' : 'днів'}</Text>
                             </TableCell>
                             <TableCell style={{ padding: "16px" }}>
-                              <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
+                              <div className={mergeClasses(styles.teamActions, hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : undefined)}>
                                 <Button
                                   appearance="primary"
                                   icon={<Check size={16} />}
                                   size="small"
                                   onClick={(e) => handleApproveTeamRequest(e, request)}
-                                  className={`${styles.btnApprove} ${styles.btnCompactAction}`}
+                                  className={mergeClasses(styles.btnApprove, styles.btnCompactAction)}
                                 />
                                 <Button
                                   appearance="outline"
                                   icon={<X size={16} />}
                                   size="small"
                                   onClick={(e) => handleRejectTeamRequest(e, request)}
-                                  className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
+                                  className={mergeClasses(styles.btnRejectGhost, styles.btnCompactAction)}
                                 />
                               </div>
                             </TableCell>
@@ -2411,7 +2412,7 @@ export const ApproveHub: React.FC = () => {
                     filteredTeamRequests.map(request => (
                       <article
                         key={request.id}
-                        className={`${styles.taskCard} ${currentTeamRequest?.id === request.id ? styles.taskCardSelected : ''}`}
+                        className={mergeClasses(styles.taskCard, currentTeamRequest?.id === request.id ? styles.taskCardSelected : undefined)}
                         onClick={() => setCurrentTeamRequest(request)}
                       >
                         <div className={styles.taskCardInner}>
@@ -2641,7 +2642,7 @@ export const ApproveHub: React.FC = () => {
                     return (
                       <TableRow
                         key={task.id}
-                        className={`${styles.teamTableRow} ${currentTask?.id === task.id ? styles.teamTableRowSelected : ''} ${isRemoving ? styles.taskCardRemoving : ''}`}
+                        className={mergeClasses(styles.teamTableRow, currentTask?.id === task.id ? styles.teamTableRowSelected : undefined, isRemoving ? styles.taskCardRemoving : undefined)}
                         onClick={() => !isRemoving && handleTaskClick(task)}
                         onMouseEnter={() => setHoveredTaskRow(task.id)}
                         onMouseLeave={() => setHoveredTaskRow(null)}
@@ -2659,7 +2660,7 @@ export const ApproveHub: React.FC = () => {
                           <TableCell style={{ width: '40px', padding: '16px' }} />
                         )}
                         <TableCell style={{ padding: "16px" }}>
-                          <span className={`${styles.teamTypeBadge} ${canApprove ? styles.teamTypeBadgeVacation : ''}`}
+                          <span className={mergeClasses(styles.teamTypeBadge, canApprove ? styles.teamTypeBadgeVacation : undefined)}
                             style={canApprove ? {} : { backgroundColor: 'rgba(156, 163, 175, 0.1)', color: '#6B7280' }}>
                             {canApprove ? <Check size={12} /> : <Eye size={12} />}
                             {task.type}
@@ -2691,7 +2692,7 @@ export const ApproveHub: React.FC = () => {
                           </Text>
                         </TableCell>
                         <TableCell style={{ padding: "16px" }}>
-                          <div className={`${styles.teamActions} ${hoveredTaskRow === task.id || currentTask?.id === task.id ? styles.teamActionsVisible : ''}`}>
+                          <div className={mergeClasses(styles.teamActions, hoveredTaskRow === task.id || currentTask?.id === task.id ? styles.teamActionsVisible : undefined)}>
                             {canApprove ? (
                               <>
                                 <Button
@@ -2699,14 +2700,14 @@ export const ApproveHub: React.FC = () => {
                                   icon={<Check size={16} />}
                                   size="small"
                                   onClick={(e) => handleApproveTask(e, task)}
-                                  className={`${styles.btnApprove} ${styles.btnCompactAction}`}
+                                  className={mergeClasses(styles.btnApprove, styles.btnCompactAction)}
                                 />
                                 <Button
                                   appearance="outline"
                                   icon={<X size={16} />}
                                   size="small"
                                   onClick={(e) => { e.stopPropagation(); setCurrentTask(task); handleOpenRejectModal(); }}
-                                  className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
+                                  className={mergeClasses(styles.btnRejectGhost, styles.btnCompactAction)}
                                 />
                               </>
                             ) : (
@@ -2732,7 +2733,7 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     appearance="subtle"
                     size="small"
-                    className={`${styles.pageBtn} ${safePage <= 1 ? styles.pageBtnDisabled : ''}`}
+                    className={mergeClasses(styles.pageBtn, safePage <= 1 ? styles.pageBtnDisabled : undefined)}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={safePage <= 1}
                   >
@@ -2743,7 +2744,7 @@ export const ApproveHub: React.FC = () => {
                       key={page}
                       appearance="subtle"
                       size="small"
-                      className={`${styles.pageBtn} ${page === safePage ? styles.pageBtnActive : ''}`}
+                      className={mergeClasses(styles.pageBtn, page === safePage ? styles.pageBtnActive : undefined)}
                       onClick={() => setCurrentPage(page)}
                     >
                       {page}
@@ -2752,7 +2753,7 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     appearance="subtle"
                     size="small"
-                    className={`${styles.pageBtn} ${safePage >= totalPages ? styles.pageBtnDisabled : ''}`}
+                    className={mergeClasses(styles.pageBtn, safePage >= totalPages ? styles.pageBtnDisabled : undefined)}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={safePage >= totalPages}
                   >
@@ -2805,7 +2806,7 @@ export const ApproveHub: React.FC = () => {
                       {filteredTeamRequests.map(request => (
                         <TableRow
                           key={`team-${request.id}`}
-                          className={`${styles.teamTableRow} ${currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : ''}`}
+                          className={mergeClasses(styles.teamTableRow, currentTeamRequest?.id === request.id ? styles.teamTableRowSelected : undefined)}
                           onClick={() => setCurrentTeamRequest(request)}
                           
                         >
@@ -2848,20 +2849,20 @@ export const ApproveHub: React.FC = () => {
                             </Text>
                           </TableCell>
                           <TableCell style={{ padding: "16px" }}>
-                            <div className={`${styles.teamActions} ${hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : ''}`}>
+                            <div className={mergeClasses(styles.teamActions, hoveredTeamRow === request.id || currentTeamRequest?.id === request.id ? styles.teamActionsVisible : undefined)}>
                               <Button
                                 appearance="primary"
                                 icon={<Check size={16} />}
                                 size="small"
                                 onClick={(e) => handleApproveTeamRequest(e, request)}
-                                className={`${styles.btnApprove} ${styles.btnCompactAction}`}
+                                className={mergeClasses(styles.btnApprove, styles.btnCompactAction)}
                               />
                               <Button
                                 appearance="outline"
                                 icon={<X size={16} />}
                                 size="small"
                                 onClick={(e) => handleRejectTeamRequest(e, request)}
-                                className={`${styles.btnRejectGhost} ${styles.btnCompactAction}`}
+                                className={mergeClasses(styles.btnRejectGhost, styles.btnCompactAction)}
                               />
                             </div>
                           </TableCell>
@@ -2885,7 +2886,7 @@ export const ApproveHub: React.FC = () => {
                 return (
                   <article
                     key={task.id}
-                    className={`${styles.taskCard} ${isSelected ? styles.taskCardSelected : ''} ${isRemoving ? styles.taskCardRemoving : ''}`}
+                    className={mergeClasses(styles.taskCard, isSelected ? styles.taskCardSelected : undefined, isRemoving ? styles.taskCardRemoving : undefined)}
                     onClick={() => !isRemoving && handleTaskClick(task)}
                     style={{ pointerEvents: isRemoving ? 'none' : 'auto' }}
                   >
@@ -2908,7 +2909,7 @@ export const ApproveHub: React.FC = () => {
                               {task.type}
                             </span>
                           </div>
-                          <span className={`${styles.taskDate} ${task.urgent ? styles.taskDateUrgent : ''}`}>
+                          <span className={mergeClasses(styles.taskDate, task.urgent ? styles.taskDateUrgent : undefined)}>
                             {task.urgent && <Flame size={14} />}
                             Строк: {task.date}
                           </span>
@@ -2949,7 +2950,7 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     appearance="subtle"
                     size="small"
-                    className={`${styles.pageBtn} ${safePage <= 1 ? styles.pageBtnDisabled : ''}`}
+                    className={mergeClasses(styles.pageBtn, safePage <= 1 ? styles.pageBtnDisabled : undefined)}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={safePage <= 1}
                   >
@@ -2960,7 +2961,7 @@ export const ApproveHub: React.FC = () => {
                       key={page}
                       appearance="subtle"
                       size="small"
-                      className={`${styles.pageBtn} ${page === safePage ? styles.pageBtnActive : ''}`}
+                      className={mergeClasses(styles.pageBtn, page === safePage ? styles.pageBtnActive : undefined)}
                       onClick={() => setCurrentPage(page)}
                     >
                       {page}
@@ -2969,7 +2970,7 @@ export const ApproveHub: React.FC = () => {
                   <Button
                     appearance="subtle"
                     size="small"
-                    className={`${styles.pageBtn} ${safePage >= totalPages ? styles.pageBtnDisabled : ''}`}
+                    className={mergeClasses(styles.pageBtn, safePage >= totalPages ? styles.pageBtnDisabled : undefined)}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={safePage >= totalPages}
                   >
@@ -3011,7 +3012,7 @@ export const ApproveHub: React.FC = () => {
                 {filteredTeamRequests.map(request => (
                   <article
                     key={request.id}
-                    className={`${styles.taskCard} ${currentTeamRequest?.id === request.id ? styles.taskCardSelected : ''}`}
+                    className={mergeClasses(styles.taskCard, currentTeamRequest?.id === request.id ? styles.taskCardSelected : undefined)}
                     onClick={() => setCurrentTeamRequest(request)}
                   >
                     <div className={styles.taskCardInner}>
@@ -3337,7 +3338,7 @@ export const ApproveHub: React.FC = () => {
           ) : (
             // ARCHIVE VIEW
             <>
-              <div className={`${styles.taskList} ${currentArchivedTask ? styles.taskListSplit : ''}`}>
+              <div className={mergeClasses(styles.taskList, currentArchivedTask ? styles.taskListSplit : undefined)}>
                 {filteredArchivedTasks.length === 0 ? (
                   <div className={styles.emptyState}>
                     <Archive size={64} style={{ color: tokens.colorNeutralForeground3, marginBottom: spacing.lg }} />
@@ -3352,7 +3353,7 @@ export const ApproveHub: React.FC = () => {
                   filteredArchivedTasks.map(task => (
                     <article
                       key={task.id}
-                      className={`${styles.taskCard} ${currentArchivedTask?.id === task.id ? styles.taskCardSelected : ''}`}
+                      className={mergeClasses(styles.taskCard, currentArchivedTask?.id === task.id ? styles.taskCardSelected : undefined)}
                       onClick={() => setCurrentArchivedTask(task)}
                     >
                       <div className={styles.taskCardInner}>
@@ -3700,7 +3701,7 @@ export const ApproveHub: React.FC = () => {
                 {[0, 1, 2].map(step => (
                   <div
                     key={step}
-                    className={`${styles.onboardingDot} ${onboardingStep === step ? styles.onboardingDotActive : ''}`}
+                    className={mergeClasses(styles.onboardingDot, onboardingStep === step ? styles.onboardingDotActive : undefined)}
                   />
                 ))}
               </div>
