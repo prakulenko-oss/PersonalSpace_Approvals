@@ -6,6 +6,7 @@ import {
   ExternalLink, X, FileText, Download, Share2,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
+import poaIcon from '../assets/poa-icon.webp';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
@@ -111,11 +112,11 @@ const kepRows: DocRow[] = [
 ];
 
 const kpiCards = [
-  { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5' },
+  { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', image: poaIcon },
   { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3' },
   { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7' },
   { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#5b2d86', iconBg: '#fce7f3' },
-];
+] as { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string }[];
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -130,9 +131,9 @@ const kepFilterOptions = [
   { value: 'expired',  label: 'Прострочені' },
 ];
 
-const instructionBlocks = [
+const instructionBlocks: { title: string; emoji: string; image?: string; bg: string; border: string; items: string[] }[] = [
   {
-    title: 'Довіреності', emoji: '📜', bg: '#eaf3fd', border: '#cfe2f8',
+    title: 'Довіреності', emoji: '📜', image: poaIcon, bg: '#eaf3fd', border: '#cfe2f8',
     items: ['Моніторити терміни дії довіреностей', 'Завчасно оновлювати документи (>30 днів)', 'Зберігати копії у захищеному сховищі'],
   },
   {
@@ -186,9 +187,13 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                   <div style={{ fontSize: '26px', fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{kpi.value}</div>
                   <div style={{ fontSize: '13px', color: '#374151', marginTop: '7px' }}>{kpi.title}</div>
                 </div>
-                <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                  {kpi.emoji}
-                </div>
+                {kpi.image ? (
+                  <img src={kpi.image} alt={kpi.title} style={{ width: 42, height: 42, borderRadius: '9px', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                    {kpi.emoji}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -393,7 +398,9 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
               {instructionBlocks.map(b => (
                 <div key={b.title} style={{ backgroundColor: b.bg, border: `1px solid ${b.border}`, borderRadius: '10px', padding: '13px 15px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '14px', color: '#1f2937', marginBottom: '9px' }}>
-                    <span style={{ fontSize: '15px' }}>{b.emoji}</span>
+                    {b.image
+                      ? <img src={b.image} alt={b.title} style={{ width: 22, height: 22, borderRadius: '5px', objectFit: 'cover' }} />
+                      : <span style={{ fontSize: '15px' }}>{b.emoji}</span>}
                     <span>{b.title}</span>
                   </div>
                   <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -480,12 +487,13 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
         {/* Шапка: номер + стан + дата реєстрації */}
         <div style={{ marginBottom: '22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+            <img src={poaIcon} alt="Довіреність" style={{ width: 40, height: 40, borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
             <span style={{ fontSize: '19px', fontWeight: 700, color: '#111827' }}>Довіреність № {detail.regNumber}</span>
             <span style={{ padding: '3px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '99px', backgroundColor: stateBadge.bg, color: stateBadge.color }}>
               {detail.state}
             </span>
           </div>
-          <div style={{ fontSize: '12.5px', color: '#6b7280' }}>Зареєстровано {detail.regDateTime}</div>
+          <div style={{ fontSize: '12.5px', color: '#6b7280', marginLeft: '52px' }}>Зареєстровано {detail.regDateTime}</div>
         </div>
 
         {/* Документ */}
@@ -616,13 +624,13 @@ const PoaShareModal = ({ row, onClose, onSent }: {
       <div style={{ padding: '14px 26px 24px' }}>
         {/* Callout */}
         <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Share2 size={15} color="#2563eb" style={{ flexShrink: 0 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src={poaIcon} alt="Довіреність" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
             <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>
-              Довіреність № {row.detail?.regNumber ?? '—'} 📜
+              Довіреність № {row.detail?.regNumber ?? '—'}
             </span>
           </div>
-          <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '23px' }}>{row.name}</div>
+          <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>{row.name}</div>
         </div>
 
         {/* Fields */}
