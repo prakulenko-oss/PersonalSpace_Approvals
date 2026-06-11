@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import {
   AlarmClock, UserPlus, PenLine,
   BarChart3, BookOpen, Search, AlertTriangle, Zap,
-  ExternalLink, X, FileText, Download, Share2,
+  ExternalLink, X, Download, Share2,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
 import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';

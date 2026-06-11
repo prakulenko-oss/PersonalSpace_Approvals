@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { mockTasks, mockArchivedTasks, mockTeamRequests } from '../data/approvals';
-import type { Attachment, Task, ArchivedTask, TeamRequest } from '../types';
+import type { Task, ArchivedTask, TeamRequest } from '../types';
 import { TopBar } from '../components/TopBar';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { TopBar } from '../components/TopBar';
 import { S, Toast, ModalShell, RightBlockHeader, Avatar } from './managerUi';
 import { PoaSection } from './ManagerPoa';
 import {
   Users, FileText, Briefcase, Calendar, BarChart3, Settings,
-  ChevronDown, ChevronRight, ChevronUp, ChevronLeft, Bell, User,
+  ChevronDown, ChevronRight, ChevronUp, ChevronLeft, Bell,
   Send, X, Menu, ArrowLeft,
   AlertTriangle, AlertCircle, HardHat, Network, CalendarX,
   CheckCircle, Info, ListChecks, HelpCircle, Cake, CalendarDays, Shield,
