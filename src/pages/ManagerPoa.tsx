@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
 import poaIcon from '../assets/poa-icon.webp';
+import poaIconOrange from '../assets/poa-icon-orange.webp';
+import kepIcon from '../assets/kep-icon.webp';
+import kepIconRed from '../assets/kep-icon-red.webp';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
@@ -113,9 +116,9 @@ const kepRows: DocRow[] = [
 
 const kpiCards = [
   { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', image: poaIcon },
-  { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3' },
-  { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7' },
-  { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#5b2d86', iconBg: '#fce7f3' },
+  { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3', image: poaIconOrange },
+  { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7', image: kepIcon },
+  { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', image: kepIconRed },
 ] as { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string }[];
 
 const poaFilterOptions = [
@@ -137,7 +140,7 @@ const instructionBlocks: { title: string; emoji: string; image?: string; bg: str
     items: ['Моніторити терміни дії довіреностей', 'Завчасно оновлювати документи (>30 днів)', 'Зберігати копії у захищеному сховищі'],
   },
   {
-    title: 'КЕП', emoji: '🪪', bg: '#eaf8ee', border: '#cdeBd8',
+    title: 'КЕП', emoji: '🪪', image: kepIcon, bg: '#eaf8ee', border: '#cdeBd8',
     items: ['Перевіряти статус сертифікатів щомісяця', 'Замовляти нові КЕП за 45 днів до закінчення', 'Архівувати прострочені сертифікати'],
   },
 ];
