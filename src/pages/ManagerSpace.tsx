@@ -54,7 +54,7 @@ type Department = {
 const makeDetail = (over: Partial<EmployeeDetail> = {}): EmployeeDetail => ({
   absenceType: '—', absenceStart: '', absenceEnd: '',
   vacationReserve: '12 днів', birthDate: '14.02.1991', isVeteran: false,
-  novaPoshtaBranch: 'Київ, Відділення №23, вул. Солом\u2019янська 12', contacts: ['+380 67 000 0000'],
+  novaPoshtaBranch: 'Київ, Відділення №23, вул. Солом\u2019янська 12', contacts: ['+380 00 000 00 00'],
   contractStatus: 'Активний', contractEnd: '31.12.2026',
   contractNote: 'Дія договору буде автоматично продовжена на невизначений строк, якщо за 14 к.д. до його завершення не буде отримано відповідь.',
   trainingStatus: 'Повторний - Пройдено', trainingEnd: '29.06.2026',
@@ -71,7 +71,7 @@ const departments: Department[] = [
     employeesCount: '3 співробітників', absentCount: '1 відсутніх', problems: '6 проблем',
     employees: [
       {
-        id: 'markov', name: 'Марков Геннадій Юрійович', position: 'Розробник архітектури програмного забезпечення...',
+        id: 'markov', name: 'Зорепадов Гнат Юхимович', position: 'Розробник архітектури програмного забезпечення...',
         initials: 'МГ', avatarColor: '#5b8def',
         absenceType: '', issues: ['training'], unusedDays: 9,
         detail: makeDetail({
@@ -90,8 +90,8 @@ const departments: Department[] = [
         detail: makeDetail({
           absenceType: 'Відпустка', absenceStart: '08.06.2026', absenceEnd: '16.06.2026',
           vacationReserve: '5 днів', birthDate: '30.07.1993', isVeteran: true,
-          novaPoshtaBranch: 'Суми, Відділення №1 Вантажне. Сад, Сумський Район',
-          contacts: ['Донька: +380966745322', 'Донька: +380678907655'],
+          novaPoshtaBranch: 'м. Казкове, Відділення №1, вул. Вигадана 7',
+          contacts: ['Донька: +380 00 111 22 33', 'Донька: +380 00 444 55 66'],
           contractStatus: 'Не активний', contractEnd: '09.07.2999',
           scheduleStatus: 'Не сформовано',
         }),
@@ -193,8 +193,8 @@ const hrOperationTitles: Record<HrOperation, { modal: string; detail: string; ca
   salary:    { modal: 'Зарплата',    detail: 'Зміна окладу', calloutTitle: 'Зміна окладу співробітника 💶', emailSubject: 'Перегляд посадового окладу співробітника' },
 };
 
-const emailTo = 'Tatiana Lubchenko (HR) <Tatiana.Lubchenko@kyivstar.net>, Nataliya Bejenar <Nataliya.Bejenar@kyivstar.net>';
-const emailCc = 'Pavel Rakulenko <Pavel.Rakulenko@kyivstar.ua>';
+const emailTo = 'Kvitka Soniashnyk (HR) <Kvitka.Soniashnyk@example.com>, Lada Veselkova <Lada.Veselkova@example.com>';
+const emailCc = 'Taras Mriynyk <Taras.Mriynyk@example.com>';
 
 /* Дані для модалок швидких дій */
 
@@ -208,9 +208,9 @@ const plannedAbsences = [
 ];
 
 const birthdays = [
-  { name: 'Шевченко Катерина', position: "Провідний аналітик комп'ютерних систем",   date: '19 червня' },
-  { name: 'Морозов Сергій',    position: "Провідний інженер з комп'ютерних систем",  date: '4 червня' },
-  { name: 'Козлов Сергій',     position: "Провідний інженер з комп'ютерних систем",  date: '22 червня' },
+  { name: 'Барвінкова Дарина', position: "Провідний аналітик комп'ютерних систем",   date: '19 червня' },
+  { name: 'Сніжко Остап',    position: "Провідний інженер з комп'ютерних систем",  date: '4 червня' },
+  { name: 'Громовик Марко',     position: "Провідний інженер з комп'ютерних систем",  date: '22 червня' },
 ];
 
 /* ════════════════════════ SMALL COMPONENTS ════════════════════════ */
@@ -1054,12 +1054,12 @@ const HrOperationForm = ({ emp, op, onBack, onClose, onSent }: {
   const buildLetter = () => {
     const d = toUaDate(effectiveDate);
     if (op === 'salary') {
-      return `Добрий день!\n\nПрошу погодити перегляд посадового окладу співробітнику з (${d}).\n${emp.name}  (таб. № К33)\nЗапропонований оклад: ${newSalary} грн\nПричина перегляду: ${reason}\nБюджет: ${budget || '—'}\n\nІнші коментарі: ${comments}`;
+      return `Добрий день!\n\nПрошу погодити перегляд посадового окладу співробітнику з (${d}).\n${emp.name}  (таб. № Т01)\nЗапропонований оклад: ${newSalary} грн\nПричина перегляду: ${reason}\nБюджет: ${budget || '—'}\n\nІнші коментарі: ${comments}`;
     }
     if (op === 'transfer') {
-      return `Добрий день!\n\nПрошу погодити переведення співробітника з (${d}).\n${emp.name}  (таб. № К33)\nНовий підрозділ: ${newDept}\nПричина: ${reason || '—'}\n\nІнші коментарі: ${comments}`;
+      return `Добрий день!\n\nПрошу погодити переведення співробітника з (${d}).\n${emp.name}  (таб. № Т01)\nНовий підрозділ: ${newDept}\nПричина: ${reason || '—'}\n\nІнші коментарі: ${comments}`;
     }
-    return `Добрий день!\n\nПрошу погодити звільнення співробітника з (${d}).\n${emp.name}  (таб. № К33)\nПричина: ${reason}\n\nІнші коментарі: ${comments}`;
+    return `Добрий день!\n\nПрошу погодити звільнення співробітника з (${d}).\n${emp.name}  (таб. № Т01)\nПричина: ${reason}\n\nІнші коментарі: ${comments}`;
   };
 
   return (

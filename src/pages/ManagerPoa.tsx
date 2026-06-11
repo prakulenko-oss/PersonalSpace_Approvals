@@ -3,19 +3,13 @@ import type { CSSProperties } from 'react';
 import {
   AlarmClock, UserPlus, PenLine,
   BarChart3, BookOpen, Search, AlertTriangle, Zap,
-  ExternalLink, X, FileText,
+  ExternalLink, X, FileText, Download, Share2,
 } from 'lucide-react';
-import { S, RightBlockHeader } from './managerUi';
+import { S, RightBlockHeader, ModalShell } from './managerUi';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
 type DocStatus = 'active' | 'expiring' | 'expired';
-
-const statusMeta: Record<DocStatus, { label: string; bg: string; color: string }> = {
-  active:   { label: 'Активна',     bg: '#d8f5e3', color: '#166534' },
-  expiring: { label: '< 30д',       bg: '#fdf3e3', color: '#b45309' },
-  expired:  { label: 'Прострочена', bg: '#fde7e7', color: '#b91c1c' },
-};
 
 const kepStatusMeta: Record<DocStatus, { label: string; bg: string; color: string }> = {
   active:   { label: 'Активний',     bg: '#d8f5e3', color: '#166534' },
@@ -45,75 +39,75 @@ type DocRow = { name: string; role: string; endDate: string; status: DocStatus; 
 
 const poaRows: DocRow[] = [
   {
-    name: 'Жуковський А.Л.', role: 'Т.в.о. директора', endDate: '11.09.2026', status: 'active', file: 'dov_004.pdf',
+    name: 'Місяченко А.Л.', role: 'Т.в.о. директора', endDate: '11.09.2026', status: 'active', file: 'dov_004.pdf',
     detail: {
       regNumber: '92-2026', regDateTime: '11.03.2026, 16:18', state: 'Чинна',
       poaKind: 'Т.В.О.',
       summary: 'Довіреність на право діяти в межах повноважень в.о. директора з розробки діджитал продуктів дирекції',
       termYears: '', termFrom: '11.03.2026', termTo: '11.09.2026',
-      issuedTo: 'Жуковський А.Л.',
+      issuedTo: 'Місяченко А.Л.',
       issuedToCompany: [
-        'Жуковський А.Л. (3000276198252 - 15 - Бізнес-підрозділ інформаційних технологій Директор з інформаційних технологій)',
-        'Федоренко А.В. (3002288828496 - 07 - Департамент управління процесами Старший фахівець з управління процесами розробки цифрових продуктів)',
+        'Місяченко А.Л. (1234567890123 - 15 - Бізнес-підрозділ інформаційних технологій Директор з інформаційних технологій)',
+        'Калиновський А.В. (9876543210987 - 07 - Департамент управління процесами Старший фахівець з управління процесами розробки цифрових продуктів)',
       ],
-      signer: 'Комаров О.В. (ПрАТ «Київстар» Президент)',
-      author: 'Горова А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
     },
   },
   {
-    name: 'Іван Петренко', role: 'Генеральна довіреність', endDate: '15.12.2026', status: 'active', file: 'dov_001.pdf',
+    name: 'Орест Вигадко', role: 'Генеральна довіреність', endDate: '15.12.2026', status: 'active', file: 'dov_001.pdf',
     detail: {
       regNumber: '87-2025', regDateTime: '15.12.2025, 10:42', state: 'Чинна',
       poaKind: 'Загальна',
       summary: 'Генеральна довіреність на представництво інтересів компанії в межах посадових повноважень',
       termYears: '1', termFrom: '15.12.2025', termTo: '15.12.2026',
-      issuedTo: 'Петренко І.В.',
+      issuedTo: 'Вигадко О.Т.',
       issuedToCompany: [
-        'Петренко І.В. (3000254118733 - 15 - Бізнес-підрозділ інформаційних технологій Керівник напряму розробки)',
+        'Вигадко О.Т. (1111111111111 - 15 - Бізнес-підрозділ інформаційних технологій Керівник напряму розробки)',
       ],
-      signer: 'Комаров О.В. (ПрАТ «Київстар» Президент)',
-      author: 'Горова А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
       comment: 'Продовження довіреності № 54-2024.',
     },
   },
   {
-    name: 'Марія Коваленко', role: 'Фінансові операції', endDate: '02.07.2026', status: 'expiring', file: 'dov_002.pdf',
+    name: 'Мирослава Квіткова', role: 'Фінансові операції', endDate: '02.07.2026', status: 'expiring', file: 'dov_002.pdf',
     detail: {
       regNumber: '14-2026', regDateTime: '02.07.2025, 09:15', state: 'Чинна',
       poaKind: 'Спеціальна',
       summary: 'Довіреність на підписання фінансових документів та здійснення банківських операцій у межах ліміту',
       termYears: '1', termFrom: '02.07.2025', termTo: '02.07.2026',
       daysLeft: 21,
-      issuedTo: 'Коваленко М.С.',
+      issuedTo: 'Квіткова М.С.',
       issuedToCompany: [
-        'Коваленко М.С. (3001144257811 - 09 - Фінансова дирекція Старший фахівець з фінансових операцій)',
+        'Квіткова М.С. (2222222222222 - 09 - Фінансова дирекція Старший фахівець з фінансових операцій)',
       ],
-      signer: 'Комаров О.В. (ПрАТ «Київстар» Президент)',
-      author: 'Горова А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
     },
   },
   {
-    name: 'Олена Сидорович', role: 'Представництво в суді', endDate: '05.08.2025', status: 'expired', file: 'dov_003.pdf',
+    name: 'Соломія Хмаркова', role: 'Представництво в суді', endDate: '05.08.2025', status: 'expired', file: 'dov_003.pdf',
     detail: {
       regNumber: '31-2024', regDateTime: '05.08.2024, 14:03', state: 'Нечинна',
       poaKind: 'Спеціальна',
       summary: 'Довіреність на представництво інтересів компанії в судах усіх інстанцій',
       termYears: '1', termFrom: '05.08.2024', termTo: '05.08.2025',
-      issuedTo: 'Сидорович О.П.',
+      issuedTo: 'Хмаркова С.П.',
       issuedToCompany: [
-        'Сидорович О.П. (3000987456123 - 04 - Юридичний департамент Провідний юрисконсульт)',
+        'Хмаркова С.П. (3333333333333 - 04 - Юридичний департамент Провідний юрисконсульт)',
       ],
-      signer: 'Комаров О.В. (ПрАТ «Київстар» Президент)',
-      author: 'Горова А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
       comment: 'Термін дії завершено. Нову довіреність не оформлено.',
     },
   },
 ];
 
 const kepRows: DocRow[] = [
-  { name: 'Іван Петренко',   role: 'КЕП особистий',          endDate: '15.03.2026', status: 'active',   file: 'kep_001.zs2' },
-  { name: 'Марія Коваленко', role: 'КЕП печатка організації', endDate: '02.07.2026', status: 'expiring', file: 'kep_002.zs2' },
-  { name: 'Олена Сидорович', role: 'КЕП особистий',          endDate: '11.01.2026', status: 'active',   file: 'kep_003.zs2' },
+  { name: 'Орест Вигадко',   role: 'КЕП особистий',          endDate: '15.03.2026', status: 'active',   file: 'kep_001.zs2' },
+  { name: 'Мирослава Квіткова', role: 'КЕП печатка організації', endDate: '02.07.2026', status: 'expiring', file: 'kep_002.zs2' },
+  { name: 'Соломія Хмаркова', role: 'КЕП особистий',          endDate: '11.01.2026', status: 'active',   file: 'kep_003.zs2' },
 ];
 
 const kpiCards = [
@@ -123,7 +117,13 @@ const kpiCards = [
   { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#5b2d86', iconBg: '#fce7f3' },
 ];
 
-const statusFilterOptions: { value: '' | DocStatus; label: string }[] = [
+const poaFilterOptions = [
+  { value: '',         label: 'Всі' },
+  { value: 'чинна',    label: 'Чинні' },
+  { value: 'нечинна',  label: 'Нечинні' },
+];
+
+const kepFilterOptions = [
   { value: '',         label: 'Всі' },
   { value: 'active',   label: 'Активні' },
   { value: 'expiring', label: '< 30д' },
@@ -146,21 +146,30 @@ const instructionBlocks = [
 export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) => {
   const [tab, setTab] = useState<'poa' | 'kep'>('poa');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'' | DocStatus>('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocRow | null>(null);
+  const [shareDoc, setShareDoc] = useState<DocRow | null>(null);
 
   const [quickOpen, setQuickOpen] = useState(true);
   const [statsOpen, setStatsOpen] = useState(true);
   const [instrOpen, setInstrOpen] = useState(true);
 
   const rows = tab === 'poa' ? poaRows : kepRows;
-  const meta = tab === 'poa' ? statusMeta : kepStatusMeta;
+  const filterOptions = tab === 'poa' ? poaFilterOptions : kepFilterOptions;
 
   const filteredRows = useMemo(() =>
-    rows.filter(r =>
-      (r.name.toLowerCase().includes(search.toLowerCase()) || r.role.toLowerCase().includes(search.toLowerCase())) &&
-      (!statusFilter || r.status === statusFilter)
-    ), [rows, search, statusFilter]);
+    rows.filter(r => {
+      const matchesSearch =
+        r.name.toLowerCase().includes(search.toLowerCase()) ||
+        (tab === 'poa' ? (r.detail?.poaKind ?? '') : r.role).toLowerCase().includes(search.toLowerCase()) ||
+        (r.detail?.summary ?? '').toLowerCase().includes(search.toLowerCase());
+      const matchesFilter = !statusFilter || (
+        tab === 'poa'
+          ? (r.detail?.state ?? '').toLowerCase() === statusFilter
+          : r.status === statusFilter
+      );
+      return matchesSearch && matchesFilter;
+    }), [rows, tab, search, statusFilter]);
 
   return (
     <>
@@ -219,27 +228,26 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                 style={{ ...S.input, paddingLeft: '36px' }}
               />
             </div>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as '' | DocStatus)} style={{ ...S.input, width: '160px' }}>
-              {statusFilterOptions.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ ...S.input, width: '160px' }}>
+              {filterOptions.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 
           {/* Table */}
           <div style={{ padding: '14px 18px 18px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.7fr 1.2fr 1fr 1fr 0.9fr', gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr', gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               <div>ПІБ</div>
-              <div>{tab === 'poa' ? 'Роль / Сфера' : 'Тип / Сфера'}</div>
+              <div>{tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'}</div>
               <div>Дата закінчення</div>
-              <div>Статус</div>
-              <div>Файл</div>
-              <div />
+              <div>{tab === 'poa' ? 'Стан довіреності' : 'Статус'}</div>
+              <div style={{ textAlign: 'right' }}>Дії</div>
             </div>
             {filteredRows.map(r => (
               <div
                 key={r.file}
                 onClick={() => r.detail && setSelectedDoc(r)}
                 style={{
-                  display: 'grid', gridTemplateColumns: '1.4fr 1.7fr 1.2fr 1fr 1fr 0.9fr', gap: '12px',
+                  display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr', gap: '12px',
                   padding: '14px', alignItems: 'center', fontSize: '13.5px', borderBottom: '1px solid #eef2f7',
                   cursor: r.detail ? 'pointer' : 'default',
                   backgroundColor: selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent',
@@ -248,21 +256,51 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent'; }}
               >
                 <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
-                <div style={{ color: '#374151' }}>{r.role}</div>
+                <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? '—') : r.role}</div>
                 <div style={{ color: '#374151' }}>{r.endDate}</div>
-                <div>
-                  <span style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: meta[r.status].bg, color: meta[r.status].color }}>
-                    {meta[r.status].label}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {tab === 'poa' ? (
+                    <>
+                      <span style={{
+                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
+                        backgroundColor: r.detail?.state === 'Чинна' ? '#d8f5e3' : '#eceef2',
+                        color: r.detail?.state === 'Чинна' ? '#166534' : '#6b7280',
+                      }}>
+                        {r.detail?.state ?? '—'}
+                      </span>
+                      {r.detail?.daysLeft != null && (
+                        <AlarmClock size={15} color="#b45309">
+                          <title>{`Закінчується через ${r.detail.daysLeft} дн.`}</title>
+                        </AlarmClock>
+                      )}
+                    </>
+                  ) : (
+                    <span style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: kepStatusMeta[r.status].bg, color: kepStatusMeta[r.status].color }}>
+                      {kepStatusMeta[r.status].label}
+                    </span>
+                  )}
                 </div>
-                <div style={{ color: '#374151' }}>{r.file}</div>
-                <div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                   <button
-                    onClick={e => { e.stopPropagation(); showToast(`Відкривається файл ${r.file}...`); }}
-                    style={{ ...S.btnLink, fontSize: '13.5px' }}
+                    onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }}
+                    title={tab === 'poa' ? 'Завантажити довіреність' : 'Завантажити файл'}
+                    style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
+                    onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
                   >
-                    Переглянути
+                    <Download size={16} color="#2f6fde" />
                   </button>
+                  {tab === 'poa' && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setShareDoc(r); }}
+                      title="Поділитися довіреністю"
+                      style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
+                      onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
+                    >
+                      <Share2 size={16} color="#2f6fde" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -302,15 +340,6 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '14px' }}>Оформити КЕП</div>
                     <div style={{ fontSize: '12.5px', color: 'rgba(255,255,255,0.88)', marginTop: '2px' }}>Заявка на цифровий підпис</div>
-                  </div>
-                </div>
-              </button>
-              <button onClick={() => showToast('Нагадування про закінчення термінів налаштовано')} style={{ width: '100%', padding: '14px', backgroundColor: '#fff', color: '#1f2937', border: '1px solid #e5e7eb', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
-                  <AlarmClock size={18} color="#f97316" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '14px' }}>Перевірити терміни</div>
-                    <div style={{ fontSize: '12.5px', color: '#6b7280', marginTop: '2px' }}>Нагадування про закінчення</div>
                   </div>
                 </div>
               </button>
@@ -399,6 +428,15 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
           showToast={showToast}
         />
       )}
+
+      {/* ═══ SHARE MODAL ═══ */}
+      {shareDoc && (
+        <PoaShareModal
+          row={shareDoc}
+          onClose={() => setShareDoc(null)}
+          onSent={(email) => { setShareDoc(null); showToast(`Довіреність надіслано на ${email}`); }}
+        />
+      )}
     </>
   );
 };
@@ -420,7 +458,7 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
   return (
     <aside style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, width: '500px', maxWidth: '92vw',
-      backgroundColor: '#fff', zIndex: 45, display: 'flex', flexDirection: 'column',
+      backgroundColor: '#fff', zIndex: 150, display: 'flex', flexDirection: 'column',
       boxShadow: '-8px 0 28px rgba(15,40,80,0.16)', borderLeft: '1px solid #e5e7eb',
     }}>
       {/* Drawer header */}
@@ -529,12 +567,127 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
       {/* Drawer footer */}
       <div style={{ padding: '14px 20px', borderTop: '1px solid #eef2f7', flexShrink: 0 }}>
         <button
-          onClick={() => showToast(`Відкривається файл ${row.file}...`)}
+          onClick={() => showToast(`Завантажується файл ${row.file}...`)}
           style={{ ...S.btnPrimary, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
         >
-          <FileText size={16} /> Переглянути файл ({row.file})
+          <Download size={16} /> Завантажити довіреність ({row.file})
         </button>
       </div>
     </aside>
+  );
+};
+
+/* ════════════════════════ SHARE MODAL ════════════════════════ */
+
+const PoaShareModal = ({ row, onClose, onSent }: {
+  row: DocRow;
+  onClose: () => void;
+  onSent: (email: string) => void;
+}) => {
+  const [email, setEmail] = useState('');
+  const [description, setDescription] = useState('');
+  const [letter, setLetter] = useState<string | null>(null);
+
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const requiredFilled = emailValid && description.trim().length > 0;
+
+  const buildLetter = () => {
+    const d = row.detail;
+    return `Добрий день!
+
+Надсилаю довіреність № ${d?.regNumber ?? '—'} (${d?.poaKind ?? row.role}).
+Короткий зміст: ${d?.summary ?? '—'}
+Термін дії: ${d?.termFrom ?? '—'} – ${d?.termTo ?? row.endDate}
+На кого видана: ${d?.issuedTo ?? row.name}
+
+Опис: ${description.trim()}
+
+Файл довіреності (${row.file}) додано у вкладенні.`;
+  };
+
+  return (
+    <ModalShell maxWidth={620} onClose={onClose}>
+      <div style={S.modalTitleRow}>
+        <div style={S.modalTitle}>Поділитися довіреністю</div>
+        <button onClick={onClose} style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+          <X size={22} />
+        </button>
+      </div>
+      <div style={{ padding: '14px 26px 24px' }}>
+        {/* Callout */}
+        <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Share2 size={15} color="#2563eb" style={{ flexShrink: 0 }} />
+            <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>
+              Довіреність № {row.detail?.regNumber ?? '—'} 📜
+            </span>
+          </div>
+          <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '23px' }}>{row.name}</div>
+        </div>
+
+        {/* Fields */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+          <div>
+            <label style={S.label}>Email отримувача *</label>
+            <input
+              type="email" placeholder="name@example.com"
+              value={email} onChange={e => setEmail(e.target.value)}
+              style={S.input}
+            />
+          </div>
+          <div>
+            <label style={S.label}>Короткий опис *</label>
+            <textarea
+              rows={3} placeholder="Вкажіть, з якою метою надсилається довіреність"
+              value={description} onChange={e => setDescription(e.target.value)}
+              style={{ ...S.input, resize: 'vertical' }}
+            />
+          </div>
+        </div>
+
+        {/* Generate letter */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: letter ? '20px' : '24px' }}>
+          <button
+            onClick={() => requiredFilled && setLetter(buildLetter())}
+            disabled={!requiredFilled}
+            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+          >
+            Сформувати лист
+          </button>
+        </div>
+
+        {letter !== null && (
+          <>
+            {/* Email meta */}
+            <div style={{ backgroundColor: '#eaf3fd', borderRadius: '10px', padding: '13px 16px', marginBottom: '14px', fontSize: '12.5px', color: '#1f2937', lineHeight: 1.55 }}>
+              <div>Кому: {email.trim()}</div>
+              <div>Тема: Довіреність № {row.detail?.regNumber ?? '—'} — {row.name}</div>
+              <div>Вкладення: {row.file}</div>
+            </div>
+
+            {/* Letter editor */}
+            <div style={{ border: '1px solid #d1d5db', borderRadius: '10px', overflow: 'hidden', marginBottom: '22px' }}>
+              <div style={{ padding: '9px 14px', borderBottom: '1px solid #e5e7eb', fontSize: '12.5px', color: '#4b5563', backgroundColor: '#fafafa' }}>
+                Шаблон листа про надсилання довіреності
+              </div>
+              <textarea
+                value={letter}
+                onChange={e => setLetter(e.target.value)}
+                rows={11}
+                style={{ width: '100%', border: 'none', outline: 'none', padding: '16px', fontSize: '13.5px', fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box', color: '#111827' }}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '18px' }}>
+          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
+          {letter !== null && (
+            <button onClick={() => onSent(email.trim())} style={S.btnPrimary}>Надіслати лист</button>
+          )}
+        </div>
+      </div>
+    </ModalShell>
   );
 };

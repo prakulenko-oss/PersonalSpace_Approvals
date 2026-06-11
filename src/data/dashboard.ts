@@ -116,7 +116,7 @@ export const vacancies: Vacancy[] = [
 // ── CURRENT USER ─────────────────────────────────────────────────────────
 
 export const currentUser = {
-  initials: 'PR',
-  name: 'Олександр',
+  initials: 'ТМ',
+  name: 'Тарас',
   pendingApprovals: 18,
 };

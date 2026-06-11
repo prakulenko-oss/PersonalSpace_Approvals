@@ -1645,7 +1645,7 @@ export const Approvals = () => {
           <div className={styles.heroContent}>
             {activeView === 'inbox' ? (
               <>
-                <div className={styles.heroTitle}>Доброго дня, Олександре! 👋</div>
+                <div className={styles.heroTitle}>Доброго дня, Тарасе! 👋</div>
                 <div className={styles.heroSubtitle}>
                   У вас {tasks.length + teamRequests.length} {(tasks.length + teamRequests.length) === 1 ? 'завдання' : 'завдань'} на затвердження
                 </div>

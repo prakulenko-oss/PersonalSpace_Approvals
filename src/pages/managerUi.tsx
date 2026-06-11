@@ -9,7 +9,7 @@ export const S: Record<string, CSSProperties> = {
   main: { flex: 1, minWidth: 0, overflowY: 'auto', padding: '20px 24px', backgroundColor: '#fff' },
   rightBar: { width: '350px', flexShrink: 0, overflowY: 'auto', padding: '20px 20px 20px 0', display: 'flex', flexDirection: 'column', gap: '18px' },
   card: { backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #b9d3f0', boxShadow: '0 1px 3px rgba(15,60,120,0.06)' },
-  modalBackdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
+  modalBackdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
   input: { width: '100%', padding: '9px 13px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none', backgroundColor: '#fff', color: '#111827' },
   label: { display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#1f2937', marginBottom: '6px' },
   btnGhost: { padding: '9px 22px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' },

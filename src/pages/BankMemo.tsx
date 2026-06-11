@@ -1086,7 +1086,7 @@ export const BankMemo = () => {
                       </div>
                       <div style={{ lineHeight: 1.65 }}>
                         <Body1>
-                          <strong>Гаврилюк Ольга</strong> — відповідальний
+                          <strong>Ромашко Оля</strong> — відповідальний
                           менеджер
                         </Body1>
                         <div
@@ -1224,29 +1224,29 @@ export const BankMemo = () => {
                       {
                         region: 'Київ, Київська область',
                         contacts: [
-                          { name: 'Волощук Віталій', tel: '0672236987' },
-                          { name: 'Лепеса Альона', tel: '0967939203' },
+                          { name: 'Вербиченко Віталій', tel: '0672236987' },
+                          { name: 'Маківка Олеся', tel: '0967939203' },
                         ],
                       },
                       {
                         region: 'Західна Україна',
-                        contacts: [{ name: 'Рудик Дмитро', tel: '0672200423' }],
+                        contacts: [{ name: 'Джерелько Дмитро', tel: '0672200423' }],
                       },
                       {
                         region: 'Південь (Одеса, Миколаїв, Херсон)',
-                        contacts: [{ name: 'Поляков Ігор', tel: '0975147107' }],
+                        contacts: [{ name: 'Степовик Ігор', tel: '0975147107' }],
                       },
                       {
                         region: 'Дніпро, Запорожжя, Черкаси',
-                        contacts: [{ name: 'Гірняк Петро', tel: '0979775641' }],
+                        contacts: [{ name: 'Верховинко Петро', tel: '0979775641' }],
                       },
                       {
                         region: 'Поділля (Житомир, Тернопіль, Хмельницький)',
-                        contacts: [{ name: 'Харчук Ганна', tel: '0676155473' }],
+                        contacts: [{ name: 'Медунка Ганна', tel: '0676155473' }],
                       },
                       {
                         region: 'Схід (Харків, Полтава, Суми, Чернігів)',
-                        contacts: [{ name: 'Котов Юрій', tel: '0674608796' }],
+                        contacts: [{ name: 'Котигорошко Юрій', tel: '0674608796' }],
                       },
                     ].map(({ region, contacts }) => (
                       <div
@@ -1475,7 +1475,7 @@ export const BankMemo = () => {
                 }}
               >
                 <Persona
-                  name="Наталія Беженар"
+                  name="Калина Вишнева"
                   secondaryText="HR Business Partner | Пільги та Компенсації"
                   size="extra-large"
                   avatar={{ color: 'brand', icon: <PersonCircle24Regular /> }}
@@ -1511,7 +1511,7 @@ export const BankMemo = () => {
                     <span>+38(0XX) XXX-XX-XX</span>
                   </a>
                   <a
-                    href="mailto:natalia.bezhenar@kyivstar.ua"
+                    href="mailto:kalyna.vyshneva@example.com"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1529,7 +1529,7 @@ export const BankMemo = () => {
                     <Mail24Regular
                       style={{ fontSize: 18, color: ks.sky, flexShrink: 0 }}
                     />
-                    <span>natalia.bezhenar@kyivstar.ua</span>
+                    <span>kalyna.vyshneva@example.com</span>
                   </a>
                   <a
                     href="#"
