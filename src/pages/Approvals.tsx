@@ -169,8 +169,14 @@ const useStyles = makeStyles({
   // ============================================
   app: {
     display: 'flex',
+    flexDirection: 'column',
     height: '100vh',
     backgroundColor: '#F8FAFC',
+  },
+  appBody: {
+    display: 'flex',
+    flex: 1,
+    minHeight: 0,
   },
 
   // ============================================
@@ -1539,6 +1545,7 @@ export const Approvals = () => {
       <TopBar />
       <Toaster toasterId={toasterId} position="top-end" />
 
+      <div className={styles.appBody}>
       {/* SIDEBAR */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
@@ -3028,6 +3035,7 @@ export const Approvals = () => {
           )}
         </div>
       </main>
+      </div>
 
       {/* Reject Modal */}
       <Dialog
