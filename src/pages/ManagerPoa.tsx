@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import {
   AlarmClock, UserPlus, PenLine,
   BarChart3, BookOpen, Search, AlertTriangle, Zap,
-  ExternalLink, X, Download, Share2,
+  ExternalLink, X, Download, Share2, Paperclip,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
 import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
@@ -150,6 +150,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocRow | null>(null);
   const [shareDoc, setShareDoc] = useState<DocRow | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const [quickOpen, setQuickOpen] = useState(true);
   const [statsOpen, setStatsOpen] = useState(true);
@@ -330,7 +331,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
           />
           {quickOpen && (
             <div style={{ padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button onClick={() => showToast('Відкривається форма створення довіреності...')} style={{ width: '100%', padding: '14px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setCreateOpen(true)} style={{ width: '100%', padding: '14px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <UserPlus size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
                   <div>
@@ -433,6 +434,14 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
           detail={selectedDoc.detail}
           onClose={() => setSelectedDoc(null)}
           showToast={showToast}
+        />
+      )}
+
+      {/* ═══ CREATE POA MODAL ═══ */}
+      {createOpen && (
+        <PoaCreateModal
+          onClose={() => setCreateOpen(false)}
+          onSent={() => { setCreateOpen(false); showToast('Запит на оформлення довіреності надіслано відповідальним!'); }}
         />
       )}
 
@@ -693,6 +702,269 @@ const PoaShareModal = ({ row, onClose, onSent }: {
           <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
           {letter !== null && (
             <button onClick={() => onSent(email.trim())} style={S.btnPrimary}>Надіслати лист</button>
+          )}
+        </div>
+      </div>
+    </ModalShell>
+  );
+};
+
+/* ════════════════════════ CREATE POA MODAL ════════════════════════ */
+
+type TeamMember = { id: string; name: string; position: string; department: string };
+
+const teamMembers: TeamMember[] = [
+  { id: 'm1', name: 'Зорепадов Гнат Юхимович', position: 'Розробник архітектури ПЗ', department: 'Департамент систем управління підприємством' },
+  { id: 'm2', name: 'Тестовий1 Користувач', position: 'QA', department: 'Департамент систем управління підприємством' },
+  { id: 'm3', name: 'Тестовий2 Користувач', position: 'DevOps', department: 'Департамент систем управління підприємством' },
+  { id: 'm4', name: 'Тестовий4 Користувач', position: 'Інженер', department: 'Відділ автоматизації операційних процесів' },
+  { id: 'm5', name: 'Тестовий5 Користувач', position: 'Інженер', department: 'Відділ автоматизації операційних процесів' },
+  { id: 'm6', name: 'Тестовий6 Користувач', position: 'Адміністратор', department: 'Відділ управління операційними системами' },
+  { id: 'm7', name: 'Тестовий7 Користувач', position: 'Адміністратор', department: 'Відділ управління операційними системами' },
+  { id: 'm8', name: 'Тестовий8 Користувач', position: 'Економіст', department: 'Відділ управління фінансовими системами' },
+  { id: 'm9', name: 'Тестовий9 Користувач', position: 'Економіст', department: 'Відділ управління фінансовими системами' },
+];
+
+const poaKinds = ['Загальна', 'Спеціальна', 'Т.В.О.'];
+
+const legalTo = 'Зореславська А.М. (юридична підтримка) <Anna.Zoreslavska@example.com>, Юридичний відділ <legal@example.com>';
+const initiatorCc = 'Taras Mriynyk <Taras.Mriynyk@example.com>';
+
+const toUa = (iso: string) => {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+};
+
+const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () => void }) => {
+  const todayISO = new Date().toISOString().split('T')[0];
+
+  const [kind, setKind] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [memberSearch, setMemberSearch] = useState('');
+  const [summary, setSummary] = useState('');
+  const [dateFrom, setDateFrom] = useState(todayISO);
+  const [dateTo, setDateTo] = useState('');
+  const [basis, setBasis] = useState('');
+  const [files, setFiles] = useState<string[]>([]);
+  const [comment, setComment] = useState('');
+  const [letter, setLetter] = useState<string | null>(null);
+
+  const selectedMembers = teamMembers.filter(m => selectedIds.includes(m.id));
+  const filteredMembers = teamMembers.filter(m =>
+    m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+    m.position.toLowerCase().includes(memberSearch.toLowerCase()) ||
+    m.department.toLowerCase().includes(memberSearch.toLowerCase())
+  );
+
+  const toggleMember = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const datesValid = !!dateFrom && !!dateTo && dateTo >= dateFrom;
+  const requiredFilled = !!kind && selectedIds.length > 0 && summary.trim().length > 0 && datesValid;
+
+  const onFilesPicked = (list: FileList | null) => {
+    if (!list) return;
+    setFiles(prev => [...prev, ...Array.from(list).map(f => f.name).filter(n => !prev.includes(n))]);
+  };
+
+  const buildLetter = () => {
+    const people = selectedMembers
+      .map(m => `${m.name} (${m.position}, ${m.department})`)
+      .join('\n');
+    return `Добрий день!
+
+Прошу оформити довіреність (${kind}).
+
+На кого видається:
+${people}
+
+Короткий зміст: ${summary.trim()}
+Термін дії: ${toUa(dateFrom)} – ${toUa(dateTo)}
+Підстава: ${basis.trim() || '—'}
+
+Коментар: ${comment.trim() || '—'}
+
+Додатки: ${files.length ? files.join(', ') : '—'}`;
+  };
+
+  return (
+    <ModalShell maxWidth={660} onClose={onClose}>
+      <div style={S.modalTitleRow}>
+        <div style={S.modalTitle}>Створити довіреність</div>
+        <button onClick={onClose} style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+          <X size={22} />
+        </button>
+      </div>
+      <div style={{ padding: '14px 26px 24px' }}>
+        {/* Callout */}
+        <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src={poaIcon} alt="Довіреність" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+            <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>Запит на оформлення нової довіреності</span>
+          </div>
+          <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>
+            Після надсилання листа процес оформлення запустить юридичний відділ
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+          {/* Вид */}
+          <div>
+            <label style={S.label}>Вид довіреності *</label>
+            <select value={kind} onChange={e => setKind(e.target.value)} style={S.input}>
+              <option value="" disabled>Оберіть вид</option>
+              {poaKinds.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+
+          {/* На кого видається */}
+          <div>
+            <label style={S.label}>На кого видається *</label>
+            {selectedMembers.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                {selectedMembers.map(m => (
+                  <span key={m.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 10px', backgroundColor: '#eaf3fd', border: '1px solid #cfe2f8', borderRadius: '99px', fontSize: '12.5px', color: '#1f2937' }}>
+                    {m.name}
+                    <X size={13} style={{ cursor: 'pointer', color: '#6b7280' }} onClick={() => toggleMember(m.id)} />
+                  </span>
+                ))}
+              </div>
+            )}
+            <input
+              value={memberSearch}
+              onChange={e => setMemberSearch(e.target.value)}
+              placeholder="Пошук за іменем, посадою або відділом..."
+              style={{ ...S.input, marginBottom: '8px' }}
+            />
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', maxHeight: '170px', overflowY: 'auto' }}>
+              {filteredMembers.map(m => {
+                const checked = selectedIds.includes(m.id);
+                return (
+                  <label
+                    key={m.id}
+                    style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f3f6', backgroundColor: checked ? '#f5f9ff' : 'transparent' }}
+                  >
+                    <input type="checkbox" checked={checked} onChange={() => toggleMember(m.id)} style={{ accentColor: '#2563eb' }} />
+                    <span>
+                      <span style={{ fontWeight: 600, fontSize: '13px', color: '#111827' }}>{m.name}</span>
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}> — {m.position}, {m.department}</span>
+                    </span>
+                  </label>
+                );
+              })}
+              {filteredMembers.length === 0 && (
+                <div style={{ padding: '12px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>Нікого не знайдено</div>
+              )}
+            </div>
+          </div>
+
+          {/* Короткий зміст */}
+          <div>
+            <label style={S.label}>Короткий зміст / мета *</label>
+            <textarea
+              rows={3}
+              placeholder="Напр.: Довіреність на право діяти в межах повноважень в.о. директора з розробки діджитал продуктів дирекції"
+              value={summary} onChange={e => setSummary(e.target.value)}
+              style={{ ...S.input, resize: 'vertical' }}
+            />
+          </div>
+
+          {/* Термін дії */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div>
+              <label style={S.label}>Термін дії з *</label>
+              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={S.input} />
+            </div>
+            <div>
+              <label style={S.label}>Термін дії по *</label>
+              <input type="date" min={dateFrom} value={dateTo} onChange={e => setDateTo(e.target.value)} style={S.input} />
+            </div>
+          </div>
+          {dateFrom && dateTo && dateTo < dateFrom && (
+            <div style={{ fontSize: '12.5px', color: '#b91c1c', marginTop: '-8px' }}>
+              Дата «по» не може бути раніше за дату «з»
+            </div>
+          )}
+
+          {/* Підстава */}
+          <div>
+            <label style={S.label}>Підстава</label>
+            <input
+              type="text" placeholder="Напр.: наказ № 12-К від 01.06.2026, службова записка"
+              value={basis} onChange={e => setBasis(e.target.value)}
+              style={S.input}
+            />
+          </div>
+
+          {/* Файли */}
+          <div>
+            <label style={S.label}>Додатки</label>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', border: '1px dashed #93c5fd', borderRadius: '8px', cursor: 'pointer', fontSize: '13.5px', color: '#2563eb', backgroundColor: '#f5f9ff' }}>
+              <Paperclip size={15} />
+              Додати файл(и)
+              <input type="file" multiple style={{ display: 'none' }} onChange={e => { onFilesPicked(e.target.files); e.target.value = ''; }} />
+            </label>
+            {files.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
+                {files.map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '13px', color: '#374151' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                      <Paperclip size={13} color="#6b7280" />
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f}</span>
+                    </span>
+                    <X size={14} style={{ cursor: 'pointer', color: '#6b7280', flexShrink: 0 }} onClick={() => setFiles(prev => prev.filter(x => x !== f))} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Коментар */}
+          <div>
+            <label style={S.label}>Коментар</label>
+            <textarea rows={2} placeholder="Додаткова інформація (за потреби)" value={comment} onChange={e => setComment(e.target.value)} style={{ ...S.input, resize: 'vertical' }} />
+          </div>
+        </div>
+
+        {/* Generate letter */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: letter ? '20px' : '24px' }}>
+          <button
+            onClick={() => requiredFilled && setLetter(buildLetter())}
+            disabled={!requiredFilled}
+            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+          >
+            Сформувати лист
+          </button>
+        </div>
+
+        {letter !== null && (
+          <>
+            <div style={{ backgroundColor: '#eaf3fd', borderRadius: '10px', padding: '13px 16px', marginBottom: '14px', fontSize: '12.5px', color: '#1f2937', lineHeight: 1.55 }}>
+              <div>Кому: {legalTo}</div>
+              <div>Копія: {initiatorCc} (ініціатор)</div>
+              <div>Тема: Запит на оформлення довіреності — {selectedMembers.map(m => m.name).join(', ')}</div>
+              {files.length > 0 && <div>Вкладення: {files.join(', ')}</div>}
+            </div>
+            <div style={{ border: '1px solid #d1d5db', borderRadius: '10px', overflow: 'hidden', marginBottom: '22px' }}>
+              <div style={{ padding: '9px 14px', borderBottom: '1px solid #e5e7eb', fontSize: '12.5px', color: '#4b5563', backgroundColor: '#fafafa' }}>
+                Шаблон листа — запит на оформлення довіреності
+              </div>
+              <textarea
+                value={letter}
+                onChange={e => setLetter(e.target.value)}
+                rows={14}
+                style={{ width: '100%', border: 'none', outline: 'none', padding: '16px', fontSize: '13.5px', fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box', color: '#111827' }}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '18px' }}>
+          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
+          {letter !== null && (
+            <button onClick={onSent} style={S.btnPrimary}>Надіслати лист</button>
           )}
         </div>
       </div>
