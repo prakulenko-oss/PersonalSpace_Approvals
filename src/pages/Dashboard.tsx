@@ -1,545 +1,595 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { makeStyles, tokens, Avatar, CounterBadge, Text } from '@fluentui/react-components';
+import { CounterBadge } from '@fluentui/react-components';
 import {
-  Search, ListChecks, Video, ClipboardList, Newspaper,
+  ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter,
+  Briefcase, Instagram, Facebook, Twitter, Search
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
 
-const useStyles = makeStyles({
+const styles = {
   page: {
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
     minHeight: '100vh',
     backgroundColor: '#ffffff',
-    fontFamily: "'Segoe UI', system-ui, sans-serif",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    alignItems: 'center',
+    width: '100%',
   },
   navSection: {
-    borderBottom: '1px solid #edebe9',
-    padding: '16px 24px',
-    backgroundColor: '#fff',
+    padding: '24px 16px 0',
+    backgroundColor: '#ffffff',
+    maxWidth: '1500px',
+    width: '100%',
+    boxSizing: 'border-box' as const,
   },
   navGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    border: '1px solid #edebe9',
-    borderRadius: '4px',
-    overflow: 'hidden',
+    rowGap: '32px',
+    columnGap: '24px',
+    width: '100%',
   },
   navTile: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    padding: '14px 20px',
+    gap: '16px',
+    padding: '0',
+    border: 'none',
+    backgroundColor: 'transparent',
     cursor: 'pointer',
-    borderBottom: '1px solid #edebe9',
-    borderRight: '1px solid #edebe9',
-    transition: 'background 0.15s',
-    ':hover': { backgroundColor: '#f3f2f1' },
   },
   tileIcon: {
-    width: '32px',
-    height: '32px',
+    width: '52px',
+    height: '52px',
     borderRadius: '50%',
-    border: '1.5px solid #0078d4',
+    border: '2px solid #0078d4',
+    background: 'linear-gradient(135deg, #ffffff 0%, #dcf1ff 100%)',
+    boxShadow: '2px 4px 10px rgba(0, 0, 0, 0.1)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-    color: '#0078d4',
+    transition: 'transform 0.2s',
   },
-  tileIconDev: { border: '1.5px solid #a19f9d', color: '#a19f9d' },
-  tileLabel: { fontSize: '13.5px', color: '#323130', lineHeight: '1.3' },
-  tileLabelDev: { color: '#a19f9d' },
-  tileSub: { fontSize: '11px', color: '#a19f9d' },
-
-  peopleSearch: {
-    margin: '0 24px 16px',
-    backgroundColor: '#fff',
-    border: '1.5px solid #f0c419',
-    borderRadius: '4px',
-    height: '36px',
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 12px',
-    gap: '8px',
-    cursor: 'text',
-  },
-
-  content: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1.8fr 310px',
-    gap: '12px',
-    padding: '0 24px 24px',
-    alignItems: 'start',
-  },
-
-  widget: {
-    backgroundColor: '#fff',
-    border: '1px solid #edebe9',
-    borderRadius: '4px',
-    padding: '14px 16px',
-    marginBottom: '12px',
-  },
-  widgetClickable: {
-    cursor: 'pointer',
-    borderColor: '#0078d4',
-    ':hover': { backgroundColor: '#f9f8f7' },
-  },
-  widgetHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '10px',
-    paddingBottom: '8px',
-    borderBottom: '2px solid #0078d4',
-  },
-  widgetTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#323130',
-  },
-  allLink: {
-    fontSize: '12px',
-    color: '#0078d4',
-    cursor: 'pointer',
-    ':hover': { textDecoration: 'underline' },
-  },
-  empty: { color: '#a19f9d', fontSize: '13px', padding: '6px 0' },
-  badge: {
-    backgroundColor: '#edebe9',
-    color: '#323130',
-    fontSize: '11px',
-    fontWeight: '600',
-    borderRadius: '10px',
-    padding: '1px 7px',
-  },
-  badgeBlue: { backgroundColor: '#0078d4', color: '#fff' },
-
-  meetingItem: {
-    paddingBottom: '8px',
-    marginBottom: '8px',
-    borderBottom: '1px solid #f3f2f1',
-  },
-  meetingTime: { fontSize: '12px', color: '#605e5c' },
-  meetingName: {
-    fontSize: '13px',
-    color: '#0078d4',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    lineHeight: '1.4',
-  },
-
-  eventItem: { padding: '8px 0', borderBottom: '1px solid #f3f2f1' },
-  eventDate: { fontSize: '12px', color: '#605e5c', marginBottom: '3px' },
-  eventRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' },
-  eventName: { fontSize: '13.5px', color: '#323130' },
-  eventTag: {
-    fontSize: '11px',
-    color: '#0078d4',
-    backgroundColor: '#eff6fc',
-    border: '1px solid #c7e0f4',
-    borderRadius: '2px',
-    padding: '2px 8px',
-    whiteSpace: 'nowrap',
-    flexShrink: 0,
-  },
-
-  corpBanner: {
-    backgroundColor: '#0078d4',
-    borderRadius: '4px',
-    padding: '20px 16px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    cursor: 'pointer',
-    minHeight: '90px',
-    marginBottom: '12px',
-  },
-  sun: {
+  tileIconHovered: {
     width: '52px',
     height: '52px',
     borderRadius: '50%',
-    backgroundColor: '#f0c419',
+    border: '2px solid #0078d4',
+    background: '#FFC400',
+    boxShadow: '2px 4px 12px rgba(0, 0, 0, 0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     flexShrink: 0,
   },
-  corpText: { color: '#fff', fontSize: '16px', fontWeight: '600', lineHeight: '1.3' },
-
+  tileIconDev: {
+    width: '52px',
+    height: '52px',
+    borderRadius: '50%',
+    border: '2px solid #9ca3af',
+    background: 'linear-gradient(135deg, #f9fafb 0%, #d1d5db 100%)',
+    boxShadow: '2px 4px 10px rgba(0, 0, 0, 0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    cursor: 'default',
+  },
+  tileLabel: {
+    fontSize: '15px',
+    fontWeight: 500,
+    color: '#1a1a1a',
+    lineHeight: '1.3',
+  },
+  tileSub: {
+    fontSize: '13px',
+    color: '#9ca3af',
+    marginTop: '2px',
+  },
+  peopleSearchWrap: {
+    width: '100%',
+    maxWidth: '1500px',
+    padding: '0 16px',
+    marginTop: '32px',
+    marginBottom: '32px',
+    boxSizing: 'border-box' as const,
+  },
+  searchBox: {
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    border: '1px solid #ffcd00',
+    borderRadius: '6px',
+    padding: '10px 16px',
+    backgroundColor: '#fff',
+  },
+  searchInput: {
+    width: '100%',
+    fontSize: '15px',
+    color: '#374151',
+    border: 'none',
+    outline: 'none',
+    background: 'transparent',
+    fontFamily: 'inherit',
+    marginLeft: '12px',
+  },
+  content: {
+    display: 'grid',
+    gridTemplateColumns: '3fr 6fr 3fr',
+    gap: '24px',
+    padding: '0 16px 48px',
+    width: '100%',
+    maxWidth: '1500px',
+    boxSizing: 'border-box' as const,
+    alignItems: 'start',
+  },
+  widget: {
+    backgroundColor: '#fff',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    marginBottom: '24px',
+  },
+  widgetClickable: {
+    cursor: 'pointer',
+  },
+  widgetHeader: {
+    padding: '16px 20px',
+    borderBottom: '1px solid #e5e7eb',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  widgetTitleWrap: {
+    position: 'relative' as const,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    borderBottom: '2px solid #0078d4',
+    paddingBottom: '16px',
+    marginBottom: '-17px',
+  },
+  widgetTitle: {
+    fontSize: '16px',
+    fontWeight: 500,
+    color: '#1a1a1a',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  allLink: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#374151',
+    cursor: 'pointer',
+    textDecoration: 'none',
+  },
+  widgetBody: {
+    padding: '24px 20px',
+  },
+  widgetBodyZeroPadding: { padding: '0' },
+  empty: { color: '#6b7280', fontSize: '14px' },
+  badge: {
+    backgroundColor: '#e6f2ff',
+    color: '#0078d4',
+    fontSize: '11px',
+    fontWeight: 600,
+    borderRadius: '12px',
+    padding: '2px 8px',
+  },
+  meetingItem: { paddingBottom: '16px' },
+  meetingTime: { fontSize: '14px', color: '#b30000', fontWeight: 500, cursor: 'pointer' },
+  meetingDesc: { fontSize: '14px', color: '#6b7280', marginTop: '16px' },
+  eventItem: {
+    padding: '16px 20px',
+    borderBottom: '1px solid #f3f2f1',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    cursor: 'pointer',
+  },
+  eventDate: { fontSize: '13px', color: '#6b7280', marginBottom: '4px' },
+  eventRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  eventName: { fontSize: '15px', fontWeight: 500, color: '#1a1a1a' },
+  eventTag: {
+    fontSize: '11px',
+    color: '#00897b',
+    backgroundColor: '#e0f2f1',
+    borderRadius: '12px',
+    padding: '2px 10px',
+    whiteSpace: 'nowrap' as const,
+  },
+  corpBanner: {
+    backgroundColor: '#1b8cff',
+    borderRadius: '12px',
+    position: 'relative' as const,
+    overflow: 'hidden',
+    marginBottom: '24px',
+    cursor: 'pointer',
+    height: '120px',
+  },
+  sun: {
+    position: 'absolute' as const,
+    left: '-24px',
+    bottom: '-24px',
+    width: '96px',
+    height: '96px',
+    backgroundColor: '#ffcd00',
+    borderRadius: '50%',
+  },
+  corpText: {
+    position: 'absolute' as const,
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center' as const,
+    color: '#fff',
+    fontSize: '17px',
+    fontWeight: 600,
+    lineHeight: '1.2',
+    zIndex: 10,
+  },
   calendar: {
     backgroundColor: '#fff',
-    border: '1px solid #edebe9',
-    borderRadius: '4px',
-    padding: '14px',
-    marginBottom: '12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    padding: '20px',
+    marginBottom: '24px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
   },
-  calHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' },
-  calMonth: { fontSize: '14px', fontWeight: '600' },
-  calNav: { display: 'flex', gap: '4px' },
-  calNavBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: '2px 6px',
-    color: '#323130',
-    borderRadius: '2px',
-    ':hover': { backgroundColor: '#f3f2f1' },
+  calHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' },
+  calMonth: { fontSize: '16px', fontWeight: 600, color: '#1a1a1a' },
+  calNav: { display: 'flex', gap: '12px', color: '#9ca3af' },
+  calNavBtn: { background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: 0 },
+  calGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px 4px', textAlign: 'center' as const, fontSize: '13px' },
+  calDayHeader: { fontSize: '13px', color: '#6b7280', paddingBottom: '8px' },
+  calDayWrap: {
+    position: 'relative' as const,
+    display: 'inline-flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '28px',
+    height: '28px',
+    margin: '0 auto',
+    color: '#374151',
   },
-  calGrid: { display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center' },
-  calDayHeader: { fontSize: '11px', color: '#605e5c', padding: '3px 0', fontWeight: '600' },
-  calDay: {
-    fontSize: '12px',
-    padding: '4px 2px',
-    borderRadius: '2px',
-    cursor: 'pointer',
-    ':hover': { backgroundColor: '#f3f2f1' },
+  calDayActive: {
+    border: '2px solid #fbbf24',
+    borderRadius: '50%',
+    fontWeight: 600,
+  },
+  calDayDot: {
+    position: 'absolute' as const,
+    bottom: '0',
+    width: '4px',
+    height: '4px',
+    backgroundColor: '#ef4444',
+    borderRadius: '50%',
   },
   allEvents: {
-    fontSize: '12px',
-    color: '#0078d4',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#374151',
     cursor: 'pointer',
-    marginTop: '8px',
-    display: 'block',
-    ':hover': { textDecoration: 'underline' },
-  },
-
-  collapseWidget: {
-    backgroundColor: '#fff',
-    border: '1px solid #edebe9',
-    borderRadius: '4px',
-    marginBottom: '12px',
+    marginTop: '16px',
+    display: 'inline-block',
   },
   collapseHeader: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px 16px',
+    padding: '16px 20px',
     cursor: 'pointer',
-    borderBottom: '2px solid #0078d4',
-    ':hover': { backgroundColor: '#f9f8f7' },
+    backgroundColor: '#fff',
   },
-  collapseTitle: {
+  collapseTitleWrap: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#0078d4',
+    gap: '10px',
   },
-  collapseBody: { padding: '10px 16px' },
   vacancyItem: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '6px 0',
+    padding: '12px 20px',
     borderBottom: '1px solid #f3f2f1',
-    fontSize: '13px',
-    ':last-child': { borderBottom: 'none' },
+    fontSize: '14px',
+    cursor: 'pointer',
   },
-  vacancyLoc: { color: '#605e5c', fontSize: '12px' },
-
+  vacancyTitle: { color: '#374151' },
+  vacancyLoc: { color: '#6b7280', fontSize: '13px' },
   footer: {
     backgroundColor: '#fff',
-    borderTop: '1px solid #edebe9',
-    padding: '20px 24px',
+    borderTop: '1px solid #e5e7eb',
+    padding: '24px 16px',
     marginTop: 'auto',
+    width: '100%',
+    boxSizing: 'border-box' as const,
   },
   footerInner: {
+    maxWidth: '1500px',
+    margin: '0 auto',
     display: 'grid',
-    gridTemplateColumns: 'auto 1fr 1fr 1fr 1fr auto',
-    gap: '24px',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr 1.5fr',
+    gap: '32px',
     alignItems: 'start',
   },
-  footerStar: { fontSize: '28px', color: '#0078d4', fontWeight: '100', letterSpacing: '-2px' },
+  footerCol: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '12px',
+  },
   footerLink: {
-    display: 'block',
-    fontSize: '13px',
-    color: '#605e5c',
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#1a1a1a',
     textDecoration: 'none',
-    padding: '2px 0',
     cursor: 'pointer',
-    ':hover': { color: '#0078d4' },
+  },
+  footerActions: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'flex-end',
+    gap: '20px',
   },
   feedbackBtn: {
     backgroundColor: '#0078d4',
     color: '#fff',
     border: 'none',
-    borderRadius: '2px',
-    padding: '8px 16px',
-    fontSize: '13px',
+    borderRadius: '6px',
+    padding: '8px 32px',
+    fontSize: '14px',
+    fontWeight: 500,
     cursor: 'pointer',
     fontFamily: 'inherit',
   },
-  socialRow: { display: 'flex', gap: '6px', marginTop: '8px' },
-  socialIcon: {
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    border: '1px solid #edebe9',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    color: '#605e5c',
-  },
-});
+  socialRow: { display: 'flex', gap: '16px', alignItems: 'center' },
+  socialIcon: { color: '#4b5563', cursor: 'pointer' },
+};
 
 export const Dashboard = () => {
-  const styles = useStyles();
   const navigate = useNavigate();
-
+  const [hoveredTile, setHoveredTile] = useState<number | null>(null);
   const [jobOpen, setJobOpen] = useState(true);
   const [favOpen, setFavOpen] = useState(false);
   const [absOpen, setAbsOpen] = useState(false);
   const [chgOpen, setChgOpen] = useState(false);
 
   return (
-    <div className={styles.page}>
-
+    <div style={styles.page}>
       <TopBar />
 
       {/* NAV TILES */}
-      <div className={styles.navSection}>
-        <div className={styles.navGrid}>
-          {navTiles.map((tile, i) => {
-            const is4n   = (i + 1) % 4 === 0;
-            const isLast = i >= navTiles.length - 4;
-            return (
-              <div
-                key={tile.label}
-                className={styles.navTile}
-                style={{
-                  borderRight:  is4n   ? 'none' : undefined,
-                  borderBottom: isLast ? 'none' : undefined,
-                }}
-                onClick={() => tile.route && !tile.dev && navigate(tile.route)}
-              >
-                <div className={`${styles.tileIcon}${tile.dev ? ` ${styles.tileIconDev}` : ''}`}>
-                  <tile.Icon size={16} />
-                </div>
-                <div>
-                  <div className={`${styles.tileLabel}${tile.dev ? ` ${styles.tileLabelDev}` : ''}`}>
-                    {tile.label}
-                  </div>
-                  {tile.sub && <div className={styles.tileSub}>{tile.sub}</div>}
-                </div>
+      <div style={styles.navSection}>
+        <div style={styles.navGrid}>
+          {navTiles.map((tile, i) => (
+            <div
+              key={tile.label}
+              style={styles.navTile}
+              onClick={() => tile.route && !tile.dev && navigate(tile.route)}
+              onMouseEnter={() => !tile.dev && setHoveredTile(i)}
+              onMouseLeave={() => setHoveredTile(null)}
+            >
+              <div style={tile.dev ? styles.tileIconDev : hoveredTile === i ? styles.tileIconHovered : styles.tileIcon}>
+                <svg
+                  width="22" height="22" viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={tile.dev ? '#6b7280' : '#0078d4'}
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  dangerouslySetInnerHTML={{ __html: tile.svg }}
+                />
               </div>
-            );
-          })}
+              <div>
+                <div style={styles.tileLabel}>{tile.label}</div>
+                {tile.sub && <div style={styles.tileSub}>{tile.sub}</div>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* PEOPLE SEARCH */}
-      <div className={styles.peopleSearch}>
-        <Search size={16} color="#605e5c" />
-        <Text style={{ color: '#a19f9d', fontSize: '13px' }}>Search people</Text>
+      <div style={styles.peopleSearchWrap}>
+        <div style={styles.searchBox}>
+          <Search size={20} color="#0078d4" strokeWidth={2} />
+          <input type="text" placeholder="Search people" style={styles.searchInput} />
+        </div>
       </div>
 
       {/* 3-COLUMN CONTENT */}
-      <div className={styles.content}>
+      <div style={styles.content}>
 
         {/* LEFT */}
         <div>
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <ListChecks size={16} color="#0078d4" />Tasks
-                <span className={styles.badge}>0</span>
+          <div style={styles.widget}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <ListChecks size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Tasks</span>
+                <span style={styles.badge}>0</span>
               </div>
             </div>
-            <div className={styles.empty}>There are no tasks today...</div>
+            <div style={styles.widgetBody}>
+              <div style={styles.empty}>There are no tasks today...</div>
+            </div>
           </div>
 
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <Video size={16} color="#0078d4" />Meetings
-                <span className={styles.badge}>0</span>
+          <div style={styles.widget}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <Video size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Meetings</span>
+                <span style={styles.badge}>0</span>
               </div>
-              <a className={styles.allLink}>All</a>
+              <a style={styles.allLink}>All</a>
             </div>
-            <div className={styles.meetingItem}>
-              <div className={styles.meetingTime}>9:00 – 9:05.</div>
-              <div className={styles.meetingName}>
-                Хвилина пам'яті. Пам'ятаємо колег, які поклали за нашу свободу
+            <div style={styles.widgetBody}>
+              <div style={styles.meetingItem}>
+                <div style={styles.meetingTime}>9:00 - 9:05. Хвилина пам'яті. Пам'ятаємо колег, які полягли за нашу свободу</div>
+                <div style={styles.meetingDesc}>There are no events today...</div>
               </div>
             </div>
-            <div className={styles.empty} style={{ marginTop: '6px' }}>There are no events today...</div>
           </div>
 
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <ClipboardList size={16} color="#0078d4" />Surveys
-                <span className={styles.badge}>0</span>
+          <div style={styles.widget}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <ClipboardList size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Surveys</span>
+                <span style={styles.badge}>0</span>
               </div>
             </div>
-            <div className={styles.empty}>There are no surveys today...</div>
+            <div style={styles.widgetBody}>
+              <div style={styles.empty}>There are no surveys today...</div>
+            </div>
           </div>
 
           {/* Approvals shortcut */}
-          <div
-            className={`${styles.widget} ${styles.widgetClickable}`}
-            onClick={() => navigate('/approvals')}
-          >
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <ListChecks size={16} color="#0078d4" />Погодження
+          <div style={{ ...styles.widget, ...styles.widgetClickable }} onClick={() => navigate('/approvals')}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <ListChecks size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Погодження</span>
                 <CounterBadge count={currentUser.pendingApprovals} appearance="filled" color="informative" size="small" />
               </div>
-              <a className={styles.allLink}>Відкрити →</a>
+              <a style={styles.allLink}>Відкрити →</a>
             </div>
-            <div style={{ fontSize: '13px', color: '#605e5c' }}>
-              {currentUser.pendingApprovals} документів очікують вашого рішення
+            <div style={styles.widgetBody}>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                {currentUser.pendingApprovals} документів очікують вашого рішення
+              </div>
             </div>
           </div>
         </div>
 
         {/* CENTER */}
         <div>
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <Newspaper size={16} color="#0078d4" />News
-                <span className={styles.badge}>0</span>
+          <div style={styles.widget}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <Newspaper size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>News</span>
+                <span style={styles.badge}>0</span>
               </div>
-              <a className={styles.allLink}>All</a>
+              <a style={styles.allLink}>All</a>
             </div>
-            <div className={styles.empty}>Немає новин сьогодні...</div>
+            <div style={styles.widgetBody}>
+              <div style={{ height: '60px' }} />
+            </div>
           </div>
 
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <Bell size={16} color="#0078d4" />Events in the company
-                <span className={`${styles.badge} ${styles.badgeBlue}`}>{companyEvents.length + 4}</span>
+          <div style={styles.widget}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <Bell size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Events in the company</span>
+                <span style={styles.badge}>{companyEvents.length + 4}</span>
               </div>
-              <a className={styles.allLink}>All</a>
+              <a style={styles.allLink}>All</a>
             </div>
-            {companyEvents.map(ev => (
-              <div key={ev.name} className={styles.eventItem}>
-                <div className={styles.eventDate}>{ev.date}</div>
-                <div className={styles.eventRow}>
-                  <span className={styles.eventName}>{ev.name}</span>
-                  <span className={styles.eventTag}>{ev.tag}</span>
+            <div style={styles.widgetBodyZeroPadding}>
+              {companyEvents.map(ev => (
+                <div key={ev.name} style={styles.eventItem}>
+                  <span style={styles.eventDate}>{ev.date}</span>
+                  <div style={styles.eventRow}>
+                    <span style={styles.eventName}>{ev.name}</span>
+                    <span style={styles.eventTag}>{ev.tag}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* RIGHT */}
         <div>
-          <div className={styles.corpBanner}>
-            <div className={styles.sun} />
-            <div className={styles.corpText}>Корпоративна<br />культура</div>
+          <div style={styles.corpBanner}>
+            <div style={styles.sun} />
+            <div style={styles.corpText}>Корпоративна<br />культура</div>
           </div>
 
-          {/* Calendar */}
-          <div className={styles.calendar}>
-            <div className={styles.calHeader}>
-              <span className={styles.calMonth}>April 2026</span>
-              <div className={styles.calNav}>
-                <button className={styles.calNavBtn}><ChevronUp size={14} /></button>
-                <button className={styles.calNavBtn}><ChevronDown size={14} /></button>
+          <div style={styles.calendar}>
+            <div style={styles.calHeader}>
+              <span style={styles.calMonth}>April 2026</span>
+              <div style={styles.calNav}>
+                <button style={styles.calNavBtn}><ChevronUp size={18} /></button>
+                <button style={styles.calNavBtn}><ChevronDown size={18} /></button>
               </div>
             </div>
-            <div className={styles.calGrid}>
+            <div style={styles.calGrid}>
               {['M','T','W','T','F','S','S'].map((d, i) => (
-                <div key={i} className={styles.calDayHeader}>{d}</div>
+                <div key={i} style={styles.calDayHeader}>{d}</div>
               ))}
               {calDays.map((day, i) => (
-                <div
-                  key={i}
-                  className={styles.calDay}
-                  style={{
-                    color: day.today ? '#fff'
-                      : day.other && day.holiday ? '#f1929a'
-                      : day.holiday ? '#d13438'
-                      : day.other ? '#c8c6c4'
-                      : '#323130',
-                    backgroundColor: day.today ? '#0078d4' : undefined,
-                    borderRadius: day.today ? '50%' : undefined,
-                    fontWeight: day.today ? '600' : undefined,
-                  }}
-                >
-                  {day.d}
+                <div key={i} style={{ color: day.other ? '#9ca3af' : '#374151' }}>
+                  <div style={{ ...styles.calDayWrap, ...(day.today ? styles.calDayActive : {}) }}>
+                    {day.d}
+                    {day.holiday && <div style={styles.calDayDot} />}
+                  </div>
                 </div>
               ))}
             </div>
-            <a className={styles.allEvents}>All events</a>
+            <a style={styles.allEvents}>All events</a>
           </div>
 
-          {/* Birthdays */}
-          <div className={styles.widget}>
-            <div className={styles.widgetHeader}>
-              <div className={styles.widgetTitle}>
-                <Heart size={16} color="#0078d4" />Birthdays
-                <span className={`${styles.badge} ${styles.badgeBlue}`}>37</span>
+          <div style={{ ...styles.widget, marginBottom: '12px' }}>
+            <div style={{ ...styles.collapseHeader, borderBottom: 'none' }}>
+              <div style={styles.collapseTitleWrap}>
+                <Heart size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Birthdays</span>
+                <span style={styles.badge}>37</span>
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#605e5c' }}>
-              <Avatar name="Іменинник" size={20} />
-              <span>37 іменинників цього місяця</span>
+              <ChevronDown size={18} color="#0078d4" />
             </div>
           </div>
 
-          {/* Collapse: Favorites */}
-          <div className={styles.collapseWidget}>
-            <div className={styles.collapseHeader} onClick={() => setFavOpen(v => !v)}>
-              <div className={styles.collapseTitle}>
-                <Heart size={16} />Favorites
-                <span className={styles.badge}>0</span>
+          {[
+            { label: 'Favorites', icon: <Heart size={18} color="#0078d4" />, count: '0', open: favOpen, setOpen: setFavOpen },
+            { label: 'Absentees', icon: <Users size={18} color="#0078d4" />, count: '11', open: absOpen, setOpen: setAbsOpen },
+            { label: 'Changes', icon: <RefreshCw size={18} color="#0078d4" />, count: '5', open: chgOpen, setOpen: setChgOpen },
+          ].map(({ label, icon, count, open, setOpen }) => (
+            <div key={label} style={{ ...styles.widget, marginBottom: '12px' }}>
+              <div
+                style={{ ...styles.collapseHeader, borderBottom: open ? '2px solid #0078d4' : 'none' }}
+                onClick={() => setOpen((v: boolean) => !v)}
+              >
+                <div style={styles.collapseTitleWrap}>
+                  {icon}
+                  <span style={styles.widgetTitle}>{label}</span>
+                  <span style={styles.badge}>{count}</span>
+                </div>
+                {open ? <ChevronUp size={18} color="#0078d4" /> : <ChevronDown size={18} color="#0078d4" />}
               </div>
-              {favOpen ? <ChevronUp size={16} color="#605e5c" /> : <ChevronDown size={16} color="#605e5c" />}
+              {open && <div style={styles.widgetBody}><span style={{ fontSize: '13px', color: '#a19f9d' }}>—</span></div>}
             </div>
-            {favOpen && <div className={styles.collapseBody}><span style={{ fontSize: '13px', color: '#a19f9d' }}>Немає обраних</span></div>}
-          </div>
+          ))}
 
-          {/* Collapse: Absentees */}
-          <div className={styles.collapseWidget}>
-            <div className={styles.collapseHeader} onClick={() => setAbsOpen(v => !v)}>
-              <div className={styles.collapseTitle}>
-                <Users size={16} />Absentees
-                <span className={`${styles.badge} ${styles.badgeBlue}`}>11</span>
+          <div style={styles.widget}>
+            <div
+              style={{ ...styles.collapseHeader, borderBottom: jobOpen ? '1px solid #e5e7eb' : 'none' }}
+              onClick={() => setJobOpen(v => !v)}
+            >
+              <div style={styles.collapseTitleWrap}>
+                <Briefcase size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Job Vacancies</span>
+                <span style={styles.badge}>{vacancies.length}</span>
               </div>
-              {absOpen ? <ChevronUp size={16} color="#605e5c" /> : <ChevronDown size={16} color="#605e5c" />}
-            </div>
-            {absOpen && <div className={styles.collapseBody}><span style={{ fontSize: '13px', color: '#a19f9d' }}>Список відсутніх</span></div>}
-          </div>
-
-          {/* Collapse: Changes */}
-          <div className={styles.collapseWidget}>
-            <div className={styles.collapseHeader} onClick={() => setChgOpen(v => !v)}>
-              <div className={styles.collapseTitle}>
-                <RefreshCw size={16} />Changes
-                <span className={`${styles.badge} ${styles.badgeBlue}`}>5</span>
-              </div>
-              {chgOpen ? <ChevronUp size={16} color="#605e5c" /> : <ChevronDown size={16} color="#605e5c" />}
-            </div>
-            {chgOpen && <div className={styles.collapseBody}><span style={{ fontSize: '13px', color: '#a19f9d' }}>Зміни в системі</span></div>}
-          </div>
-
-          {/* Collapse: Job Vacancies */}
-          <div className={styles.collapseWidget}>
-            <div className={styles.collapseHeader} onClick={() => setJobOpen(v => !v)}>
-              <div className={styles.collapseTitle}>
-                <Briefcase size={16} />Job Vacancies
-                <span className={`${styles.badge} ${styles.badgeBlue}`}>{vacancies.length}</span>
-              </div>
-              {jobOpen ? <ChevronUp size={16} color="#605e5c" /> : <ChevronDown size={16} color="#605e5c" />}
+              {jobOpen ? <ChevronUp size={18} color="#0078d4" /> : <ChevronDown size={18} color="#0078d4" />}
             </div>
             {jobOpen && (
-              <div className={styles.collapseBody}>
+              <div style={styles.widgetBodyZeroPadding}>
                 {vacancies.map(v => (
-                  <div key={v.title} className={styles.vacancyItem}>
-                    <span>{v.title}{v.hot ? ' 🔥' : ''}</span>
-                    <span className={styles.vacancyLoc}>{v.loc}</span>
+                  <div key={v.title} style={styles.vacancyItem}>
+                    <span style={styles.vacancyTitle}>{v.title}{v.hot ? ' 🔥' : ''}</span>
+                    <span style={styles.vacancyLoc}>{v.loc}</span>
                   </div>
                 ))}
               </div>
@@ -549,28 +599,29 @@ export const Dashboard = () => {
       </div>
 
       {/* FOOTER */}
-      <div className={styles.footer}>
-        <div className={styles.footerInner}>
-          <div><span className={styles.footerStar}>✳</span></div>
+      <div style={styles.footer}>
+        <div style={styles.footerInner}>
+          <div>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0078d4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3v18M4.22 7.22l15.56 9.56M4.22 16.78l15.56-9.56"/>
+            </svg>
+          </div>
           {footerColumns.map((col, i) => (
-            <div key={i}>
-              {col.map(link => <a key={link} className={styles.footerLink}>{link}</a>)}
+            <div key={i} style={styles.footerCol}>
+              {col.map(link => <a key={link} style={styles.footerLink}>{link}</a>)}
             </div>
           ))}
-          <div />
-          <div>
-            <button className={styles.feedbackBtn}>Leave feedback</button>
-            <div className={styles.socialRow}>
-              <div className={styles.socialIcon}><Instagram size={14} /></div>
-              <div className={styles.socialIcon}><Instagram size={14} /></div>
-              <div className={styles.socialIcon}><Facebook size={14} /></div>
-              <div className={styles.socialIcon}><Twitter size={14} /></div>
-              <div className={styles.socialIcon} style={{ fontSize: '11px', fontWeight: '700' }}>Tk</div>
+          <div style={styles.footerActions}>
+            <button style={styles.feedbackBtn}>Leave feedback</button>
+            <div style={styles.socialRow}>
+              <Instagram size={24} style={styles.socialIcon} />
+              <Instagram size={24} style={styles.socialIcon} />
+              <Facebook size={24} style={styles.socialIcon} />
+              <Twitter size={24} style={styles.socialIcon} />
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };

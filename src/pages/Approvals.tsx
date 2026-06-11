@@ -149,6 +149,20 @@ const sortOptions = [
   { id: 'author',    label: 'За автором (А → Я)' },
 ];
 
+// Archive date filter options
+const archiveDateFilters = [
+  { id: 'today',     label: 'Сьогодні' },
+  { id: 'yesterday', label: 'Вчора' },
+  { id: '2days',     label: 'За 2 дні' },
+];
+
+// Team request type labels
+const teamRequestTypeLabels: Record<string, string> = {
+  vacation:      'Відпустка',
+  sick:          'Лікарняний',
+  business_trip: 'Відрядження',
+};
+
 const useStyles = makeStyles({
   // ============================================
   // APP LAYOUT
@@ -3248,7 +3262,7 @@ export const Approvals = () => {
                   onClick={() => setOnboardingStep(prev => prev - 1)}
                   style={{ 
                     borderRadius: '8px',
-                    borderColor: tokens.colorNeutralStroke1,
+                    borderTopColor: tokens.colorNeutralStroke1, borderBottomColor: tokens.colorNeutralStroke1, borderLeftColor: tokens.colorNeutralStroke1, borderRightColor: tokens.colorNeutralStroke1,
                   }}
                 >
                   Назад
