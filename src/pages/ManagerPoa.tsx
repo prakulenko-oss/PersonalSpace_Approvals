@@ -6,10 +6,7 @@ import {
   ExternalLink, X, FileText, Download, Share2,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
-import poaIcon from '../assets/poa-icon.webp';
-import poaIconOrange from '../assets/poa-icon-orange.webp';
-import kepIcon from '../assets/kep-icon.webp';
-import kepIconRed from '../assets/kep-icon-red.webp';
+import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
