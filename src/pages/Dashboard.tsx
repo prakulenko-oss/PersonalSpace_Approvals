@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -465,6 +465,22 @@ export const Dashboard = () => {
             <div style={styles.widgetBody}>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>
                 {currentUser.pendingApprovals} документів очікують вашого рішення
+              </div>
+            </div>
+          </div>
+
+          {/* Bank memo shortcut */}
+          <div style={{ ...styles.widget, ...styles.widgetClickable }} onClick={() => navigate('/bank-memo')}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <Landmark size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Зарплатний банк</span>
+              </div>
+              <a style={styles.allLink}>Відкрити →</a>
+            </div>
+            <div style={styles.widgetBody}>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                Пам'ятка: як обрати банк для зарплатної картки та що зробити для переходу
               </div>
             </div>
           </div>
