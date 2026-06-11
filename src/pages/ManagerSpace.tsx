@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { TopBar } from '../components/TopBar';
+import { S, Toast, ModalShell, RightBlockHeader, Avatar } from './managerUi';
+import { PoaSection } from './ManagerPoa';
 import {
   Users, FileText, Briefcase, Calendar, BarChart3, Settings,
   ChevronDown, ChevronRight, ChevronUp, ChevronLeft, Bell, User,
@@ -164,13 +166,15 @@ const reports = [
   { title: 'Графік відпусток',         icon: <BarChart3 size={18} color="#9333ea" />,    iconBg: '#f3e8ff' },
 ];
 
-const sidebarNav = [
-  { label: 'Кадрові операції / відсутності', icon: Users,     active: true },
-  { label: 'Довіреності / КЕП',              icon: FileText,  active: false },
-  { label: 'Посадові інструкції',            icon: Briefcase, active: false },
-  { label: 'Календар',                       icon: Calendar,  active: false },
-  { label: 'Звіти',                          icon: BarChart3, active: false },
-  { label: 'Налаштування',                   icon: Settings,  active: false },
+type Section = 'hr' | 'poa';
+
+const sidebarNav: { label: string; icon: typeof Users; section?: Section }[] = [
+  { label: 'Кадрові операції / відсутності', icon: Users,     section: 'hr' },
+  { label: 'Довіреності / КЕП',              icon: FileText,  section: 'poa' },
+  { label: 'Посадові інструкції',            icon: Briefcase },
+  { label: 'Календар',                       icon: Calendar },
+  { label: 'Звіти',                          icon: BarChart3 },
+  { label: 'Налаштування',                   icon: Settings },
 ];
 
 /* Кадрові операції (3 типи, як на проді) */
@@ -209,24 +213,6 @@ const birthdays = [
   { name: 'Козлов Сергій',     position: "Провідний інженер з комп'ютерних систем",  date: '22 червня' },
 ];
 
-/* ════════════════════════ SHARED STYLES ════════════════════════ */
-
-const S: Record<string, CSSProperties> = {
-  page: { height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#fff', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" },
-  body: { display: 'flex', flex: 1, minHeight: 0 },
-  main: { flex: 1, minWidth: 0, overflowY: 'auto', padding: '20px 24px', backgroundColor: '#fff' },
-  rightBar: { width: '350px', flexShrink: 0, overflowY: 'auto', padding: '20px 20px 20px 0', display: 'flex', flexDirection: 'column', gap: '18px' },
-  card: { backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #b9d3f0', boxShadow: '0 1px 3px rgba(15,60,120,0.06)' },
-  modalBackdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' },
-  input: { width: '100%', padding: '9px 13px', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box', outline: 'none', backgroundColor: '#fff', color: '#111827' },
-  label: { display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#1f2937', marginBottom: '6px' },
-  btnGhost: { padding: '9px 22px', border: '1px solid #d1d5db', backgroundColor: '#fff', color: '#374151', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit' },
-  btnPrimary: { padding: '9px 26px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
-  btnLink: { backgroundColor: 'transparent', border: 'none', color: '#2563eb', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit', display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '6px 4px' },
-  modalTitleRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 26px 0' },
-  modalTitle: { fontSize: '19px', fontWeight: 600, color: '#111827' },
-};
-
 /* ════════════════════════ SMALL COMPONENTS ════════════════════════ */
 
 const IssueBadge = ({ icon, size = 17 }: { icon: IssueIcon; size?: number }) => {
@@ -255,45 +241,9 @@ const UnusedBadge = ({ days }: { days: number }) => {
   );
 };
 
-const Avatar = ({ emp, size = 36 }: { emp: { initials?: string; avatarColor?: string }; size?: number }) => (
-  emp.initials
-    ? <div style={{ width: size, height: size, borderRadius: '50%', backgroundColor: emp.avatarColor || '#6b7280', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: size * 0.34, flexShrink: 0 }}>{emp.initials}</div>
-    : <div style={{ width: size, height: size, borderRadius: '50%', backgroundColor: '#e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><User size={size * 0.5} color="#9ca3af" /></div>
-);
 
-const Toast = ({ message }: { message: string }) => (
-  <div style={{
-    position: 'fixed', top: 70, right: 20, backgroundColor: '#10b981', color: '#fff',
-    padding: '14px 22px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-    zIndex: 1000, maxWidth: '400px', fontSize: '14px', fontWeight: 500,
-  }}>
-    {message}
-  </div>
-);
 
-const ModalShell = ({ children, maxWidth, onClose }: { children: ReactNode; maxWidth: number; onClose: () => void }) => (
-  <div style={S.modalBackdrop} onClick={onClose}>
-    <div
-      style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 25px 50px rgba(0,0,0,0.25)', maxWidth, width: '100%', maxHeight: '92vh', overflowY: 'auto' }}
-      onClick={e => e.stopPropagation()}
-    >
-      {children}
-    </div>
-  </div>
-);
 
-const RightBlockHeader = ({ icon, title, open, onToggle }: { icon: ReactNode; title: string; open: boolean; onToggle: () => void }) => (
-  <div
-    onClick={onToggle}
-    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', cursor: 'pointer' }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-      {icon}
-      <span style={{ fontWeight: 600, fontSize: '16px', color: '#1b1b1b', borderBottom: '2px solid #2f6fde', paddingBottom: '3px' }}>{title}</span>
-    </div>
-    {open ? <ChevronUp size={18} color="#2f6fde" /> : <ChevronDown size={18} color="#2f6fde" />}
-  </div>
-);
 
 const InfoField = ({ label, value, multiline }: { label: string; value: string | string[]; multiline?: boolean }) => (
   <div>
@@ -315,6 +265,7 @@ const toUaDate = (iso: string) => {
 export const ManagerSpace = () => {
   // Layout
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeSection, setActiveSection] = useState<Section>('hr');
 
   // Sections
   const [teamOpen, setTeamOpen] = useState(true);
@@ -402,10 +353,11 @@ export const ManagerSpace = () => {
           <nav style={{ display: 'flex', flexDirection: 'column', padding: sidebarCollapsed ? '4px 6px' : '4px 0', gap: '2px' }}>
             {sidebarNav.map(item => {
               const Icon = item.icon;
+              const active = item.section === activeSection;
               return (
                 <button
                   key={item.label}
-                  onClick={() => { if (!item.active) showToast('Розділ у розробці'); }}
+                  onClick={() => { if (item.section) setActiveSection(item.section); else showToast('Розділ у розробці'); }}
                   title={item.label}
                   style={{
                     display: 'flex', alignItems: 'center', gap: '11px',
@@ -413,13 +365,13 @@ export const ManagerSpace = () => {
                     justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
                     border: 'none', cursor: 'pointer', textAlign: 'left',
                     fontSize: '13.5px', fontWeight: 500, fontFamily: 'inherit',
-                    backgroundColor: item.active ? '#ededed' : 'transparent',
-                    color: item.active ? '#1b1b1b' : '#4b5563',
-                    borderLeft: !sidebarCollapsed && item.active ? '3px solid #2f6fde' : '3px solid transparent',
+                    backgroundColor: active ? '#ededed' : 'transparent',
+                    color: active ? '#1b1b1b' : '#4b5563',
+                    borderLeft: !sidebarCollapsed && active ? '3px solid #2f6fde' : '3px solid transparent',
                     borderRadius: sidebarCollapsed ? '8px' : 0,
                   }}
                 >
-                  <Icon size={18} color={item.active ? '#2f6fde' : '#6b7280'} />
+                  <Icon size={18} color={active ? '#2f6fde' : '#6b7280'} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </button>
               );
@@ -427,6 +379,7 @@ export const ManagerSpace = () => {
           </nav>
         </aside>
 
+        {activeSection === 'hr' && (<>
         {/* ═══ MAIN ═══ */}
         <main style={S.main}>
 
@@ -687,6 +640,9 @@ export const ManagerSpace = () => {
             )}
           </div>
         </aside>
+        </>)}
+
+        {activeSection === 'poa' && <PoaSection showToast={showToast} />}
       </div>
 
       {/* Floating help bubble */}
