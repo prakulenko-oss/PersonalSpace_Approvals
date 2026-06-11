@@ -3,6 +3,7 @@ import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { Dashboard } from './pages/Dashboard';
 import { Approvals } from './pages/Approvals';
 import { BankMemo } from './pages/BankMemo';
+import { ManagerSpace } from './pages/ManagerSpace';
 
 // ── Щоб додати нову сторінку:
 // 1. Створіть файл src/pages/MyNewPage.tsx
@@ -18,6 +19,7 @@ function App() {
           <Route path="/"           element={<Dashboard />} />
           <Route path="/approvals"  element={<Approvals />} />
           <Route path="/bank-memo"  element={<BankMemo />} />
+          <Route path="/manager-space" element={<ManagerSpace />} />
 
           {/* Заглушки — замініть на реальні сторінки згодом */}
           <Route path="/vacations"  element={<Navigate to="/" replace />} />

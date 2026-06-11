@@ -13,7 +13,8 @@ const styles = {
   page: {
     display: 'flex',
     flexDirection: 'column' as const,
-    minHeight: '100vh',
+    height: '100vh',
+    overflowY: 'auto' as const,
     backgroundColor: '#ffffff',
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     alignItems: 'center',
@@ -481,6 +482,22 @@ export const Dashboard = () => {
             <div style={styles.widgetBody}>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>
                 Пам'ятка: як обрати банк для зарплатної картки та що зробити для переходу
+              </div>
+            </div>
+          </div>
+
+          {/* Manager space shortcut */}
+          <div style={{ ...styles.widget, ...styles.widgetClickable }} onClick={() => navigate('/manager-space')}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <Users size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Простір менеджера</span>
+              </div>
+              <a style={styles.allLink}>Відкрити →</a>
+            </div>
+            <div style={styles.widgetBody}>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                Кадрові операції та відсутності: команда, звіти, швидкі дії
               </div>
             </div>
           </div>
