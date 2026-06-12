@@ -4,6 +4,7 @@ import {
   AlarmClock, UserPlus, PenLine,
   BarChart3, BookOpen, Search, AlertTriangle, Zap,
   ExternalLink, X, Download, Share2, Paperclip,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
 import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
@@ -43,7 +44,7 @@ const poaRows: DocRow[] = [
     name: 'Місяченко А.Л.', role: 'Т.в.о. директора', endDate: '11.09.2026', status: 'active', file: 'dov_004.pdf',
     detail: {
       regNumber: '92-2026', regDateTime: '11.03.2026, 16:18', state: 'Чинна',
-      poaKind: 'Т.В.О.',
+      poaKind: 'т.в.о.',
       summary: 'Довіреність на право діяти в межах повноважень в.о. директора з розробки діджитал продуктів дирекції',
       termYears: '', termFrom: '11.03.2026', termTo: '11.09.2026',
       issuedTo: 'Місяченко А.Л.',
@@ -59,7 +60,7 @@ const poaRows: DocRow[] = [
     name: 'Орест Вигадко', role: 'Генеральна довіреність', endDate: '15.12.2026', status: 'active', file: 'dov_001.pdf',
     detail: {
       regNumber: '87-2025', regDateTime: '15.12.2025, 10:42', state: 'Чинна',
-      poaKind: 'Загальна',
+      poaKind: 'загальна',
       summary: 'Генеральна довіреність на представництво інтересів компанії в межах посадових повноважень',
       termYears: '1', termFrom: '15.12.2025', termTo: '15.12.2026',
       issuedTo: 'Вигадко О.Т.',
@@ -75,7 +76,7 @@ const poaRows: DocRow[] = [
     name: 'Мирослава Квіткова', role: 'Фінансові операції', endDate: '02.07.2026', status: 'expiring', file: 'dov_002.pdf',
     detail: {
       regNumber: '14-2026', regDateTime: '02.07.2025, 09:15', state: 'Чинна',
-      poaKind: 'Спеціальна',
+      poaKind: 'спеціальна',
       summary: 'Довіреність на підписання фінансових документів та здійснення банківських операцій у межах ліміту',
       termYears: '1', termFrom: '02.07.2025', termTo: '02.07.2026',
       daysLeft: 21,
@@ -91,7 +92,7 @@ const poaRows: DocRow[] = [
     name: 'Соломія Хмаркова', role: 'Представництво в суді', endDate: '05.08.2025', status: 'expired', file: 'dov_003.pdf',
     detail: {
       regNumber: '31-2024', regDateTime: '05.08.2024, 14:03', state: 'Нечинна',
-      poaKind: 'Спеціальна',
+      poaKind: 'спеціальна',
       summary: 'Довіреність на представництво інтересів компанії в судах усіх інстанцій',
       termYears: '1', termFrom: '05.08.2024', termTo: '05.08.2025',
       issuedTo: 'Хмаркова С.П.',
@@ -103,6 +104,22 @@ const poaRows: DocRow[] = [
       comment: 'Термін дії завершено. Нову довіреність не оформлено.',
     },
   },
+  {
+    name: 'Джерелько Дмитро', role: 'Закупівлі', endDate: '20.06.2026', status: 'expiring', file: 'dov_005.pdf',
+    detail: {
+      regNumber: '41-2026', regDateTime: '20.06.2025, 11:30', state: 'Чинна',
+      poaKind: 'спеціальна',
+      summary: 'Довіреність на укладання договорів закупівлі товарів та послуг у межах ліміту',
+      termYears: '1', termFrom: '20.06.2025', termTo: '20.06.2026',
+      daysLeft: 8,
+      issuedTo: 'Джерелько Д.О.',
+      issuedToCompany: [
+        'Джерелько Д.О. (4444444444444 - 11 - Департамент закупівель Провідний фахівець із закупівель)',
+      ],
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+    },
+  },
 ];
 
 const kepRows: DocRow[] = [
@@ -111,12 +128,14 @@ const kepRows: DocRow[] = [
   { name: 'Соломія Хмаркова', role: 'КЕП особистий',          endDate: '11.01.2026', status: 'active',   file: 'kep_003.zs2' },
 ];
 
+type KpiCard = { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string; tab: 'poa' | 'kep' };
+
 const kpiCards = [
-  { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', image: poaIcon },
-  { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3', image: poaIconOrange },
-  { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7', image: kepIcon },
-  { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', image: kepIconRed },
-] as { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string }[];
+  { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', image: poaIcon, tab: 'poa' },
+  { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3', image: poaIconOrange, tab: 'poa' },
+  { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7', image: kepIcon, tab: 'kep' },
+  { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', image: kepIconRed, tab: 'kep' },
+] as KpiCard[];
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -144,10 +163,28 @@ const instructionBlocks: { title: string; emoji: string; image?: string; bg: str
 
 /* ════════════════════════ SECTION ════════════════════════ */
 
+const SortHeader = <C extends string>({ label, col, sort, onSort }: {
+  label: string; col: C;
+  sort: { col: C; dir: 1 | -1 } | null;
+  onSort: (col: C) => void;
+}) => (
+  <div
+    onClick={() => onSort(col)}
+    style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', userSelect: 'none' }}
+    title="Сортувати"
+  >
+    <span>{label}</span>
+    {sort?.col === col
+      ? (sort.dir === 1 ? <ArrowUp size={12} color="#2563eb" /> : <ArrowDown size={12} color="#2563eb" />)
+      : <ArrowUpDown size={12} color="#c2c9d4" />}
+  </div>
+);
+
 export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) => {
   const [tab, setTab] = useState<'poa' | 'kep'>('poa');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [kindFilter, setKindFilter] = useState('');
   const [selectedDoc, setSelectedDoc] = useState<DocRow | null>(null);
   const [shareDoc, setShareDoc] = useState<DocRow | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -159,19 +196,49 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
   const rows = tab === 'poa' ? poaRows : kepRows;
   const filterOptions = tab === 'poa' ? poaFilterOptions : kepFilterOptions;
 
-  const filteredRows = useMemo(() =>
-    rows.filter(r => {
+  // Сортування: колонка + напрямок
+  type SortCol = 'name' | 'kind' | 'endDate' | 'state';
+  const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 } | null>(null);
+  const toggleSort = (col: SortCol) =>
+    setSort(prev => prev?.col === col ? (prev.dir === 1 ? { col, dir: -1 } : null) : { col, dir: 1 });
+
+  // Пагінація
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+
+  const dateKey = (d: string) => d.split('.').reverse().join('');   // dd.mm.yyyy → yyyymmdd
+
+  const filteredRows = useMemo(() => {
+    const result = rows.filter(r => {
       const matchesSearch =
         r.name.toLowerCase().includes(search.toLowerCase()) ||
         (tab === 'poa' ? (r.detail?.poaKind ?? '') : r.role).toLowerCase().includes(search.toLowerCase()) ||
         (r.detail?.summary ?? '').toLowerCase().includes(search.toLowerCase());
-      const matchesFilter = !statusFilter || (
+      const matchesStatus = !statusFilter || (
         tab === 'poa'
           ? (r.detail?.state ?? '').toLowerCase() === statusFilter
           : r.status === statusFilter
       );
-      return matchesSearch && matchesFilter;
-    }), [rows, tab, search, statusFilter]);
+      const matchesKind = !kindFilter || (r.detail?.poaKind ?? '') === kindFilter;
+      return matchesSearch && matchesStatus && matchesKind;
+    });
+    if (sort) {
+      const val = (r: DocRow): string => {
+        switch (sort.col) {
+          case 'name':    return r.name;
+          case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? '') : r.role;
+          case 'endDate': return dateKey(r.endDate);
+          case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : r.status;
+        }
+      };
+      result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
+    }
+    return result;
+  }, [rows, tab, search, statusFilter, kindFilter, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <>
@@ -179,8 +246,8 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
       <main style={S.main}>
 
         {/* KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px', marginBottom: '24px' }}>
-          {kpiCards.map(kpi => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px', marginBottom: '24px' }}>
+          {kpiCards.filter(kpi => kpi.tab === tab).map(kpi => (
             <div key={kpi.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: kpi.accent }} />
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -210,7 +277,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
             ]).map(t => (
               <button
                 key={t.id}
-                onClick={() => { setTab(t.id); setSearch(''); setStatusFilter(''); setSelectedDoc(null); }}
+                onClick={() => { setTab(t.id); setSearch(''); setStatusFilter(''); setKindFilter(''); setSelectedDoc(null); setSort(null); setPage(1); }}
                 style={{
                   padding: '8px 18px', border: 'none', borderRadius: '8px', cursor: 'pointer',
                   fontSize: '14px', fontWeight: 600, fontFamily: 'inherit',
@@ -234,21 +301,29 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                 style={{ ...S.input, paddingLeft: '36px' }}
               />
             </div>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ ...S.input, width: '160px' }}>
+            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} style={{ ...S.input, width: '150px' }}>
               {filterOptions.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
             </select>
+            {tab === 'poa' && (
+              <select value={kindFilter} onChange={e => { setKindFilter(e.target.value); setPage(1); }} style={{ ...S.input, width: '170px' }}>
+                <option value="">Всі види</option>
+                <option value="загальна">загальна</option>
+                <option value="спеціальна">спеціальна</option>
+                <option value="т.в.о.">т.в.о.</option>
+              </select>
+            )}
           </div>
 
           {/* Table */}
           <div style={{ padding: '14px 18px 18px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr', gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              <div>ПІБ</div>
-              <div>{tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'}</div>
-              <div>Дата закінчення</div>
-              <div>{tab === 'poa' ? 'Стан довіреності' : 'Статус'}</div>
+              <SortHeader label="ПІБ" col="name" sort={sort} onSort={toggleSort} />
+              <SortHeader label={tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'} col="kind" sort={sort} onSort={toggleSort} />
+              <SortHeader label="Дата закінчення" col="endDate" sort={sort} onSort={toggleSort} />
+              <SortHeader label={tab === 'poa' ? 'Стан довіреності' : 'Статус'} col="state" sort={sort} onSort={toggleSort} />
               <div style={{ textAlign: 'right' }}>Дії</div>
             </div>
-            {filteredRows.map(r => (
+            {pagedRows.map(r => (
               <div
                 key={r.file}
                 onClick={() => r.detail && setSelectedDoc(r)}
@@ -263,7 +338,19 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
               >
                 <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
                 <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? '—') : r.role}</div>
-                <div style={{ color: '#374151' }}>{r.endDate}</div>
+                <div>
+                  {r.detail?.daysLeft != null ? (
+                    <span style={{
+                      padding: '4px 10px', borderRadius: '6px', fontSize: '12.5px', fontWeight: 600,
+                      backgroundColor: r.detail.daysLeft < 10 ? '#fde7e7' : '#fdf3e3',
+                      color: r.detail.daysLeft < 10 ? '#b91c1c' : '#b45309',
+                    }}>
+                      {r.endDate}
+                    </span>
+                  ) : (
+                    <span style={{ color: '#374151' }}>{r.endDate}</span>
+                  )}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {tab === 'poa' ? (
                     <>
@@ -275,7 +362,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                         {r.detail?.state ?? '—'}
                       </span>
                       {r.detail?.daysLeft != null && (
-                        <AlarmClock size={15} color="#b45309">
+                        <AlarmClock size={15} color={r.detail.daysLeft < 10 ? '#dc2626' : '#b45309'}>
                           <title>{`Закінчується через ${r.detail.daysLeft} дн.`}</title>
                         </AlarmClock>
                       )}
@@ -315,6 +402,46 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                 Нічого не знайдено за вашим запитом
               </div>
             )}
+
+            {/* Пагінація */}
+            {filteredRows.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px' }}>
+                <span style={{ fontSize: '12.5px', color: '#6b7280' }}>
+                  Показано {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredRows.length)} з {filteredRows.length}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={safePage === 1}
+                    style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === 1 ? 'default' : 'pointer', color: safePage === 1 ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      style={{
+                        minWidth: 30, height: 30, padding: '0 8px', borderRadius: '7px', cursor: 'pointer',
+                        fontSize: '13px', fontWeight: 600, fontFamily: 'inherit',
+                        border: p === safePage ? '1px solid #2563eb' : '1px solid #e5e7eb',
+                        backgroundColor: p === safePage ? '#eaf3fd' : '#fff',
+                        color: p === safePage ? '#2563eb' : '#374151',
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={safePage === totalPages}
+                    style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === totalPages ? 'default' : 'pointer', color: safePage === totalPages ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
@@ -331,6 +458,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
           />
           {quickOpen && (
             <div style={{ padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {tab === 'poa' && (
               <button onClick={() => setCreateOpen(true)} style={{ width: '100%', padding: '14px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <UserPlus size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -340,6 +468,8 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                   </div>
                 </div>
               </button>
+              )}
+              {tab === 'kep' && (
               <button onClick={() => showToast('Відкривається заявка на оформлення КЕП...')} style={{ width: '100%', padding: '14px', backgroundColor: '#1aa251', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <PenLine size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
@@ -349,6 +479,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                   </div>
                 </div>
               </button>
+              )}
             </div>
           )}
         </div>
@@ -364,23 +495,24 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
           {statsOpen && (
             <div style={{ padding: '2px 16px 18px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
-                <span style={{ color: '#4b5563' }}>Всього довіреностей</span>
+                <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього довіреностей</span>
                 <span style={{ fontWeight: 700, color: '#111827' }}>15</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
-                <span style={{ color: '#4b5563' }}>Всього КЕП</span>
-                <span style={{ fontWeight: 700, color: '#111827' }}>10</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
+                <span style={{ color: '#6b7280' }}>загальна</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>6</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '13px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
+                <span style={{ color: '#6b7280' }}>спеціальна</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
+                <span style={{ color: '#6b7280' }}>т.в.о.</span>
+                <span style={{ fontWeight: 600, color: '#374151' }}>2</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
                 <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
                 <span style={{ fontWeight: 700, color: '#f97316' }}>5</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>
-                <span>Активність</span>
-                <span style={{ fontWeight: 600 }}>80%</span>
-              </div>
-              <div style={{ width: '100%', height: '7px', backgroundColor: '#e5e7eb', borderRadius: '4px' }}>
-                <div style={{ width: '80%', height: '7px', backgroundColor: '#2f6fde', borderRadius: '4px' }} />
               </div>
             </div>
           )}
@@ -536,7 +668,7 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
             </div>
           </div>
           {detail.daysLeft != null && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '6px 13px', backgroundColor: '#fdf3e3', color: '#b45309', borderRadius: '7px', fontSize: '12.5px', fontWeight: 600 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', padding: '6px 13px', backgroundColor: detail.daysLeft < 10 ? '#fde7e7' : '#fdf3e3', color: detail.daysLeft < 10 ? '#b91c1c' : '#b45309', borderRadius: '7px', fontSize: '12.5px', fontWeight: 600 }}>
               <AlarmClock size={14} />
               Закінчується через {detail.daysLeft} {detail.daysLeft === 1 ? 'день' : detail.daysLeft < 5 ? 'дні' : 'днів'}
             </div>
@@ -662,17 +794,6 @@ const PoaShareModal = ({ row, onClose, onSent }: {
           </div>
         </div>
 
-        {/* Generate letter */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: letter ? '20px' : '24px' }}>
-          <button
-            onClick={() => requiredFilled && setLetter(buildLetter())}
-            disabled={!requiredFilled}
-            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
-          >
-            Сформувати лист
-          </button>
-        </div>
-
         {letter !== null && (
           <>
             {/* Email meta */}
@@ -697,9 +818,18 @@ const PoaShareModal = ({ row, onClose, onSent }: {
           </>
         )}
 
-        {/* Footer */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '18px' }}>
+        {/* Footer: усі дії в одному ряду справа */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
           <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
+          <button
+            onClick={() => requiredFilled && setLetter(buildLetter())}
+            disabled={!requiredFilled}
+            style={letter !== null
+              ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
+              : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+          >
+            Сформувати лист
+          </button>
           {letter !== null && (
             <button onClick={() => onSent(email.trim())} style={S.btnPrimary}>Надіслати лист</button>
           )}
@@ -725,27 +855,21 @@ const teamMembers: TeamMember[] = [
   { id: 'm9', name: 'Тестовий9 Користувач', position: 'Економіст', department: 'Відділ управління фінансовими системами' },
 ];
 
-const poaKinds = ['Загальна', 'Спеціальна', 'Т.В.О.'];
+const poaKinds = ['загальна', 'спеціальна', 'т.в.о.'];
+
+const basisOptions = ['Наказ про призначення на посаду', 'Наказ про т.в.о.', 'Управлінське рішення'];
 
 const legalTo = 'Зореславська А.М. (юридична підтримка) <Anna.Zoreslavska@example.com>, Юридичний відділ <legal@example.com>';
 const initiatorCc = 'Taras Mriynyk <Taras.Mriynyk@example.com>';
 
-const toUa = (iso: string) => {
-  if (!iso) return '';
-  const [y, m, d] = iso.split('-');
-  return `${d}.${m}.${y}`;
-};
-
 const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () => void }) => {
-  const todayISO = new Date().toISOString().split('T')[0];
-
   const [kind, setKind] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
   const [summary, setSummary] = useState('');
-  const [dateFrom, setDateFrom] = useState(todayISO);
-  const [dateTo, setDateTo] = useState('');
-  const [basis, setBasis] = useState('');
+  const [term, setTerm] = useState('');
+  const [termCustom, setTermCustom] = useState('');
+  const [basisList, setBasisList] = useState<string[]>([]);
   const [files, setFiles] = useState<string[]>([]);
   const [comment, setComment] = useState('');
   const [letter, setLetter] = useState<string | null>(null);
@@ -760,8 +884,8 @@ const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () =
   const toggleMember = (id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
-  const datesValid = !!dateFrom && !!dateTo && dateTo >= dateFrom;
-  const requiredFilled = !!kind && selectedIds.length > 0 && summary.trim().length > 0 && datesValid;
+  const termValid = !!term && (term !== 'інше' || termCustom.trim().length > 0);
+  const requiredFilled = selectedIds.length > 0 && summary.trim().length > 0 && termValid;
 
   const onFilesPicked = (list: FileList | null) => {
     if (!list) return;
@@ -772,16 +896,17 @@ const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () =
     const people = selectedMembers
       .map(m => `${m.name} (${m.position}, ${m.department})`)
       .join('\n');
+    const termText = term === 'інше' ? termCustom.trim() : term;
     return `Добрий день!
 
-Прошу оформити довіреність (${kind}).
+Прошу оформити довіреність${kind ? ` (${kind})` : ''}.
 
 На кого видається:
 ${people}
 
 Короткий зміст: ${summary.trim()}
-Термін дії: ${toUa(dateFrom)} – ${toUa(dateTo)}
-Підстава: ${basis.trim() || '—'}
+Термін дії довіреності: ${termText}
+Підстава: ${basisList.length ? basisList.join('; ') : '—'}
 
 Коментар: ${comment.trim() || '—'}
 
@@ -811,9 +936,9 @@ ${people}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           {/* Вид */}
           <div>
-            <label style={S.label}>Вид довіреності *</label>
+            <label style={S.label}>Вид довіреності</label>
             <select value={kind} onChange={e => setKind(e.target.value)} style={S.input}>
-              <option value="" disabled>Оберіть вид</option>
+              <option value="">Не обрано</option>
               {poaKinds.map(k => <option key={k} value={k}>{k}</option>)}
             </select>
           </div>
@@ -871,30 +996,41 @@ ${people}
           </div>
 
           {/* Термін дії */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-            <div>
-              <label style={S.label}>Термін дії з *</label>
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={S.input} />
-            </div>
-            <div>
-              <label style={S.label}>Термін дії по *</label>
-              <input type="date" min={dateFrom} value={dateTo} onChange={e => setDateTo(e.target.value)} style={S.input} />
-            </div>
+          <div>
+            <label style={S.label}>Термін дії довіреності *</label>
+            <select value={term} onChange={e => setTerm(e.target.value)} style={S.input}>
+              <option value="" disabled>Оберіть термін</option>
+              <option value="1 рік">1 рік</option>
+              <option value="3 роки">3 роки</option>
+              <option value="інше">Інше</option>
+            </select>
+            {term === 'інше' && (
+              <input
+                type="text" placeholder="Вкажіть термін, напр.: 6 місяців, до 31.12.2026"
+                value={termCustom} onChange={e => setTermCustom(e.target.value)}
+                style={{ ...S.input, marginTop: '8px' }}
+              />
+            )}
           </div>
-          {dateFrom && dateTo && dateTo < dateFrom && (
-            <div style={{ fontSize: '12.5px', color: '#b91c1c', marginTop: '-8px' }}>
-              Дата «по» не може бути раніше за дату «з»
-            </div>
-          )}
 
           {/* Підстава */}
           <div>
             <label style={S.label}>Підстава</label>
-            <input
-              type="text" placeholder="Напр.: наказ № 12-К від 01.06.2026, службова записка"
-              value={basis} onChange={e => setBasis(e.target.value)}
-              style={S.input}
-            />
+            <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+              {basisOptions.map(b => {
+                const checked = basisList.includes(b);
+                return (
+                  <label key={b} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f3f6', backgroundColor: checked ? '#f5f9ff' : 'transparent', fontSize: '13.5px', color: '#111827' }}>
+                    <input
+                      type="checkbox" checked={checked}
+                      onChange={() => setBasisList(prev => checked ? prev.filter(x => x !== b) : [...prev, b])}
+                      style={{ accentColor: '#2563eb' }}
+                    />
+                    {b}
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           {/* Файли */}
@@ -927,16 +1063,7 @@ ${people}
           </div>
         </div>
 
-        {/* Generate letter */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: letter ? '20px' : '24px' }}>
-          <button
-            onClick={() => requiredFilled && setLetter(buildLetter())}
-            disabled={!requiredFilled}
-            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
-          >
-            Сформувати лист
-          </button>
-        </div>
+
 
         {letter !== null && (
           <>
@@ -960,9 +1087,18 @@ ${people}
           </>
         )}
 
-        {/* Footer */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '18px' }}>
+        {/* Footer: усі дії в одному ряду справа */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
           <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
+          <button
+            onClick={() => requiredFilled && setLetter(buildLetter())}
+            disabled={!requiredFilled}
+            style={letter !== null
+              ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
+              : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+          >
+            Сформувати лист
+          </button>
           {letter !== null && (
             <button onClick={onSent} style={S.btnPrimary}>Надіслати лист</button>
           )}
