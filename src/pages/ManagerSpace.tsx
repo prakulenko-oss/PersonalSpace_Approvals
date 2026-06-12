@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { TopBar } from '../components/TopBar';
 import { S, Toast, ModalShell, RightBlockHeader, Avatar } from './managerUi';
@@ -264,8 +265,10 @@ const toUaDate = (iso: string) => {
 
 export const ManagerSpace = () => {
   // Layout
+  const location = useLocation();
+  const initialSection: Section = new URLSearchParams(location.search).get('section') === 'poa' ? 'poa' : 'hr';
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>('hr');
+  const [activeSection, setActiveSection] = useState<Section>(initialSection);
 
   // Sections
   const [teamOpen, setTeamOpen] = useState(true);

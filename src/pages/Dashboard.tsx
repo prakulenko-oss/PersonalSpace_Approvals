@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -410,16 +410,62 @@ export const Dashboard = () => {
 
         {/* LEFT */}
         <div>
+          {/* Мої сервіси — лаунчер топ-процесів */}
           <div style={styles.widget}>
             <div style={styles.widgetHeader}>
               <div style={styles.widgetTitleWrap}>
-                <ListChecks size={18} color="#0078d4" />
-                <span style={styles.widgetTitle}>Tasks</span>
-                <span style={styles.badge}>0</span>
+                <LayoutGrid size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Мої сервіси</span>
               </div>
             </div>
-            <div style={styles.widgetBody}>
-              <div style={styles.empty}>There are no tasks today...</div>
+            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '14px 6px 10px' }}>
+              {[
+                {
+                  label: 'Центр\nЗатверджень', route: '/approvals',
+                  gradient: 'linear-gradient(135deg, #2196f3, #0d5bb5)',
+                  icon: <ListChecks size={26} color="#fff" />,
+                  badge: currentUser.pendingApprovals,
+                },
+                {
+                  label: 'Простір\nМенеджера', route: '/manager-space',
+                  gradient: 'linear-gradient(135deg, #8b5cf6, #4f46e5)',
+                  icon: <Users size={26} color="#fff" />,
+                },
+                {
+                  label: 'Довіреності\n/ КЕП', route: '/poa',
+                  gradient: 'linear-gradient(135deg, #14b8a6, #0e7490)',
+                  icon: <FileText size={26} color="#fff" />,
+                },
+              ].map(app => (
+                <div
+                  key={app.route}
+                  onClick={() => navigate(app.route)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '86px' }}
+                  onMouseEnter={e => { const ic = e.currentTarget.firstElementChild as HTMLElement; ic.style.transform = 'scale(1.07)'; }}
+                  onMouseLeave={e => { const ic = e.currentTarget.firstElementChild as HTMLElement; ic.style.transform = 'scale(1)'; }}
+                >
+                  <div style={{
+                    position: 'relative', width: 58, height: 58, borderRadius: '14px',
+                    background: app.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(15,60,120,0.18)', transition: 'transform 0.15s ease',
+                  }}>
+                    {app.icon}
+                    {app.badge != null && app.badge > 0 && (
+                      <span style={{
+                        position: 'absolute', top: -6, right: -6, minWidth: 20, height: 20, padding: '0 5px',
+                        borderRadius: '10px', backgroundColor: '#e02f2f', color: '#fff',
+                        fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '2px solid #fff', boxSizing: 'border-box',
+                      }}>
+                        {app.badge}
+                      </span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#374151', textAlign: 'center', lineHeight: 1.25, whiteSpace: 'pre-line' }}>
+                    {app.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

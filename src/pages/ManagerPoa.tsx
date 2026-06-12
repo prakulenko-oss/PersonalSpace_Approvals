@@ -187,7 +187,9 @@ const SortHeader = <C extends string>({ label, col, sort, onSort }: {
   </div>
 );
 
-export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) => {
+export type PoaMode = 'manager' | 'employee';
+
+export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: string) => void; mode?: PoaMode }) => {
   const [tab, setTab] = useState<'poa' | 'kep'>('poa');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -615,6 +617,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
       {/* ═══ CREATE POA MODAL ═══ */}
       {createOpen && (
         <PoaCreateModal
+          mode={mode}
           onClose={() => setCreateOpen(false)}
           onSent={() => { setCreateOpen(false); showToast('Запит на оформлення довіреності надіслано відповідальним!'); }}
         />
@@ -921,6 +924,15 @@ const teamMembers: TeamMember[] = [
   { id: 'm9', name: 'Тестовий9 Користувач', position: 'Економіст', department: 'Відділ управління фінансовими системами' },
 ];
 
+/* Режим співробітника: я + мій керівник + колеги функції */
+const functionMembers: (TeamMember & { tag?: 'self' | 'manager' })[] = [
+  { id: 'self', name: 'Тарас Мрійник',            position: 'Фахівець з внутрішніх комунікацій', department: 'Функція управління персоналом', tag: 'self' },
+  { id: 'boss', name: 'Світанко Роман Олегович',  position: 'Директор департаменту',             department: 'Функція управління персоналом', tag: 'manager' },
+  { id: 'f1',   name: 'Барвінкова Дарина',        position: 'Провідний аналітик',                department: 'Функція управління персоналом' },
+  { id: 'f2',   name: 'Громовик Марко',           position: 'Провідний інженер',                 department: 'Функція управління персоналом' },
+  { id: 'f3',   name: 'Медунка Ганна',            position: 'Фахівець із документообігу',        department: 'Функція управління персоналом' },
+];
+
 const poaKinds = ['загальна', 'спеціальна', 'т.в.о.'];
 
 const basisOptions = ['Наказ про призначення на посаду', 'Наказ про т.в.о.', 'Управлінське рішення'];
@@ -928,7 +940,8 @@ const basisOptions = ['Наказ про призначення на посад�
 const legalTo = 'Зореславська А.М. (юридична підтримка) <Anna.Zoreslavska@example.com>, Юридичний відділ <legal@example.com>';
 const initiatorCc = 'Taras Mriynyk <Taras.Mriynyk@example.com>';
 
-const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () => void }) => {
+const PoaCreateModal = ({ mode, onClose, onSent }: { mode: PoaMode; onClose: () => void; onSent: () => void }) => {
+  const memberPool: (TeamMember & { tag?: 'self' | 'manager' })[] = mode === 'employee' ? functionMembers : teamMembers;
   const [kind, setKind] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
@@ -940,8 +953,8 @@ const PoaCreateModal = ({ onClose, onSent }: { onClose: () => void; onSent: () =
   const [comment, setComment] = useState('');
   const [letter, setLetter] = useState<string | null>(null);
 
-  const selectedMembers = teamMembers.filter(m => selectedIds.includes(m.id));
-  const filteredMembers = teamMembers.filter(m =>
+  const selectedMembers = memberPool.filter(m => selectedIds.includes(m.id));
+  const filteredMembers = memberPool.filter(m =>
     m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
     m.position.toLowerCase().includes(memberSearch.toLowerCase()) ||
     m.department.toLowerCase().includes(memberSearch.toLowerCase())
@@ -995,7 +1008,9 @@ ${people}
             <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>Запит на оформлення нової довіреності</span>
           </div>
           <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>
-            Після надсилання листа процес оформлення запустить юридичний відділ
+            {mode === 'employee'
+              ? 'Можна замовити довіреність для себе, колег своєї функції або вашого керівника. Процес оформлення запустить юридичний відділ.'
+              : 'Після надсилання листа процес оформлення запустить юридичний відділ'}
           </div>
         </div>
 
@@ -1039,6 +1054,12 @@ ${people}
                     <input type="checkbox" checked={checked} onChange={() => toggleMember(m.id)} style={{ accentColor: '#2563eb' }} />
                     <span>
                       <span style={{ fontWeight: 600, fontSize: '13px', color: '#111827' }}>{m.name}</span>
+                      {m.tag === 'self' && (
+                        <span style={{ marginLeft: '6px', padding: '1px 8px', fontSize: '10.5px', fontWeight: 600, borderRadius: '99px', backgroundColor: '#eceef2', color: '#4b5563' }}>ви</span>
+                      )}
+                      {m.tag === 'manager' && (
+                        <span style={{ marginLeft: '6px', padding: '1px 8px', fontSize: '10.5px', fontWeight: 600, borderRadius: '99px', backgroundColor: '#eaf3fd', border: '1px solid #cfe2f8', color: '#2563eb' }}>Керівник</span>
+                      )}
                       <span style={{ fontSize: '12px', color: '#6b7280' }}> — {m.position}, {m.department}</span>
                     </span>
                   </label>
