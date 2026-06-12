@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
   AlarmClock, UserPlus, PenLine,
-  BarChart3, BookOpen, Search, AlertTriangle, Zap,
+  BarChart3, BookOpen, Search, Zap,
   ExternalLink, X, Download, Share2, Paperclip,
-  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Check,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell } from './managerUi';
 import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
@@ -12,12 +12,6 @@ import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons'
 /* ════════════════════════ DATA ════════════════════════ */
 
 type DocStatus = 'active' | 'expiring' | 'expired';
-
-const kepStatusMeta: Record<DocStatus, { label: string; bg: string; color: string }> = {
-  active:   { label: 'Активний',     bg: '#d8f5e3', color: '#166534' },
-  expiring: { label: '< 30д',        bg: '#fdf3e3', color: '#b45309' },
-  expired:  { label: 'Прострочений', bg: '#fde7e7', color: '#b91c1c' },
-};
 
 /** Детальна інформація довіреності (read-only подання даних з Докнет) */
 type PoaDetail = {
@@ -37,7 +31,17 @@ type PoaDetail = {
   comment?: string;
 };
 
-type DocRow = { name: string; role: string; endDate: string; status: DocStatus; file: string; detail?: PoaDetail };
+type ProgressStep = { label: string; date?: string; status: 'done' | 'current' | 'pending' };
+
+type DocRow = {
+  name: string; role: string; endDate: string; status: DocStatus; file: string;
+  detail?: PoaDetail;
+  kind?: string;                 // вид довіреності для заявок «в роботі»
+  progress?: ProgressStep[];     // якщо є — заявка в роботі, шторка показує флоу
+  kepState?: 'Чинний' | 'Нечинний';
+  daysLeft?: number;             // для КЕП — підсвітка термінів
+  basis?: string;                // підстава (стовпчик на табі КЕП)
+};
 
 const poaRows: DocRow[] = [
   {
@@ -123,10 +127,24 @@ const poaRows: DocRow[] = [
 ];
 
 const kepRows: DocRow[] = [
-  { name: 'Орест Вигадко',   role: 'КЕП особистий',          endDate: '15.03.2026', status: 'active',   file: 'kep_001.zs2' },
-  { name: 'Мирослава Квіткова', role: 'КЕП печатка організації', endDate: '02.07.2026', status: 'expiring', file: 'kep_002.zs2' },
-  { name: 'Соломія Хмаркова', role: 'КЕП особистий',          endDate: '11.01.2026', status: 'active',   file: 'kep_003.zs2' },
+  { name: 'Орест Вигадко',      role: 'КЕП особистий',           endDate: '15.03.2026', status: 'active',   file: 'kep_001.zs2', kepState: 'Чинний',   basis: 'Наказ про призначення на посаду' },
+  { name: 'Мирослава Квіткова', role: 'КЕП печатка організації', endDate: '02.07.2026', status: 'expiring', file: 'kep_002.zs2', kepState: 'Чинний',   daysLeft: 21, basis: 'Управлінське рішення' },
+  { name: 'Соломія Хмаркова',   role: 'КЕП особистий',           endDate: '19.06.2026', status: 'expiring', file: 'kep_003.zs2', kepState: 'Чинний',   daysLeft: 7,  basis: 'Наказ про т.в.о.' },
+  { name: 'Зорепадов Гнат Юхимович', role: 'КЕП особистий',      endDate: '11.01.2026', status: 'expired',  file: 'kep_004.zs2', kepState: 'Нечинний', basis: 'Наказ про призначення на посаду' },
 ];
+
+/* Заявка на КЕП «в роботі» — приклад для трекінгу */
+const inProgressKepRow: DocRow = {
+  name: 'Тарас Мрійник', role: 'Підписант документів', endDate: '31.12.2026', status: 'active', file: 'kep_request_001',
+  basis: 'Управлінське рішення',
+  progress: [
+    { label: 'Заявку створено',                            date: '10.06.2026, 14:32', status: 'done' },
+    { label: 'Передано в систему контролю прав доступу',   date: '10.06.2026, 14:33', status: 'done' },
+    { label: 'Погодження ролі',                            date: '11.06.2026, 09:15', status: 'current' },
+    { label: 'Генерація сертифіката',                      status: 'pending' },
+    { label: 'КЕП готовий',                                status: 'pending' },
+  ],
+};
 
 type KpiCard = { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string; tab: 'poa' | 'kep' };
 
@@ -144,21 +162,10 @@ const poaFilterOptions = [
 ];
 
 const kepFilterOptions = [
-  { value: '',         label: 'Всі' },
-  { value: 'active',   label: 'Активні' },
-  { value: 'expiring', label: '< 30д' },
-  { value: 'expired',  label: 'Прострочені' },
-];
-
-const instructionBlocks: { title: string; emoji: string; image?: string; bg: string; border: string; items: string[] }[] = [
-  {
-    title: 'Довіреності', emoji: '📜', image: poaIcon, bg: '#eaf3fd', border: '#cfe2f8',
-    items: ['Моніторити терміни дії довіреностей', 'Завчасно оновлювати документи (>30 днів)', 'Зберігати копії у захищеному сховищі'],
-  },
-  {
-    title: 'КЕП', emoji: '🪪', image: kepIcon, bg: '#eaf8ee', border: '#cdeBd8',
-    items: ['Перевіряти статус сертифікатів щомісяця', 'Замовляти нові КЕП за 45 днів до закінчення', 'Архівувати прострочені сертифікати'],
-  },
+  { value: '',          label: 'Всі' },
+  { value: 'чинний',    label: 'Чинні' },
+  { value: 'нечинний',  label: 'Нечинні' },
+  { value: 'в роботі',  label: 'У роботі' },
 ];
 
 /* ════════════════════════ SECTION ════════════════════════ */
@@ -188,16 +195,18 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
   const [selectedDoc, setSelectedDoc] = useState<DocRow | null>(null);
   const [shareDoc, setShareDoc] = useState<DocRow | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [kepOpen, setKepOpen] = useState(false);
+  const [createdRows, setCreatedRows] = useState<DocRow[]>([]);
 
   const [quickOpen, setQuickOpen] = useState(true);
   const [statsOpen, setStatsOpen] = useState(true);
   const [instrOpen, setInstrOpen] = useState(true);
 
-  const rows = tab === 'poa' ? poaRows : kepRows;
+  const rows = tab === 'poa' ? poaRows : [inProgressKepRow, ...createdRows, ...kepRows];
   const filterOptions = tab === 'poa' ? poaFilterOptions : kepFilterOptions;
 
   // Сортування: колонка + напрямок
-  type SortCol = 'name' | 'kind' | 'endDate' | 'state';
+  type SortCol = 'name' | 'kind' | 'endDate' | 'state' | 'basis';
   const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 } | null>(null);
   const toggleSort = (col: SortCol) =>
     setSort(prev => prev?.col === col ? (prev.dir === 1 ? { col, dir: -1 } : null) : { col, dir: 1 });
@@ -213,22 +222,25 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
       const matchesSearch =
         r.name.toLowerCase().includes(search.toLowerCase()) ||
         (tab === 'poa' ? (r.detail?.poaKind ?? '') : r.role).toLowerCase().includes(search.toLowerCase()) ||
-        (r.detail?.summary ?? '').toLowerCase().includes(search.toLowerCase());
+        (r.detail?.summary ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (r.basis ?? '').toLowerCase().includes(search.toLowerCase());
+      const kepState = r.progress ? 'в роботі' : (r.kepState ?? '').toLowerCase();
       const matchesStatus = !statusFilter || (
         tab === 'poa'
           ? (r.detail?.state ?? '').toLowerCase() === statusFilter
-          : r.status === statusFilter
+          : kepState === statusFilter
       );
-      const matchesKind = !kindFilter || (r.detail?.poaKind ?? '') === kindFilter;
+      const matchesKind = !kindFilter || (r.detail?.poaKind ?? r.kind ?? '') === kindFilter;
       return matchesSearch && matchesStatus && matchesKind;
     });
     if (sort) {
       const val = (r: DocRow): string => {
         switch (sort.col) {
           case 'name':    return r.name;
-          case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? '') : r.role;
-          case 'endDate': return dateKey(r.endDate);
-          case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : r.status;
+          case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '') : r.role;
+          case 'endDate': return r.endDate === '—' ? '99999999' : dateKey(r.endDate);
+          case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : (r.progress ? 'в роботі' : (r.kepState ?? ''));
+          case 'basis':   return r.basis ?? '';
         }
       };
       result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
@@ -240,15 +252,17 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
   const safePage = Math.min(page, totalPages);
   const pagedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  const gridCols = tab === 'poa' ? '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr' : '1.5fr 1.4fr 1.1fr 1fr 1.7fr';
+
   return (
     <>
       {/* ═══ MAIN ═══ */}
       <main style={S.main}>
 
         {/* KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginBottom: '24px' }}>
           {kpiCards.filter(kpi => kpi.tab === tab).map(kpi => (
-            <div key={kpi.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden' }}>
+            <div key={kpi.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden', width: '270px', boxSizing: 'border-box' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: kpi.accent }} />
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
@@ -316,40 +330,45 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
 
           {/* Table */}
           <div style={{ padding: '14px 18px 18px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr', gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               <SortHeader label="ПІБ" col="name" sort={sort} onSort={toggleSort} />
               <SortHeader label={tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'} col="kind" sort={sort} onSort={toggleSort} />
               <SortHeader label="Дата закінчення" col="endDate" sort={sort} onSort={toggleSort} />
-              <SortHeader label={tab === 'poa' ? 'Стан довіреності' : 'Статус'} col="state" sort={sort} onSort={toggleSort} />
-              <div style={{ textAlign: 'right' }}>Дії</div>
+              <SortHeader label={tab === 'poa' ? 'Стан довіреності' : 'Стан КЕП'} col="state" sort={sort} onSort={toggleSort} />
+              {tab === 'poa'
+                ? <div style={{ textAlign: 'right' }}>Дії</div>
+                : <SortHeader label="Підстава" col="basis" sort={sort} onSort={toggleSort} />}
             </div>
             {pagedRows.map(r => (
               <div
                 key={r.file}
-                onClick={() => r.detail && setSelectedDoc(r)}
+                onClick={() => { if (tab === 'poa' ? r.detail : r.progress) setSelectedDoc(r); }}
                 style={{
-                  display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1.1fr 1.2fr 0.7fr', gap: '12px',
+                  display: 'grid', gridTemplateColumns: gridCols, gap: '12px',
                   padding: '14px', alignItems: 'center', fontSize: '13.5px', borderBottom: '1px solid #eef2f7',
-                  cursor: r.detail ? 'pointer' : 'default',
+                  cursor: (tab === 'poa' ? r.detail : r.progress) ? 'pointer' : 'default',
                   backgroundColor: selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent',
                 }}
                 onMouseEnter={e => { if (selectedDoc?.file !== r.file) e.currentTarget.style.backgroundColor = '#fafbfd'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent'; }}
               >
                 <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
-                <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? '—') : r.role}</div>
+                <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '—') : r.role}</div>
                 <div>
-                  {r.detail?.daysLeft != null ? (
-                    <span style={{
-                      padding: '4px 10px', borderRadius: '6px', fontSize: '12.5px', fontWeight: 600,
-                      backgroundColor: r.detail.daysLeft < 10 ? '#fde7e7' : '#fdf3e3',
-                      color: r.detail.daysLeft < 10 ? '#b91c1c' : '#b45309',
-                    }}>
-                      {r.endDate}
-                    </span>
-                  ) : (
-                    <span style={{ color: '#374151' }}>{r.endDate}</span>
-                  )}
+                  {(() => {
+                    const dl = tab === 'poa' ? r.detail?.daysLeft : r.daysLeft;
+                    return dl != null ? (
+                      <span style={{
+                        padding: '4px 10px', borderRadius: '6px', fontSize: '12.5px', fontWeight: 600,
+                        backgroundColor: dl < 10 ? '#fde7e7' : '#fdf3e3',
+                        color: dl < 10 ? '#b91c1c' : '#b45309',
+                      }}>
+                        {r.endDate}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#374151' }}>{r.endDate}</span>
+                    );
+                  })()}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {tab === 'poa' ? (
@@ -367,34 +386,55 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
                         </AlarmClock>
                       )}
                     </>
-                  ) : (
-                    <span style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: kepStatusMeta[r.status].bg, color: kepStatusMeta[r.status].color }}>
-                      {kepStatusMeta[r.status].label}
+                  ) : r.progress ? (
+                    <span style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
+                      В роботі
                     </span>
+                  ) : (
+                    <>
+                      <span style={{
+                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
+                        backgroundColor: r.kepState === 'Чинний' ? '#d8f5e3' : '#eceef2',
+                        color: r.kepState === 'Чинний' ? '#166534' : '#6b7280',
+                      }}>
+                        {r.kepState ?? '—'}
+                      </span>
+                      {r.daysLeft != null && (
+                        <AlarmClock size={15} color={r.daysLeft < 10 ? '#dc2626' : '#b45309'}>
+                          <title>{`Закінчується через ${r.daysLeft} дн.`}</title>
+                        </AlarmClock>
+                      )}
+                    </>
                   )}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                  <button
-                    onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }}
-                    title={tab === 'poa' ? 'Завантажити довіреність' : 'Завантажити файл'}
-                    style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
-                    onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
-                  >
-                    <Download size={16} color="#2f6fde" />
-                  </button>
-                  {tab === 'poa' && (
-                    <button
-                      onClick={e => { e.stopPropagation(); setShareDoc(r); }}
-                      title="Поділитися довіреністю"
-                      style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
-                      onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
-                    >
-                      <Share2 size={16} color="#2f6fde" />
-                    </button>
-                  )}
-                </div>
+                {tab === 'poa' ? (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                    {!r.progress && (
+                      <>
+                        <button
+                          onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }}
+                          title="Завантажити довіреність"
+                          style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
+                          onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
+                        >
+                          <Download size={16} color="#2f6fde" />
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); setShareDoc(r); }}
+                          title="Поділитися довіреністю"
+                          style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
+                          onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
+                        >
+                          <Share2 size={16} color="#2f6fde" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ color: '#374151', fontSize: '13px' }}>{r.basis ?? '—'}</div>
+                )}
               </div>
             ))}
             {filteredRows.length === 0 && (
@@ -470,7 +510,7 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
               </button>
               )}
               {tab === 'kep' && (
-              <button onClick={() => showToast('Відкривається заявка на оформлення КЕП...')} style={{ width: '100%', padding: '14px', backgroundColor: '#1aa251', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setKepOpen(true)} style={{ width: '100%', padding: '14px', backgroundColor: '#1aa251', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <PenLine size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
                   <div>
@@ -493,28 +533,49 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
             onToggle={() => setStatsOpen(o => !o)}
           />
           {statsOpen && (
-            <div style={{ padding: '2px 16px 18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
-                <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього довіреностей</span>
-                <span style={{ fontWeight: 700, color: '#111827' }}>15</span>
+            tab === 'poa' ? (
+              <div style={{ padding: '2px 16px 18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
+                  <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього довіреностей</span>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>15</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>загальна</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>6</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>спеціальна</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>т.в.о.</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>2</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
+                  <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
+                  <span style={{ fontWeight: 700, color: '#f97316' }}>5</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
-                <span style={{ color: '#6b7280' }}>загальна</span>
-                <span style={{ fontWeight: 600, color: '#374151' }}>6</span>
+            ) : (
+              <div style={{ padding: '2px 16px 18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
+                  <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього КЕП</span>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>10</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>особистий</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>печатка організації</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>3</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
+                  <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
+                  <span style={{ fontWeight: 700, color: '#f97316' }}>2</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
-                <span style={{ color: '#6b7280' }}>спеціальна</span>
-                <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
-                <span style={{ color: '#6b7280' }}>т.в.о.</span>
-                <span style={{ fontWeight: 600, color: '#374151' }}>2</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
-                <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
-                <span style={{ fontWeight: 700, color: '#f97316' }}>5</span>
-              </div>
-            </div>
+            )
           )}
         </div>
 
@@ -527,40 +588,22 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
             onToggle={() => setInstrOpen(o => !o)}
           />
           {instrOpen && (
-            <div style={{ padding: '2px 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {instructionBlocks.map(b => (
-                <div key={b.title} style={{ backgroundColor: b.bg, border: `1px solid ${b.border}`, borderRadius: '10px', padding: '13px 15px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '14px', color: '#1f2937', marginBottom: '9px' }}>
-                    {b.image
-                      ? <img src={b.image} alt={b.title} style={{ width: 22, height: 22, borderRadius: '5px', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '15px' }}>{b.emoji}</span>}
-                    <span>{b.title}</span>
-                  </div>
-                  <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {b.items.map(it => (
-                      <li key={it} style={{ fontSize: '12.5px', color: '#2563eb' }}>
-                        <span style={{ color: '#1f2937' }}>{it}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              <div style={{ backgroundColor: '#fdf0f6', border: '1px solid #f3d3e4', borderRadius: '10px', padding: '13px 15px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '14px', color: '#9d174d', marginBottom: '9px' }}>
-                  <AlertTriangle size={15} color="#d97706" />
-                  <span>Критично важливо</span>
-                </div>
-                <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <li style={{ fontSize: '12.5px', color: '#9d174d' }}>Не допускати прострочення діючих довіреностей</li>
-                  <li style={{ fontSize: '12.5px', color: '#9d174d' }}>КЕП керівника має бути дійсним постійно</li>
-                </ul>
+            <div style={{ padding: '2px 16px 16px' }}>
+              <div style={{ textAlign: 'center', padding: '14px 0', fontSize: '13px', color: '#9ca3af' }}>
+                Наповнення розділу в роботі
               </div>
             </div>
           )}
         </div>
       </aside>
       {/* ═══ DETAIL DRAWER ═══ */}
-      {selectedDoc && selectedDoc.detail && (
+      {selectedDoc && selectedDoc.progress && (
+        <KepProgressDrawer
+          row={selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+        />
+      )}
+      {selectedDoc && !selectedDoc.progress && selectedDoc.detail && (
         <PoaDetailDrawer
           row={selectedDoc}
           detail={selectedDoc.detail}
@@ -574,6 +617,29 @@ export const PoaSection = ({ showToast }: { showToast: (msg: string) => void }) 
         <PoaCreateModal
           onClose={() => setCreateOpen(false)}
           onSent={() => { setCreateOpen(false); showToast('Запит на оформлення довіреності надіслано відповідальним!'); }}
+        />
+      )}
+
+      {/* ═══ KEP REQUEST MODAL ═══ */}
+      {kepOpen && (
+        <KepRequestModal
+          onClose={() => setKepOpen(false)}
+          onSent={(info) => {
+            setKepOpen(false);
+            setCreatedRows(prev => [{
+              name: 'Тарас Мрійник', role: info.role, endDate: info.validTo, status: 'active',
+              file: `kep_request_${Date.now()}`,
+              basis: info.basis,
+              progress: [
+                { label: 'Заявку створено', date: new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }), status: 'done' },
+                { label: 'Передано в систему контролю прав доступу', status: 'current' },
+                { label: 'Погодження ролі', status: 'pending' },
+                { label: 'Генерація сертифіката', status: 'pending' },
+                { label: 'КЕП готовий', status: 'pending' },
+              ],
+            }, ...prev]);
+            showToast('Заявку створено! Вона з\u2019явилась у таблиці зі статусом «В роботі»');
+          }}
         />
       )}
 
@@ -1102,6 +1168,154 @@ ${people}
           {letter !== null && (
             <button onClick={onSent} style={S.btnPrimary}>Надіслати лист</button>
           )}
+        </div>
+      </div>
+    </ModalShell>
+  );
+};
+
+/* ════════════════════════ PROGRESS DRAWER (заявка в роботі) ════════════════════════ */
+
+const KepProgressDrawer = ({ row, onClose }: { row: DocRow; onClose: () => void }) => (
+  <aside style={{
+    position: 'fixed', top: 0, right: 0, bottom: 0, width: '460px', maxWidth: '92vw',
+    backgroundColor: '#fff', zIndex: 150, display: 'flex', flexDirection: 'column',
+    boxShadow: '-8px 0 28px rgba(15,40,80,0.16)', borderLeft: '1px solid #e5e7eb',
+  }}>
+    <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef2f7', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
+      <button onClick={onClose} style={{ padding: '6px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', borderRadius: '8px' }}>
+        <X size={20} />
+      </button>
+    </div>
+
+    <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+      {/* Шапка */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+          <img src={kepIcon} alt="КЕП" style={{ width: 40, height: 40, borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          <span style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Заявка на КЕП</span>
+          <span style={{ padding: '3px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '99px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
+            В роботі
+          </span>
+        </div>
+        <div style={{ fontSize: '13px', color: '#6b7280', marginLeft: '52px' }}>
+          {row.name}{row.role ? ` · ${row.role}` : ''}
+        </div>
+      </div>
+
+      {/* Таймлайн */}
+      <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>
+        Статус заявки
+      </div>
+      <div>
+        {(row.progress ?? []).map((step, i, arr) => {
+          const isLast = i === arr.length - 1;
+          const dotColor = step.status === 'done' ? '#16a34a' : step.status === 'current' ? '#2563eb' : '#d1d5db';
+          return (
+            <div key={step.label} style={{ display: 'flex', gap: '14px' }}>
+              {/* Точка + лінія */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '24px', flexShrink: 0 }}>
+                <div style={{
+                  width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: step.status === 'done' ? '#d8f5e3' : step.status === 'current' ? '#dbeafe' : '#f1f3f6',
+                  border: `2px solid ${dotColor}`, flexShrink: 0,
+                }}>
+                  {step.status === 'done' && <Check size={13} color="#16a34a" />}
+                  {step.status === 'current' && <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#2563eb' }} />}
+                </div>
+                {!isLast && (
+                  <div style={{ width: '2px', flex: 1, minHeight: '26px', backgroundColor: step.status === 'done' ? '#86d9a8' : '#e5e7eb' }} />
+                )}
+              </div>
+              {/* Текст */}
+              <div style={{ paddingBottom: isLast ? 0 : '22px' }}>
+                <div style={{
+                  fontSize: '14px',
+                  fontWeight: step.status === 'current' ? 700 : 600,
+                  color: step.status === 'pending' ? '#9ca3af' : '#111827',
+                }}>
+                  {step.label}
+                  {step.status === 'current' && (
+                    <span style={{ marginLeft: '8px', fontSize: '11.5px', fontWeight: 600, color: '#2563eb' }}>зараз тут</span>
+                  )}
+                </div>
+                {step.date && <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>{step.date}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Підказка */}
+      <div style={{ marginTop: '24px', backgroundColor: '#f7f8fa', borderRadius: '10px', padding: '13px 15px', fontSize: '12.5px', color: '#4b5563', lineHeight: 1.5 }}>
+        Коли КЕП буде готовий, заявка в таблиці зміниться на запис зі станом «Чинний». Сповіщення прийде на вашу пошту.
+      </div>
+    </div>
+  </aside>
+);
+
+/* ════════════════════════ KEP REQUEST MODAL ════════════════════════ */
+
+const KepRequestModal = ({ onClose, onSent }: { onClose: () => void; onSent: (info: { role: string; validTo: string; basis: string }) => void }) => {
+  const [role, setRole] = useState('');
+  const [validTo, setValidTo] = useState('');
+  const [basis, setBasis] = useState('');
+
+  const todayISO = new Date().toISOString().split('T')[0];
+  const requiredFilled = role.trim().length > 0 && !!validTo && !!basis;
+
+  return (
+    <ModalShell maxWidth={520} onClose={onClose}>
+      <div style={S.modalTitleRow}>
+        <div style={S.modalTitle}>Оформити КЕП</div>
+        <button onClick={onClose} style={{ padding: '4px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+          <X size={22} />
+        </button>
+      </div>
+      <div style={{ padding: '14px 26px 24px' }}>
+        {/* Callout */}
+        <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src={kepIcon} alt="КЕП" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+            <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>Заявка на оформлення КЕП</span>
+          </div>
+          <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>
+            Запит буде автоматично передано в систему контролю прав доступу
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+          <div>
+            <label style={S.label}>Роль *</label>
+            <input
+              type="text" placeholder="Вкажіть роль у системі"
+              value={role} onChange={e => setRole(e.target.value)}
+              style={S.input}
+            />
+          </div>
+          <div>
+            <label style={S.label}>Дійсна до *</label>
+            <input type="date" min={todayISO} value={validTo} onChange={e => setValidTo(e.target.value)} style={S.input} />
+          </div>
+          <div>
+            <label style={S.label}>Підстава *</label>
+            <select value={basis} onChange={e => setBasis(e.target.value)} style={S.input}>
+              <option value="" disabled>Оберіть підставу</option>
+              {basisOptions.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
+          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
+          <button
+            onClick={() => requiredFilled && onSent({ role: role.trim(), validTo: validTo.split('-').reverse().join('.'), basis })}
+            disabled={!requiredFilled}
+            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+          >
+            Створити заявку
+          </button>
         </div>
       </div>
     </ModalShell>
