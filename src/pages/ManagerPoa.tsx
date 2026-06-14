@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
+  TabList, Tab, Input, Dropdown, Option, Button, Badge, Textarea, Checkbox, Field, tokens,
+} from '@fluentui/react-components';
+import { DismissRegular, SendRegular } from '@fluentui/react-icons';
+import {
   AlarmClock, UserPlus, PenLine,
   BarChart3, BookOpen, Search, Zap,
   ExternalLink, X, Download, Share2, Paperclip,
@@ -175,18 +179,15 @@ const kepFilterOptions = [
 const StateBadge = ({ state }: { state: string }) => {
   const active = state === 'Чинна' || state === 'Чинний';
   const unknown = state === '—';
+  if (unknown) return <Badge appearance="outline" color="informative">—</Badge>;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: '5px',
-      padding: '4px 10px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
-      backgroundColor: active ? '#d8f5e3' : '#eceef2',
-      color: active ? '#166534' : '#6b7280',
-    }}>
-      {!unknown && (active
-        ? <CheckCircle2 size={13} />
-        : <MinusCircle size={13} />)}
+    <Badge
+      appearance="tint"
+      color={active ? 'success' : 'subtle'}
+      icon={active ? <CheckCircle2 size={12} /> : <MinusCircle size={12} />}
+    >
       {state}
-    </span>
+    </Badge>
   );
 };
 
@@ -200,7 +201,7 @@ const EmptyState = ({ empathetic, filtered, tab, onCreate, onClear }: {
       <div style={{ textAlign: 'center', padding: '40px 24px', color: '#6b7280' }}>
         <FileSearch size={40} color="#c2c9d4" style={{ margin: '0 auto 12px' }} />
         <div style={{ fontSize: '14px', marginBottom: '14px' }}>За вашим запитом нічого не знайдено</div>
-        <button onClick={onClear} style={{ ...S.btnGhost, padding: '7px 18px' }}>Скинути фільтри</button>
+        <Button appearance="secondary" onClick={onClear}>Скинути фільтри</Button>
       </div>
     );
   }
@@ -223,9 +224,9 @@ const EmptyState = ({ empathetic, filtered, tab, onCreate, onClear }: {
           ? 'Поки що порожньо — і це нормально. Коли знадобиться діяти від імені компанії, оформлення довіреності займе кілька хвилин, а ми проведемо вас за руку.'
           : 'Поки що порожньо. Коли знадобиться електронний підпис, оформлення КЕП займе кілька хвилин — ми поруч на кожному кроці.'}
       </div>
-      <button onClick={onCreate} style={{ ...S.btnPrimary, display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
-        {tab === 'poa' ? <><UserPlus size={16} /> Створити довіреність</> : <><PenLine size={16} /> Оформити КЕП</>}
-      </button>
+      <Button appearance="primary" icon={tab === 'poa' ? <UserPlus size={16} /> : <PenLine size={16} />} onClick={onCreate}>
+        {tab === 'poa' ? 'Створити довіреність' : 'Оформити КЕП'}
+      </Button>
     </div>
   );
 };
@@ -360,71 +361,67 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
         {/* Table block */}
         <div style={{ ...S.card, marginBottom: '24px' }}>
           {/* Tabs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '12px 18px', borderBottom: '1px solid #eef2f7' }}>
-            {([
-              { id: 'poa' as const, label: 'Довіреності' },
-              { id: 'kep' as const, label: 'КЕП' },
-            ]).map(t => (
-              <button
-                key={t.id}
-                onClick={() => { setTab(t.id); setSelectedDoc(null); setPage(1); }}
-                style={{
-                  padding: '8px 18px', border: 'none', borderRadius: '8px', cursor: 'pointer',
-                  fontSize: '14px', fontWeight: 600, fontFamily: 'inherit',
-                  backgroundColor: tab === t.id ? '#eaf3fd' : 'transparent',
-                  color: tab === t.id ? '#2563eb' : '#374151',
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
+          <div style={{ padding: '6px 12px', borderBottom: '1px solid #eef2f7' }}>
+            <TabList
+              selectedValue={tab}
+              onTabSelect={(_, d) => { setTab(d.value as 'poa' | 'kep'); setSelectedDoc(null); setPage(1); }}
+            >
+              <Tab value="poa">Довіреності</Tab>
+              <Tab value="kep">КЕП</Tab>
+            </TabList>
           </div>
 
           {/* Search + filter */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', padding: '16px 18px 4px' }}>
-            <div style={{ position: 'relative', flex: isMobile ? '1 1 100%' : '0 0 260px' }}>
-              <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Пошук за ПІБ / Опис"
-                aria-label="Пошук"
-                style={{ ...S.input, paddingLeft: '36px', paddingRight: search ? '34px' : '13px' }}
-              />
-              {search && (
-                <button
-                  onClick={() => { setSearch(''); setPage(1); }}
-                  aria-label="Очистити пошук"
-                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', padding: '3px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex' }}
-                >
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} aria-label="Фільтр за станом" style={{ ...S.input, flex: isMobile ? '1 1 45%' : '0 0 150px', width: 'auto' }}>
-              {filterOptions.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
-            </select>
+            <Input
+              value={search}
+              onChange={(_, d) => { setSearch(d.value); setPage(1); }}
+              placeholder="Пошук за ПІБ / Опис"
+              aria-label="Пошук"
+              contentBefore={<Search size={15} color={tokens.colorNeutralForeground3} />}
+              contentAfter={search
+                ? <DismissRegular onClick={() => { setSearch(''); setPage(1); }} style={{ cursor: 'pointer' }} aria-label="Очистити пошук" />
+                : undefined}
+              style={{ flex: isMobile ? '1 1 100%' : '0 0 280px' }}
+            />
+            <Dropdown
+              value={filterOptions.find(o => o.value === statusFilter)?.label ?? 'Всі'}
+              selectedOptions={[statusFilter]}
+              onOptionSelect={(_, d) => { setStatusFilter(d.optionValue ?? ''); setPage(1); }}
+              aria-label="Фільтр за станом"
+              style={{ flex: isMobile ? '1 1 45%' : '0 0 160px', minWidth: 0 }}
+            >
+              {filterOptions.map(o => <Option key={o.label} value={o.value} text={o.label}>{o.label}</Option>)}
+            </Dropdown>
             {tab === 'poa' && (
-              <select value={kindFilter} onChange={e => { setKindFilter(e.target.value); setPage(1); }} aria-label="Фільтр за видом" style={{ ...S.input, flex: isMobile ? '1 1 45%' : '0 0 170px', width: 'auto' }}>
-                <option value="">Всі види</option>
-                <option value="загальна">загальна</option>
-                <option value="спеціальна">спеціальна</option>
-                <option value="т.в.о.">т.в.о.</option>
-              </select>
+              <Dropdown
+                value={kindFilter || 'Всі види'}
+                selectedOptions={[kindFilter]}
+                onOptionSelect={(_, d) => { setKindFilter(d.optionValue ?? ''); setPage(1); }}
+                aria-label="Фільтр за видом"
+                style={{ flex: isMobile ? '1 1 45%' : '0 0 180px', minWidth: 0 }}
+              >
+                <Option value="" text="Всі види">Всі види</Option>
+                <Option value="загальна" text="загальна">загальна</Option>
+                <Option value="спеціальна" text="спеціальна">спеціальна</Option>
+                <Option value="т.в.о." text="т.в.о.">т.в.о.</Option>
+              </Dropdown>
             )}
           </div>
 
           {/* Демо-контроль порожнього стану (на погодження з бізнесом) */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px', padding: '8px 18px 0' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#9ca3af', cursor: 'pointer' }}>
-              <input type="checkbox" checked={emptyPreview} onChange={e => setEmptyPreview(e.target.checked)} style={{ accentColor: '#2563eb' }} />
-              Демо: показати порожній стан
-            </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', padding: '6px 14px 0' }}>
+            <Checkbox
+              checked={emptyPreview}
+              onChange={(_, d) => setEmptyPreview(!!d.checked)}
+              label="Демо: показати порожній стан"
+            />
             {emptyPreview && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#9ca3af', cursor: 'pointer' }}>
-                <input type="checkbox" checked={empatheticEmpty} onChange={e => setEmpatheticEmpty(e.target.checked)} style={{ accentColor: '#2563eb' }} />
-                Емпатичний варіант
-              </label>
+              <Checkbox
+                checked={empatheticEmpty}
+                onChange={(_, d) => setEmpatheticEmpty(!!d.checked)}
+                label="Емпатичний варіант"
+              />
             )}
           </div>
 
@@ -471,9 +468,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                     )}
                   </>
                 ) : r.progress ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
-                    <FileSearch size={13} /> В роботі
-                  </span>
+                  <Badge appearance="tint" color="brand" icon={<FileSearch size={12} />}>В роботі</Badge>
                 ) : (
                   <>
                     <StateBadge state={r.kepState ?? '—'} />
@@ -485,12 +480,8 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               );
               const actions = tab === 'poa' && !r.progress && (
                 <>
-                  <button onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }} aria-label="Завантажити довіреність" title="Завантажити довіреність" style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')} onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}>
-                    <Download size={16} color="#2f6fde" />
-                  </button>
-                  <button onClick={e => { e.stopPropagation(); setShareDoc(r); }} aria-label="Поділитися довіреністю" title="Поділитися довіреністю" style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')} onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}>
-                    <Share2 size={16} color="#2f6fde" />
-                  </button>
+                  <Button appearance="subtle" size="small" icon={<Download size={16} />} aria-label="Завантажити довіреність" title="Завантажити довіреність" onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }} />
+                  <Button appearance="subtle" size="small" icon={<Share2 size={16} />} aria-label="Поділитися довіреністю" title="Поділитися довіреністю" onClick={e => { e.stopPropagation(); setShareDoc(r); }} />
                 </>
               );
 
@@ -771,12 +762,9 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
     <Drawer width={500} onClose={onClose}>
       {/* Drawer header */}
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef2f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-        <button
-          onClick={() => showToast('Відкривається документ у Докнет...')}
-          style={{ ...S.btnLink, fontSize: '13.5px' }}
-        >
-          <ExternalLink size={15} /> Відкрити в Докнет
-        </button>
+        <Button appearance="subtle" icon={<ExternalLink size={15} />} onClick={() => showToast('Відкривається документ у Докнет...')}>
+          Відкрити в Докнет
+        </Button>
         <button onClick={onClose} style={{ padding: '6px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', borderRadius: '8px' }}>
           <X size={20} />
         </button>
@@ -875,12 +863,9 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
 
       {/* Drawer footer */}
       <div style={{ padding: '14px 20px', borderTop: '1px solid #eef2f7', flexShrink: 0 }}>
-        <button
-          onClick={() => showToast(`Завантажується файл ${row.file}...`)}
-          style={{ ...S.btnPrimary, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-        >
-          <Download size={16} /> Завантажити довіреність ({row.file})
-        </button>
+        <Button appearance="primary" icon={<Download size={16} />} onClick={() => showToast(`Завантажується файл ${row.file}...`)} style={{ width: '100%' }}>
+          Завантажити довіреність ({row.file})
+        </Button>
       </div>
     </Drawer>
   );
@@ -936,22 +921,12 @@ const PoaShareModal = ({ row, onClose, onSent }: {
 
         {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-          <div>
-            <label style={S.label}>Email отримувача *</label>
-            <input
-              type="email" placeholder="name@example.com"
-              value={email} onChange={e => setEmail(e.target.value)}
-              style={S.input}
-            />
-          </div>
-          <div>
-            <label style={S.label}>Короткий опис *</label>
-            <textarea
-              rows={3} placeholder="Вкажіть, з якою метою надсилається довіреність"
-              value={description} onChange={e => setDescription(e.target.value)}
-              style={{ ...S.input, resize: 'vertical' }}
-            />
-          </div>
+          <Field label="Email отримувача" required>
+            <Input type="email" placeholder="name@example.com" value={email} onChange={(_, d) => setEmail(d.value)} />
+          </Field>
+          <Field label="Короткий опис" required>
+            <Textarea rows={3} placeholder="Вкажіть, з якою метою надсилається довіреність" value={description} onChange={(_, d) => setDescription(d.value)} />
+          </Field>
         </div>
 
         {letter !== null && (
@@ -983,18 +958,16 @@ const PoaShareModal = ({ row, onClose, onSent }: {
 
         {/* Footer: усі дії в одному ряду справа */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
-          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
-          <button
-            onClick={() => requiredFilled && setLetter(buildLetter())}
+          <Button appearance="subtle" onClick={onClose}>Скасувати</Button>
+          <Button
+            appearance={letter !== null ? 'secondary' : 'primary'}
             disabled={!requiredFilled}
-            style={letter !== null
-              ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
-              : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+            onClick={() => requiredFilled && setLetter(buildLetter())}
           >
             {letter !== null ? 'Оновити текст листа' : 'Сформувати лист'}
-          </button>
+          </Button>
           {letter !== null && (
-            <button onClick={() => onSent(email.trim())} style={S.btnPrimary}>Надіслати лист</button>
+            <Button appearance="primary" icon={<SendRegular />} onClick={() => onSent(email.trim())}>Надіслати лист</Button>
           )}
         </div>
       </div>
@@ -1110,13 +1083,17 @@ ${people}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           {/* Вид */}
-          <div>
-            <label style={S.label}>Вид довіреності</label>
-            <select value={kind} onChange={e => setKind(e.target.value)} style={S.input}>
-              <option value="">Не обрано</option>
-              {poaKinds.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
-          </div>
+          <Field label="Вид довіреності">
+            <Dropdown
+              placeholder="Не обрано"
+              value={kind}
+              selectedOptions={kind ? [kind] : []}
+              onOptionSelect={(_, d) => setKind(d.optionValue ?? '')}
+            >
+              <Option value="" text="Не обрано">Не обрано</Option>
+              {poaKinds.map(k => <Option key={k} value={k} text={k}>{k}</Option>)}
+            </Dropdown>
+          </Field>
 
           {/* На кого видається */}
           <div>
@@ -1131,12 +1108,15 @@ ${people}
                 ))}
               </div>
             )}
-            <input
-              value={memberSearch}
-              onChange={e => setMemberSearch(e.target.value)}
-              placeholder="Пошук за іменем, посадою або відділом..."
-              style={{ ...S.input, marginBottom: '8px' }}
-            />
+            <div style={{ marginBottom: '8px' }}>
+              <Input
+                value={memberSearch}
+                onChange={(_, d) => setMemberSearch(d.value)}
+                placeholder="Пошук за іменем, посадою або відділом..."
+                contentBefore={<Search size={15} color={tokens.colorNeutralForeground3} />}
+                style={{ width: '100%' }}
+              />
+            </div>
             <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', maxHeight: '170px', overflowY: 'auto' }}>
               {filteredMembers.map(m => {
                 const checked = selectedIds.includes(m.id);
@@ -1145,7 +1125,7 @@ ${people}
                     key={m.id}
                     style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f3f6', backgroundColor: checked ? '#f5f9ff' : 'transparent' }}
                   >
-                    <input type="checkbox" checked={checked} onChange={() => toggleMember(m.id)} style={{ accentColor: '#2563eb' }} />
+                    <Checkbox checked={checked} onChange={() => toggleMember(m.id)} />
                     <span>
                       <span style={{ fontWeight: 600, fontSize: '13px', color: '#111827' }}>{m.name}</span>
                       {m.tag === 'self' && (
@@ -1166,33 +1146,34 @@ ${people}
           </div>
 
           {/* Короткий зміст */}
-          <div>
-            <label style={S.label}>Короткий зміст / мета *</label>
-            <textarea
+          <Field label="Короткий зміст / мета" required>
+            <Textarea
               rows={3}
               placeholder="Напр.: Довіреність на право діяти в межах повноважень в.о. директора з розробки діджитал продуктів дирекції"
-              value={summary} onChange={e => setSummary(e.target.value)}
-              style={{ ...S.input, resize: 'vertical' }}
+              value={summary} onChange={(_, d) => setSummary(d.value)}
             />
-          </div>
+          </Field>
 
           {/* Термін дії */}
-          <div>
-            <label style={S.label}>Термін дії довіреності *</label>
-            <select value={term} onChange={e => setTerm(e.target.value)} style={S.input}>
-              <option value="" disabled>Оберіть термін</option>
-              <option value="1 рік">1 рік</option>
-              <option value="3 роки">3 роки</option>
-              <option value="інше">Інше</option>
-            </select>
+          <Field label="Термін дії довіреності" required>
+            <Dropdown
+              placeholder="Оберіть термін"
+              value={term}
+              selectedOptions={term ? [term] : []}
+              onOptionSelect={(_, d) => setTerm(d.optionValue ?? '')}
+            >
+              <Option value="1 рік" text="1 рік">1 рік</Option>
+              <Option value="3 роки" text="3 роки">3 роки</Option>
+              <Option value="інше" text="Інше">Інше</Option>
+            </Dropdown>
             {term === 'інше' && (
-              <input
-                type="text" placeholder="Вкажіть термін, напр.: 6 місяців, до 31.12.2026"
-                value={termCustom} onChange={e => setTermCustom(e.target.value)}
-                style={{ ...S.input, marginTop: '8px' }}
+              <Input
+                placeholder="Вкажіть термін, напр.: 6 місяців, до 31.12.2026"
+                value={termCustom} onChange={(_, d) => setTermCustom(d.value)}
+                style={{ marginTop: '8px' }}
               />
             )}
-          </div>
+          </Field>
 
           {/* Підстава */}
           <div>
@@ -1202,12 +1183,11 @@ ${people}
                 const checked = basisList.includes(b);
                 return (
                   <label key={b} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f3f6', backgroundColor: checked ? '#f5f9ff' : 'transparent', fontSize: '13.5px', color: '#111827' }}>
-                    <input
-                      type="checkbox" checked={checked}
+                    <Checkbox
+                      checked={checked}
                       onChange={() => setBasisList(prev => checked ? prev.filter(x => x !== b) : [...prev, b])}
-                      style={{ accentColor: '#2563eb' }}
+                      label={b}
                     />
-                    {b}
                   </label>
                 );
               })}
@@ -1215,9 +1195,8 @@ ${people}
           </div>
 
           {/* Файли */}
-          <div>
-            <label style={S.label}>Додатки</label>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', border: '1px dashed #93c5fd', borderRadius: '8px', cursor: 'pointer', fontSize: '13.5px', color: '#2563eb', backgroundColor: '#f5f9ff' }}>
+          <Field label="Додатки">
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 16px', border: `1px dashed ${tokens.colorBrandStroke1}`, borderRadius: tokens.borderRadiusMedium, cursor: 'pointer', fontSize: '13.5px', color: tokens.colorBrandForeground1, backgroundColor: tokens.colorBrandBackground2, width: 'fit-content' }}>
               <Paperclip size={15} />
               Додати файл(и)
               <input type="file" multiple style={{ display: 'none' }} onChange={e => { onFilesPicked(e.target.files); e.target.value = ''; }} />
@@ -1225,23 +1204,22 @@ ${people}
             {files.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
                 {files.map(f => (
-                  <div key={f} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 12px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '13px', color: '#374151' }}>
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 8px 5px 12px', backgroundColor: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium, fontSize: '13px', color: tokens.colorNeutralForeground2 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-                      <Paperclip size={13} color="#6b7280" />
+                      <Paperclip size={13} color={tokens.colorNeutralForeground3} />
                       <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f}</span>
                     </span>
-                    <X size={14} style={{ cursor: 'pointer', color: '#6b7280', flexShrink: 0 }} onClick={() => setFiles(prev => prev.filter(x => x !== f))} />
+                    <Button appearance="subtle" size="small" icon={<DismissRegular />} aria-label={`Прибрати ${f}`} onClick={() => setFiles(prev => prev.filter(x => x !== f))} />
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </Field>
 
           {/* Коментар */}
-          <div>
-            <label style={S.label}>Коментар</label>
-            <textarea rows={2} placeholder="Додаткова інформація (за потреби)" value={comment} onChange={e => setComment(e.target.value)} style={{ ...S.input, resize: 'vertical' }} />
-          </div>
+          <Field label="Коментар">
+            <Textarea rows={2} placeholder="Додаткова інформація (за потреби)" value={comment} onChange={(_, d) => setComment(d.value)} />
+          </Field>
         </div>
 
 
@@ -1273,18 +1251,16 @@ ${people}
 
         {/* Footer: усі дії в одному ряду справа */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
-          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
-          <button
-            onClick={() => requiredFilled && setLetter(buildLetter())}
+          <Button appearance="subtle" onClick={onClose}>Скасувати</Button>
+          <Button
+            appearance={letter !== null ? 'secondary' : 'primary'}
             disabled={!requiredFilled}
-            style={letter !== null
-              ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
-              : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+            onClick={() => requiredFilled && setLetter(buildLetter())}
           >
             {letter !== null ? 'Оновити текст листа' : 'Сформувати лист'}
-          </button>
+          </Button>
           {letter !== null && (
-            <button onClick={onSent} style={S.btnPrimary}>Надіслати лист</button>
+            <Button appearance="primary" icon={<SendRegular />} onClick={onSent}>Надіслати лист</Button>
           )}
         </div>
       </div>
@@ -1399,37 +1375,34 @@ const KepRequestModal = ({ onClose, onSent }: { onClose: () => void; onSent: (in
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-          <div>
-            <label style={S.label}>Роль *</label>
-            <input
-              type="text" placeholder="Вкажіть роль у системі"
-              value={role} onChange={e => setRole(e.target.value)}
-              style={S.input}
-            />
-          </div>
-          <div>
-            <label style={S.label}>Дійсна до *</label>
-            <input type="date" min={todayISO} value={validTo} onChange={e => setValidTo(e.target.value)} style={S.input} />
-          </div>
-          <div>
-            <label style={S.label}>Підстава *</label>
-            <select value={basis} onChange={e => setBasis(e.target.value)} style={S.input}>
-              <option value="" disabled>Оберіть підставу</option>
-              {basisOptions.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
-          </div>
+          <Field label="Роль" required>
+            <Input value={role} onChange={(_, d) => setRole(d.value)} placeholder="Вкажіть роль у системі" />
+          </Field>
+          <Field label="Дійсна до" required>
+            <Input type="date" min={todayISO} value={validTo} onChange={(_, d) => setValidTo(d.value)} />
+          </Field>
+          <Field label="Підстава" required>
+            <Dropdown
+              placeholder="Оберіть підставу"
+              value={basis}
+              selectedOptions={basis ? [basis] : []}
+              onOptionSelect={(_, d) => setBasis(d.optionValue ?? '')}
+            >
+              {basisOptions.map(b => <Option key={b} value={b} text={b}>{b}</Option>)}
+            </Dropdown>
+          </Field>
         </div>
 
         {/* Footer */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #eef2f7', paddingTop: '16px' }}>
-          <button onClick={onClose} style={{ ...S.btnLink, color: '#374151' }}>Скасувати</button>
-          <button
-            onClick={() => requiredFilled && onSent({ role: role.trim(), validTo: validTo.split('-').reverse().join('.'), basis })}
+          <Button appearance="subtle" onClick={onClose}>Скасувати</Button>
+          <Button
+            appearance="primary"
             disabled={!requiredFilled}
-            style={{ ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
+            onClick={() => requiredFilled && onSent({ role: role.trim(), validTo: validTo.split('-').reverse().join('.'), basis })}
           >
             Створити заявку
-          </button>
+          </Button>
         </div>
       </div>
     </ModalShell>
