@@ -5,8 +5,9 @@ import {
   BarChart3, BookOpen, Search, Zap,
   ExternalLink, X, Download, Share2, Paperclip,
   ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Check,
+  CheckCircle2, MinusCircle, FileSearch, Info,
 } from 'lucide-react';
-import { S, RightBlockHeader, ModalShell } from './managerUi';
+import { S, RightBlockHeader, ModalShell, Drawer, SuccessModal, useIsMobile, AnimStyles } from './managerUi';
 import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
 
 /* ════════════════════════ DATA ════════════════════════ */
@@ -170,26 +171,94 @@ const kepFilterOptions = [
 
 /* ════════════════════════ SECTION ════════════════════════ */
 
+/* Бейдж стану з іконкою (не лише колір — для дальтоніків) */
+const StateBadge = ({ state }: { state: string }) => {
+  const active = state === 'Чинна' || state === 'Чинний';
+  const unknown = state === '—';
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: '5px',
+      padding: '4px 10px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
+      backgroundColor: active ? '#d8f5e3' : '#eceef2',
+      color: active ? '#166534' : '#6b7280',
+    }}>
+      {!unknown && (active
+        ? <CheckCircle2 size={13} />
+        : <MinusCircle size={13} />)}
+      {state}
+    </span>
+  );
+};
+
+/* Порожній стан: за перемикачем — емпатичний (картинка + текст) або сухий */
+const EmptyState = ({ empathetic, filtered, tab, onCreate, onClear }: {
+  empathetic: boolean; filtered: boolean; tab: 'poa' | 'kep';
+  onCreate: () => void; onClear: () => void;
+}) => {
+  if (filtered) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px 24px', color: '#6b7280' }}>
+        <FileSearch size={40} color="#c2c9d4" style={{ margin: '0 auto 12px' }} />
+        <div style={{ fontSize: '14px', marginBottom: '14px' }}>За вашим запитом нічого не знайдено</div>
+        <button onClick={onClear} style={{ ...S.btnGhost, padding: '7px 18px' }}>Скинути фільтри</button>
+      </div>
+    );
+  }
+  if (!empathetic) {
+    return (
+      <div style={{ textAlign: 'center', padding: '28px 24px', color: '#6b7280', fontSize: '14px' }}>
+        {tab === 'poa' ? 'Довіреностей поки немає' : 'Сертифікатів КЕП поки немає'}
+      </div>
+    );
+  }
+  const img = tab === 'poa' ? poaIcon : kepIcon;
+  return (
+    <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+      <img src={img} alt="" style={{ width: 72, height: 72, borderRadius: '16px', objectFit: 'cover', margin: '0 auto 18px', display: 'block', opacity: 0.95 }} />
+      <div style={{ fontSize: '16px', fontWeight: 600, color: '#1f2937', marginBottom: '8px' }}>
+        {tab === 'poa' ? 'Тут зберігатимуться ваші довіреності' : 'Тут зберігатимуться ваші КЕП'}
+      </div>
+      <div style={{ fontSize: '13.5px', color: '#6b7280', maxWidth: '360px', margin: '0 auto 20px', lineHeight: 1.5 }}>
+        {tab === 'poa'
+          ? 'Поки що порожньо — і це нормально. Коли знадобиться діяти від імені компанії, оформлення довіреності займе кілька хвилин, а ми проведемо вас за руку.'
+          : 'Поки що порожньо. Коли знадобиться електронний підпис, оформлення КЕП займе кілька хвилин — ми поруч на кожному кроці.'}
+      </div>
+      <button onClick={onCreate} style={{ ...S.btnPrimary, display: 'inline-flex', alignItems: 'center', gap: '7px' }}>
+        {tab === 'poa' ? <><UserPlus size={16} /> Створити довіреність</> : <><PenLine size={16} /> Оформити КЕП</>}
+      </button>
+    </div>
+  );
+};
+
 const SortHeader = <C extends string>({ label, col, sort, onSort }: {
   label: string; col: C;
   sort: { col: C; dir: 1 | -1 } | null;
   onSort: (col: C) => void;
-}) => (
-  <div
-    onClick={() => onSort(col)}
-    style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', userSelect: 'none' }}
-    title="Сортувати"
-  >
-    <span>{label}</span>
-    {sort?.col === col
-      ? (sort.dir === 1 ? <ArrowUp size={12} color="#2563eb" /> : <ArrowDown size={12} color="#2563eb" />)
-      : <ArrowUpDown size={12} color="#c2c9d4" />}
-  </div>
-);
+}) => {
+  const active = sort?.col === col;
+  return (
+    <button
+      onClick={() => onSort(col)}
+      aria-sort={active ? (sort!.dir === 1 ? 'ascending' : 'descending') : 'none'}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', userSelect: 'none',
+        background: 'transparent', border: 'none', padding: 0, font: 'inherit',
+        color: 'inherit', textTransform: 'inherit', letterSpacing: 'inherit',
+      }}
+      title="Сортувати"
+    >
+      <span>{label}</span>
+      {active
+        ? (sort!.dir === 1 ? <ArrowUp size={12} color="#2563eb" /> : <ArrowDown size={12} color="#2563eb" />)
+        : <ArrowUpDown size={12} color="#c2c9d4" />}
+    </button>
+  );
+};
 
 export type PoaMode = 'manager' | 'employee';
 
 export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: string) => void; mode?: PoaMode }) => {
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState<'poa' | 'kep'>('poa');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -204,14 +273,21 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
   const [statsOpen, setStatsOpen] = useState(true);
   const [instrOpen, setInstrOpen] = useState(true);
 
+  // Success modal після надсилання
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Демо-перемикач: емпатичний порожній стан (на погодження з бізнесом)
+  const [empatheticEmpty, setEmpatheticEmpty] = useState(true);
+  const [emptyPreview, setEmptyPreview] = useState(false);
+
   const rows = tab === 'poa' ? poaRows : [inProgressKepRow, ...createdRows, ...kepRows];
   const filterOptions = tab === 'poa' ? poaFilterOptions : kepFilterOptions;
 
-  // Сортування: колонка + напрямок
+  // Сортування: колонка + напрямок. За замовчуванням — за датою закінчення (найтерміновіші вгорі)
   type SortCol = 'name' | 'kind' | 'endDate' | 'state' | 'basis';
-  const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 } | null>(null);
+  const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 }>({ col: 'endDate', dir: 1 });
   const toggleSort = (col: SortCol) =>
-    setSort(prev => prev?.col === col ? (prev.dir === 1 ? { col, dir: -1 } : null) : { col, dir: 1 });
+    setSort(prev => prev.col === col && prev.dir === 1 ? { col, dir: -1 } : { col, dir: 1 });
 
   // Пагінація
   const PAGE_SIZE = 10;
@@ -235,18 +311,16 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
       const matchesKind = !kindFilter || (r.detail?.poaKind ?? r.kind ?? '') === kindFilter;
       return matchesSearch && matchesStatus && matchesKind;
     });
-    if (sort) {
-      const val = (r: DocRow): string => {
-        switch (sort.col) {
-          case 'name':    return r.name;
-          case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '') : r.role;
-          case 'endDate': return r.endDate === '—' ? '99999999' : dateKey(r.endDate);
-          case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : (r.progress ? 'в роботі' : (r.kepState ?? ''));
-          case 'basis':   return r.basis ?? '';
-        }
-      };
-      result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
-    }
+    const val = (r: DocRow): string => {
+      switch (sort.col) {
+        case 'name':    return r.name;
+        case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '') : r.role;
+        case 'endDate': return r.endDate === '—' ? '99999999' : dateKey(r.endDate);
+        case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : (r.progress ? 'в роботі' : (r.kepState ?? ''));
+        case 'basis':   return r.basis ?? '';
+      }
+    };
+    result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
     return result;
   }, [rows, tab, search, statusFilter, kindFilter, sort]);
 
@@ -293,7 +367,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             ]).map(t => (
               <button
                 key={t.id}
-                onClick={() => { setTab(t.id); setSearch(''); setStatusFilter(''); setKindFilter(''); setSelectedDoc(null); setSort(null); setPage(1); }}
+                onClick={() => { setTab(t.id); setSelectedDoc(null); setPage(1); }}
                 style={{
                   padding: '8px 18px', border: 'none', borderRadius: '8px', cursor: 'pointer',
                   fontSize: '14px', fontWeight: 600, fontFamily: 'inherit',
@@ -307,21 +381,31 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
           </div>
 
           {/* Search + filter */}
-          <div style={{ display: 'flex', gap: '14px', padding: '16px 18px 4px' }}>
-            <div style={{ position: 'relative', width: '260px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', padding: '16px 18px 4px' }}>
+            <div style={{ position: 'relative', flex: isMobile ? '1 1 100%' : '0 0 260px' }}>
               <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={e => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Пошук за ПІБ / Опис"
-                style={{ ...S.input, paddingLeft: '36px' }}
+                aria-label="Пошук"
+                style={{ ...S.input, paddingLeft: '36px', paddingRight: search ? '34px' : '13px' }}
               />
+              {search && (
+                <button
+                  onClick={() => { setSearch(''); setPage(1); }}
+                  aria-label="Очистити пошук"
+                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', padding: '3px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#9ca3af', display: 'flex' }}
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
-            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} style={{ ...S.input, width: '150px' }}>
+            <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} aria-label="Фільтр за станом" style={{ ...S.input, flex: isMobile ? '1 1 45%' : '0 0 150px', width: 'auto' }}>
               {filterOptions.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
             </select>
             {tab === 'poa' && (
-              <select value={kindFilter} onChange={e => { setKindFilter(e.target.value); setPage(1); }} style={{ ...S.input, width: '170px' }}>
+              <select value={kindFilter} onChange={e => { setKindFilter(e.target.value); setPage(1); }} aria-label="Фільтр за видом" style={{ ...S.input, flex: isMobile ? '1 1 45%' : '0 0 170px', width: 'auto' }}>
                 <option value="">Всі види</option>
                 <option value="загальна">загальна</option>
                 <option value="спеціальна">спеціальна</option>
@@ -330,155 +414,161 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             )}
           </div>
 
-          {/* Table */}
+          {/* Демо-контроль порожнього стану (на погодження з бізнесом) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px', padding: '8px 18px 0' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#9ca3af', cursor: 'pointer' }}>
+              <input type="checkbox" checked={emptyPreview} onChange={e => setEmptyPreview(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+              Демо: показати порожній стан
+            </label>
+            {emptyPreview && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '12px', color: '#9ca3af', cursor: 'pointer' }}>
+                <input type="checkbox" checked={empatheticEmpty} onChange={e => setEmpatheticEmpty(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+                Емпатичний варіант
+              </label>
+            )}
+          </div>
+
+          {/* Table / Cards */}
           <div style={{ padding: '14px 18px 18px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              <SortHeader label="ПІБ" col="name" sort={sort} onSort={toggleSort} />
-              <SortHeader label={tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'} col="kind" sort={sort} onSort={toggleSort} />
-              <SortHeader label="Дата закінчення" col="endDate" sort={sort} onSort={toggleSort} />
-              <SortHeader label={tab === 'poa' ? 'Стан довіреності' : 'Стан КЕП'} col="state" sort={sort} onSort={toggleSort} />
-              {tab === 'poa'
-                ? <div style={{ textAlign: 'right' }}>Дії</div>
-                : <SortHeader label="Підстава" col="basis" sort={sort} onSort={toggleSort} />}
-            </div>
-            {pagedRows.map(r => (
-              <div
-                key={r.file}
-                onClick={() => { if (tab === 'poa' ? r.detail : r.progress) setSelectedDoc(r); }}
-                style={{
-                  display: 'grid', gridTemplateColumns: gridCols, gap: '12px',
-                  padding: '14px', alignItems: 'center', fontSize: '13.5px', borderBottom: '1px solid #eef2f7',
-                  cursor: (tab === 'poa' ? r.detail : r.progress) ? 'pointer' : 'default',
-                  backgroundColor: selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent',
-                }}
-                onMouseEnter={e => { if (selectedDoc?.file !== r.file) e.currentTarget.style.backgroundColor = '#fafbfd'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent'; }}
-              >
-                <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
-                <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '—') : r.role}</div>
-                <div>
-                  {(() => {
-                    const dl = tab === 'poa' ? r.detail?.daysLeft : r.daysLeft;
-                    return dl != null ? (
-                      <span style={{
-                        padding: '4px 10px', borderRadius: '6px', fontSize: '12.5px', fontWeight: 600,
-                        backgroundColor: dl < 10 ? '#fde7e7' : '#fdf3e3',
-                        color: dl < 10 ? '#b91c1c' : '#b45309',
-                      }}>
-                        {r.endDate}
-                      </span>
-                    ) : (
-                      <span style={{ color: '#374151' }}>{r.endDate}</span>
-                    );
-                  })()}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {tab === 'poa' ? (
-                    <>
-                      <span style={{
-                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
-                        backgroundColor: r.detail?.state === 'Чинна' ? '#d8f5e3' : '#eceef2',
-                        color: r.detail?.state === 'Чинна' ? '#166534' : '#6b7280',
-                      }}>
-                        {r.detail?.state ?? '—'}
-                      </span>
-                      {r.detail?.daysLeft != null && (
-                        <AlarmClock size={15} color={r.detail.daysLeft < 10 ? '#dc2626' : '#b45309'}>
-                          <title>{`Закінчується через ${r.detail.daysLeft} дн.`}</title>
-                        </AlarmClock>
-                      )}
-                    </>
-                  ) : r.progress ? (
-                    <span style={{ padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
-                      В роботі
-                    </span>
-                  ) : (
-                    <>
-                      <span style={{
-                        padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px',
-                        backgroundColor: r.kepState === 'Чинний' ? '#d8f5e3' : '#eceef2',
-                        color: r.kepState === 'Чинний' ? '#166534' : '#6b7280',
-                      }}>
-                        {r.kepState ?? '—'}
-                      </span>
-                      {r.daysLeft != null && (
-                        <AlarmClock size={15} color={r.daysLeft < 10 ? '#dc2626' : '#b45309'}>
-                          <title>{`Закінчується через ${r.daysLeft} дн.`}</title>
-                        </AlarmClock>
-                      )}
-                    </>
-                  )}
-                </div>
-                {tab === 'poa' ? (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                    {!r.progress && (
-                      <>
-                        <button
-                          onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }}
-                          title="Завантажити довіреність"
-                          style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
-                          onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
-                        >
-                          <Download size={16} color="#2f6fde" />
-                        </button>
-                        <button
-                          onClick={e => { e.stopPropagation(); setShareDoc(r); }}
-                          title="Поділитися довіреністю"
-                          style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                          onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')}
-                          onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}
-                        >
-                          <Share2 size={16} color="#2f6fde" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ color: '#374151', fontSize: '13px' }}>{r.basis ?? '—'}</div>
-                )}
-              </div>
-            ))}
-            {filteredRows.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '24px', color: '#6b7280', fontSize: '14px' }}>
-                Нічого не знайдено за вашим запитом
+            {!isMobile && !emptyPreview && (
+              <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: '12px', padding: '10px 14px', backgroundColor: '#f7f8fa', borderRadius: '8px', fontSize: '11px', fontWeight: 600, color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <SortHeader label="ПІБ" col="name" sort={sort} onSort={toggleSort} />
+                <SortHeader label={tab === 'poa' ? 'Вид довіреності' : 'Тип / Сфера'} col="kind" sort={sort} onSort={toggleSort} />
+                <SortHeader label="Дата закінчення" col="endDate" sort={sort} onSort={toggleSort} />
+                <SortHeader label={tab === 'poa' ? 'Стан довіреності' : 'Стан КЕП'} col="state" sort={sort} onSort={toggleSort} />
+                {tab === 'poa'
+                  ? <div style={{ textAlign: 'right' }}>Дії</div>
+                  : <SortHeader label="Підстава" col="basis" sort={sort} onSort={toggleSort} />}
               </div>
             )}
 
+            {emptyPreview ? (
+              <EmptyState
+                empathetic={empatheticEmpty}
+                filtered={false}
+                tab={tab}
+                onCreate={() => (tab === 'poa' ? setCreateOpen(true) : setKepOpen(true))}
+                onClear={() => {}}
+              />
+            ) : (<>
+            {pagedRows.map(r => {
+              const clickable = tab === 'poa' ? !!r.detail : !!r.progress;
+              const onRowClick = () => { if (clickable) setSelectedDoc(r); };
+              const dl = tab === 'poa' ? r.detail?.daysLeft : r.daysLeft;
+              const dateCell = (
+                dl != null ? (
+                  <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12.5px', fontWeight: 600, backgroundColor: dl < 10 ? '#fde7e7' : '#fdf3e3', color: dl < 10 ? '#b91c1c' : '#b45309' }}>
+                    {r.endDate}
+                  </span>
+                ) : <span style={{ color: '#374151' }}>{r.endDate}</span>
+              );
+              const stateCell = (
+                tab === 'poa' ? (
+                  <>
+                    <StateBadge state={r.detail?.state ?? '—'} />
+                    {r.detail?.daysLeft != null && (
+                      <AlarmClock size={15} color={r.detail.daysLeft < 10 ? '#dc2626' : '#b45309'}><title>{`Закінчується через ${r.detail.daysLeft} дн.`}</title></AlarmClock>
+                    )}
+                  </>
+                ) : r.progress ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '6px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
+                    <FileSearch size={13} /> В роботі
+                  </span>
+                ) : (
+                  <>
+                    <StateBadge state={r.kepState ?? '—'} />
+                    {r.daysLeft != null && (
+                      <AlarmClock size={15} color={r.daysLeft < 10 ? '#dc2626' : '#b45309'}><title>{`Закінчується через ${r.daysLeft} дн.`}</title></AlarmClock>
+                    )}
+                  </>
+                )
+              );
+              const actions = tab === 'poa' && !r.progress && (
+                <>
+                  <button onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }} aria-label="Завантажити довіреність" title="Завантажити довіреність" style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')} onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}>
+                    <Download size={16} color="#2f6fde" />
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); setShareDoc(r); }} aria-label="Поділитися довіреністю" title="Поділитися довіреністю" style={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: '#e8f1fd', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={ev => (ev.currentTarget.style.backgroundColor = '#d4e6fb')} onMouseLeave={ev => (ev.currentTarget.style.backgroundColor = '#e8f1fd')}>
+                    <Share2 size={16} color="#2f6fde" />
+                  </button>
+                </>
+              );
+
+              if (isMobile) {
+                return (
+                  <div
+                    key={r.file}
+                    onClick={onRowClick}
+                    style={{ border: '1px solid #eef2f7', borderRadius: '10px', padding: '14px', marginBottom: '10px', cursor: clickable ? 'pointer' : 'default', backgroundColor: '#fff' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 600, color: '#111827', fontSize: '14px' }}>{r.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>{stateCell}</div>
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#6b7280', marginBottom: '4px' }}>
+                      {tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '—') : r.role}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginTop: '8px' }}>
+                      <span style={{ fontSize: '12.5px', color: '#6b7280' }}>до: {dateCell}</span>
+                      {tab === 'poa'
+                        ? <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>{actions}</div>
+                        : <span style={{ fontSize: '12px', color: '#6b7280' }}>{r.basis ?? ''}</span>}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={r.file}
+                  onClick={onRowClick}
+                  style={{
+                    display: 'grid', gridTemplateColumns: gridCols, gap: '12px',
+                    padding: '14px', alignItems: 'center', fontSize: '13.5px', borderBottom: '1px solid #eef2f7',
+                    cursor: clickable ? 'pointer' : 'default',
+                    backgroundColor: selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent',
+                  }}
+                  onMouseEnter={e => { if (selectedDoc?.file !== r.file) e.currentTarget.style.backgroundColor = '#fafbfd'; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = selectedDoc?.file === r.file ? '#eaf3fd' : 'transparent'; }}
+                >
+                  <div style={{ fontWeight: 600, color: '#111827' }}>{r.name}</div>
+                  <div style={{ color: '#374151' }}>{tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '—') : r.role}</div>
+                  <div>{dateCell}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{stateCell}</div>
+                  {tab === 'poa'
+                    ? <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>{actions}</div>
+                    : <div style={{ color: '#374151', fontSize: '13px' }}>{r.basis ?? '—'}</div>}
+                </div>
+              );
+            })}
+
+            {filteredRows.length === 0 && (
+              <EmptyState
+                empathetic={empatheticEmpty}
+                filtered={!!search || !!statusFilter || !!kindFilter}
+                tab={tab}
+                onCreate={() => (tab === 'poa' ? setCreateOpen(true) : setKepOpen(true))}
+                onClear={() => { setSearch(''); setStatusFilter(''); setKindFilter(''); setPage(1); }}
+              />
+            )}
+            </>)}
+
             {/* Пагінація */}
-            {filteredRows.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px' }}>
+            {filteredRows.length > PAGE_SIZE && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', paddingTop: '14px' }}>
                 <span style={{ fontSize: '12.5px', color: '#6b7280' }}>
                   Показано {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filteredRows.length)} з {filteredRows.length}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={safePage === 1}
-                    style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === 1 ? 'default' : 'pointer', color: safePage === 1 ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} aria-label="Попередня сторінка" style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === 1 ? 'default' : 'pointer', color: safePage === 1 ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ChevronLeft size={15} />
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      style={{
-                        minWidth: 30, height: 30, padding: '0 8px', borderRadius: '7px', cursor: 'pointer',
-                        fontSize: '13px', fontWeight: 600, fontFamily: 'inherit',
-                        border: p === safePage ? '1px solid #2563eb' : '1px solid #e5e7eb',
-                        backgroundColor: p === safePage ? '#eaf3fd' : '#fff',
-                        color: p === safePage ? '#2563eb' : '#374151',
-                      }}
-                    >
+                    <button key={p} onClick={() => setPage(p)} aria-label={`Сторінка ${p}`} aria-current={p === safePage ? 'page' : undefined} style={{ minWidth: 30, height: 30, padding: '0 8px', borderRadius: '7px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', border: p === safePage ? '1px solid #2563eb' : '1px solid #e5e7eb', backgroundColor: p === safePage ? '#eaf3fd' : '#fff', color: p === safePage ? '#2563eb' : '#374151' }}>
                       {p}
                     </button>
                   ))}
-                  <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                    disabled={safePage === totalPages}
-                    style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === totalPages ? 'default' : 'pointer', color: safePage === totalPages ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
+                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} aria-label="Наступна сторінка" style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: '7px', cursor: safePage === totalPages ? 'default' : 'pointer', color: safePage === totalPages ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ChevronRight size={15} />
                   </button>
                 </div>
@@ -512,7 +602,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               </button>
               )}
               {tab === 'kep' && (
-              <button onClick={() => setKepOpen(true)} style={{ width: '100%', padding: '14px', backgroundColor: '#1aa251', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => setKepOpen(true)} style={{ width: '100%', padding: '14px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '10px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '11px' }}>
                   <PenLine size={18} style={{ marginTop: '2px', flexShrink: 0 }} />
                   <div>
@@ -619,7 +709,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
         <PoaCreateModal
           mode={mode}
           onClose={() => setCreateOpen(false)}
-          onSent={() => { setCreateOpen(false); showToast('Запит на оформлення довіреності надіслано відповідальним!'); }}
+          onSent={() => { setCreateOpen(false); setSuccessMsg('Лист на оформлення довіреності успішно направлено відповідальним.'); }}
         />
       )}
 
@@ -641,7 +731,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                 { label: 'КЕП готовий', status: 'pending' },
               ],
             }, ...prev]);
-            showToast('Заявку створено! Вона з\u2019явилась у таблиці зі статусом «В роботі»');
+            setSuccessMsg('Заявку на КЕП успішно створено. Вона з\u2019явилась у таблиці зі статусом «В роботі».');
           }}
         />
       )}
@@ -651,9 +741,14 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
         <PoaShareModal
           row={shareDoc}
           onClose={() => setShareDoc(null)}
-          onSent={(email) => { setShareDoc(null); showToast(`Довіреність надіслано на ${email}`); }}
+          onSent={() => { setShareDoc(null); setSuccessMsg('Лист із довіреністю успішно направлено отримувачу.'); }}
         />
       )}
+
+      {/* ═══ SUCCESS MODAL ═══ */}
+      {successMsg && <SuccessModal title={successMsg} onClose={() => setSuccessMsg(null)} />}
+
+      <AnimStyles />
     </>
   );
 };
@@ -673,11 +768,7 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
     : { bg: '#eceef2', color: '#6b7280' };
 
   return (
-    <aside style={{
-      position: 'fixed', top: 0, right: 0, bottom: 0, width: '500px', maxWidth: '92vw',
-      backgroundColor: '#fff', zIndex: 150, display: 'flex', flexDirection: 'column',
-      boxShadow: '-8px 0 28px rgba(15,40,80,0.16)', borderLeft: '1px solid #e5e7eb',
-    }}>
+    <Drawer width={500} onClose={onClose}>
       {/* Drawer header */}
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef2f7', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <button
@@ -791,7 +882,7 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
           <Download size={16} /> Завантажити довіреність ({row.file})
         </button>
       </div>
-    </aside>
+    </Drawer>
   );
 };
 
@@ -877,6 +968,9 @@ const PoaShareModal = ({ row, onClose, onSent }: {
               <div style={{ padding: '9px 14px', borderBottom: '1px solid #e5e7eb', fontSize: '12.5px', color: '#4b5563', backgroundColor: '#fafafa' }}>
                 Шаблон листа про надсилання довіреності
               </div>
+              <div style={{ padding: '8px 14px', fontSize: '12px', color: '#92702a', backgroundColor: '#fdf8ec', borderBottom: '1px solid #f0e3bd', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Info size={13} /> Якщо ви зміните поля вище — натисніть «Оновити текст листа», щоб застосувати зміни.
+              </div>
               <textarea
                 value={letter}
                 onChange={e => setLetter(e.target.value)}
@@ -897,7 +991,7 @@ const PoaShareModal = ({ row, onClose, onSent }: {
               ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
               : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
           >
-            Сформувати лист
+            {letter !== null ? 'Оновити текст листа' : 'Сформувати лист'}
           </button>
           {letter !== null && (
             <button onClick={() => onSent(email.trim())} style={S.btnPrimary}>Надіслати лист</button>
@@ -1164,6 +1258,9 @@ ${people}
               <div style={{ padding: '9px 14px', borderBottom: '1px solid #e5e7eb', fontSize: '12.5px', color: '#4b5563', backgroundColor: '#fafafa' }}>
                 Шаблон листа — запит на оформлення довіреності
               </div>
+              <div style={{ padding: '8px 14px', fontSize: '12px', color: '#92702a', backgroundColor: '#fdf8ec', borderBottom: '1px solid #f0e3bd', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Info size={13} /> Якщо ви зміните поля вище — натисніть «Оновити текст листа», щоб застосувати зміни.
+              </div>
               <textarea
                 value={letter}
                 onChange={e => setLetter(e.target.value)}
@@ -1184,7 +1281,7 @@ ${people}
               ? { ...S.btnGhost, opacity: requiredFilled ? 1 : 0.5, cursor: requiredFilled ? 'pointer' : 'default' }
               : { ...S.btnPrimary, backgroundColor: requiredFilled ? '#2563eb' : '#a8c7f5', cursor: requiredFilled ? 'pointer' : 'default' }}
           >
-            Сформувати лист
+            {letter !== null ? 'Оновити текст листа' : 'Сформувати лист'}
           </button>
           {letter !== null && (
             <button onClick={onSent} style={S.btnPrimary}>Надіслати лист</button>
@@ -1198,11 +1295,7 @@ ${people}
 /* ════════════════════════ PROGRESS DRAWER (заявка в роботі) ════════════════════════ */
 
 const KepProgressDrawer = ({ row, onClose }: { row: DocRow; onClose: () => void }) => (
-  <aside style={{
-    position: 'fixed', top: 0, right: 0, bottom: 0, width: '460px', maxWidth: '92vw',
-    backgroundColor: '#fff', zIndex: 150, display: 'flex', flexDirection: 'column',
-    boxShadow: '-8px 0 28px rgba(15,40,80,0.16)', borderLeft: '1px solid #e5e7eb',
-  }}>
+  <Drawer width={460} onClose={onClose}>
     <div style={{ padding: '14px 20px', borderBottom: '1px solid #eef2f7', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 }}>
       <button onClick={onClose} style={{ padding: '6px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280', borderRadius: '8px' }}>
         <X size={20} />
@@ -1272,7 +1365,7 @@ const KepProgressDrawer = ({ row, onClose }: { row: DocRow; onClose: () => void 
         Коли КЕП буде готовий, заявка в таблиці зміниться на запис зі станом «Чинний». Сповіщення прийде на вашу пошту.
       </div>
     </div>
-  </aside>
+  </Drawer>
 );
 
 /* ════════════════════════ KEP REQUEST MODAL ════════════════════════ */

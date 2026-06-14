@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -361,10 +361,20 @@ export const Dashboard = () => {
   const [favOpen, setFavOpen] = useState(false);
   const [absOpen, setAbsOpen] = useState(false);
   const [chgOpen, setChgOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 3000);
+  };
 
   return (
     <div style={styles.page}>
       <TopBar />
+      {toast && (
+        <div style={{ position: 'fixed', top: 70, right: 20, backgroundColor: '#10b981', color: '#fff', padding: '14px 22px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', zIndex: 1000, maxWidth: '400px', fontSize: '14px', fontWeight: 500 }}>
+          {toast}
+        </div>
+      )}
 
       {/* NAV TILES */}
       <div style={styles.navSection}>
@@ -436,11 +446,16 @@ export const Dashboard = () => {
                   gradient: 'linear-gradient(135deg, #14b8a6, #0e7490)',
                   icon: <FileText size={26} color="#fff" />,
                 },
+                {
+                  label: 'Оцінка', route: '',
+                  gradient: 'linear-gradient(135deg, #f59e0b, #ea580c)',
+                  icon: <Star size={26} color="#fff" />,
+                },
               ].map(app => (
                 <div
                   key={app.route}
-                  onClick={() => navigate(app.route)}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '86px' }}
+                  onClick={() => app.route ? navigate(app.route) : showToast('Розділ «Оцінка» у розробці')}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '78px' }}
                   onMouseEnter={e => { const ic = e.currentTarget.firstElementChild as HTMLElement; ic.style.transform = 'scale(1.07)'; }}
                   onMouseLeave={e => { const ic = e.currentTarget.firstElementChild as HTMLElement; ic.style.transform = 'scale(1)'; }}
                 >
