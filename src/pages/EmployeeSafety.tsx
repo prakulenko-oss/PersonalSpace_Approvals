@@ -9,7 +9,7 @@ import {
   HelpCircle, ChevronDown,
 } from 'lucide-react';
 import {
-  briefings, medicalExams, workplaceCards,
+  briefings, medicalExams, workplaceCards, instructorCertificate,
   daysUntil, expiryStatus,
 } from '../data/safety';
 import type { ExpiryStatus, WorkplaceCard } from '../data/safety';
@@ -81,7 +81,7 @@ const Emoji3D = ({ section, size = 64 }: { section: SectionKey; size?: number })
 /* ════════════════════════ ЛОКАЛЬНІ СТИЛІ ════════════════════════ */
 
 const st: Record<string, CSSProperties> = {
-  container: { maxWidth: 1180, width: '100%', margin: '0 auto', padding: '26px 24px 48px' },
+  container: { maxWidth: 1500, width: '100%', margin: '0 auto', padding: '26px 32px 48px' },
   h1: { fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 },
   sub: { fontSize: 14, color: '#6b7280', marginTop: 6 },
   cardsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18, marginTop: 24 },
@@ -168,39 +168,124 @@ const StatusCard = ({
 
 /* ════════════════════════ ДЕТАЛІ: ІНСТРУКТАЖІ ════════════════════════ */
 
-const BriefingsDetail = ({ showToast }: { showToast: (m: string) => void }) => (
-  <div style={st.detailBody}>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {briefings.map(b => (
-        <div key={b.id} style={st.row}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>
-              {b.kind} інструктаж
-              {b.note && <span style={{ fontWeight: 400, color: '#6b7280' }}> · {b.note}</span>}
-            </div>
-            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
-              Пройдено {b.passedAt}{b.validUntil ? ` · діє до ${b.validUntil}` : ''} · {b.conductor}
-            </div>
-          </div>
-          <ExpiryBadge validUntil={b.validUntil} />
-        </div>
-      ))}
-    </div>
-
-    {/* Місток в архів */}
-    <div style={{ ...st.row, marginTop: 14, backgroundColor: '#f8fafc' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <FileText size={18} color="#475569" />
-        <span style={{ fontSize: 13.5, color: '#374151' }}>
-          Історія всіх пройдених інструктажів зберігається в системі Документообігу
-        </span>
-      </div>
-      <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, whiteSpace: 'nowrap' }}>
-        Відкрити в docNet <ExternalLink size={14} />
-      </button>
-    </div>
+/* Пара «мітка → значення» в розгорнутих деталях */
+const DetailField = ({ label, value }: { label: string; value: ReactNode }) => (
+  <div>
+    <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{label}</div>
+    <div style={{ fontSize: 13.5, color: '#111827', marginTop: 3, lineHeight: 1.5 }}>{value}</div>
   </div>
 );
+
+/* Список документів (інструкції / техкарти) з посиланнями */
+const DocList = ({ docs, onOpen }: { docs: string[]; onOpen: () => void }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 3 }}>
+    {docs.map(d => (
+      <button key={d} onClick={onOpen} style={{ ...S.btnLink, padding: '2px 0', fontSize: 13.5, textAlign: 'left', alignItems: 'flex-start' }}>
+        <FileText size={14} style={{ flexShrink: 0, marginTop: 3 }} />
+        <span style={{ lineHeight: 1.45 }}>{d}</span>
+      </button>
+    ))}
+  </div>
+);
+
+const BriefingsDetail = ({ showToast }: { showToast: (m: string) => void }) => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const openDoc = () => showToast('Документ відкриється з системи Документообігу (docNet)');
+
+  return (
+    <div style={st.detailBody}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {briefings.map(b => {
+          /* Інструктаж, що ще не проводився (подієві: Позаплановий / Цільовий) */
+          if (!b.passedAt) {
+            return (
+              <div key={b.id} style={{ ...st.row, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14.5, color: '#6b7280' }}>{b.kind} інструктаж</div>
+                  {b.notConductedHint && (
+                    <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 3 }}>{b.notConductedHint}</div>
+                  )}
+                </div>
+                <span style={{ fontSize: 13, color: '#9ca3af', whiteSpace: 'nowrap' }}>Не проводився</span>
+              </div>
+            );
+          }
+
+          const expanded = expandedId === b.id;
+          return (
+            <div
+              key={b.id}
+              style={{
+                border: expanded ? '1px solid #bfd7f2' : '1px solid #eef2f7',
+                borderRadius: 10,
+                backgroundColor: expanded ? '#f5f9ff' : '#fafcff',
+                overflow: 'hidden',
+                transition: 'background-color .15s ease, border-color .15s ease',
+              }}
+            >
+              {/* Рядок 2-го рівня — клікабельний */}
+              <div
+                onClick={() => setExpandedId(expanded ? null : b.id)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', cursor: 'pointer' }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>
+                    {b.kind} інструктаж
+                    {b.note && <span style={{ fontWeight: 400, color: '#6b7280' }}> · {b.note}</span>}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
+                    Пройдено {b.passedAt}
+                    {b.validUntil ? ` · діє до ${b.validUntil}` : ''}
+                    {b.periodicity ? ` · проводиться ${b.periodicity.toLowerCase()}` : ''}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <ExpiryBadge validUntil={b.validUntil} />
+                  <ChevronDown size={16} color="#6b7280" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+                </div>
+              </div>
+
+              {/* Акордеон 3-го рівня */}
+              {expanded && (
+                <div style={{ padding: '4px 16px 16px', borderTop: '1px solid #e3edfb', animation: 'safetyFadeUp .22s ease' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px 24px', paddingTop: 13 }}>
+                    {b.periodicity && <DetailField label="Періодичність проведення" value={b.periodicity} />}
+                    {b.reason && <DetailField label="Причина проведення" value={b.reason} />}
+                    {b.basis && <DetailField label="Підстава для проведення" value={b.basis} />}
+                    {b.conductor && <DetailField label="Інструктаж провів" value={b.conductor} />}
+                  </div>
+                  {b.instructions && b.instructions.length > 0 && (
+                    <div style={{ marginTop: 14 }}>
+                      <DetailField label="Інструкції" value={<DocList docs={b.instructions} onOpen={openDoc} />} />
+                    </div>
+                  )}
+                  {b.techCards && b.techCards.length > 0 && (
+                    <div style={{ marginTop: 14 }}>
+                      <DetailField label="Технологічні карти" value={<DocList docs={b.techCards} onOpen={openDoc} />} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Місток в архів */}
+      <div style={{ ...st.row, marginTop: 14, backgroundColor: '#f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <FileText size={18} color="#475569" />
+          <span style={{ fontSize: 13.5, color: '#374151' }}>
+            Історія всіх пройдених інструктажів зберігається в системі Документообігу
+          </span>
+        </div>
+        <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, whiteSpace: 'nowrap' }}>
+          Відкрити в docNet <ExternalLink size={14} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 /* ════════════════════════ ДЕТАЛІ: МЕДИЧНІ ОГЛЯДИ ════════════════════════ */
 
@@ -329,6 +414,97 @@ const AttestationDetail = ({
   </div>
 );
 
+/* ════════════════════════ ПРАВА КОЛОНКА ════════════════════════ */
+
+/* Картка посвідчення керівника — за патерном «Мої страхові відомості» */
+const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
+  const cert = instructorCertificate;
+  const status = expiryStatus(cert.validUntil);
+  const row: CSSProperties = {
+    display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+    gap: 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9',
+  };
+  const label: CSSProperties = { fontSize: 13, color: '#6b7280' };
+  const value: CSSProperties = { fontSize: 13.5, fontWeight: 600, color: '#111827', textAlign: 'right' };
+
+  return (
+    <div style={{ backgroundColor: '#fff', border: '1px solid #93c5fd', borderRadius: 12, padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, borderBottom: '2px solid #111827' }}>
+        <img
+          src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Identification%20card/3D/identification_card_3d.png"
+          alt="" width={26} height={26} style={{ display: 'block' }}
+          onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+        <span style={{ fontSize: 15.5, fontWeight: 700, color: '#111827' }}>Право проведення інструктажів</span>
+      </div>
+
+      <div style={{ fontSize: 12.5, color: '#6b7280', margin: '10px 0 2px', lineHeight: 1.5 }}>
+        {cert.title}
+      </div>
+
+      <div style={row}>
+        <span style={label}>Номер посвідчення</span>
+        <span style={value}>{cert.number}</span>
+      </div>
+      <div style={row}>
+        <span style={label}>Дата видачі</span>
+        <span style={value}>{cert.issuedAt}</span>
+      </div>
+      <div style={row}>
+        <span style={label}>Чинне до</span>
+        <span style={{ ...value, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          {cert.validUntil}
+          <Badge appearance="tint" color={status === 'ok' ? 'success' : status === 'soon' ? 'warning' : 'danger'}>
+            {status === 'ok' ? 'Чинне' : status === 'soon' ? 'Завершується' : 'Прострочено'}
+          </Badge>
+        </span>
+      </div>
+      <div style={{ ...row, borderBottom: 'none' }}>
+        <span style={label}>Видано</span>
+        <span style={value}>{cert.issuedBy}</span>
+      </div>
+
+      <button
+        onClick={() => showToast('Посвідчення відкриється з системи Документообігу (docNet)')}
+        style={{ ...S.btnLink, paddingLeft: 0, marginTop: 4 }}
+      >
+        Переглянути посвідчення <ExternalLink size={14} />
+      </button>
+    </div>
+  );
+};
+
+/* Жовта картка зворотного звʼязку — за патерном Страхування */
+const FeedbackCard = ({ showToast }: { showToast: (m: string) => void }) => (
+  <div
+    onClick={() => showToast('Форма звернення до інженера з охорони праці відкриється тут')}
+    style={{
+      backgroundColor: '#fdf6d8', border: '1px solid #f5e6a4', borderRadius: 12,
+      padding: '20px 18px', display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer',
+    }}
+  >
+    {/* Композиція: бульбашка + лайк, як у Страхуванні */}
+    <div style={{ position: 'relative', width: 62, height: 56, flexShrink: 0 }}>
+      <img
+        src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Speech%20balloon/3D/speech_balloon_3d.png"
+        alt="" width={44} height={44}
+        style={{ display: 'block', position: 'absolute', top: 0, left: 0 }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+      <img
+        src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Thumbs%20up/Default/3D/thumbs_up_3d_default.png"
+        alt="" width={36} height={36}
+        style={{ display: 'block', position: 'absolute', bottom: 0, right: 0 }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+    </div>
+    <div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>Зворотній звʼязок</div>
+      <div style={{ fontSize: 13.5, color: '#2563eb', fontWeight: 600, marginTop: 4 }}>Написати інженеру з ОП →</div>
+    </div>
+  </div>
+);
+
 /* ════════════════════════ СТОРІНКА ════════════════════════ */
 
 export const EmployeeSafety = () => {
@@ -343,14 +519,17 @@ export const EmployeeSafety = () => {
   /* ── Агрегація статусів для карток ── */
 
   const briefingsAgg = useMemo(() => {
-    const status = worst(briefings.map(b => expiryStatus(b.validUntil)));
-    const critical = briefings
+    /* Світлофор рахуємо лише по «постійній трійці» — Позаплановий і Цільовий
+       подієві та не мають терміну дії */
+    const core = briefings.filter(b => ['Вступний', 'Первинний', 'Повторний'].includes(b.kind));
+    const status = worst(core.map(b => expiryStatus(b.validUntil)));
+    const critical = core
       .filter(b => b.validUntil)
       .sort((a, b) => (daysUntil(a.validUntil!) ?? 9e9) - (daysUntil(b.validUntil!) ?? 9e9))[0];
     return {
       status,
       mainLine: status === 'ok'
-        ? 'Вступний, Первинний та Повторний пройдені'
+        ? 'Всі обовʼязкові інструктажі пройдені'
         : `${critical.kind} — діє до`,
       dateLine: status === 'ok' ? undefined : critical.validUntil,
     };
@@ -434,60 +613,73 @@ export const EmployeeSafety = () => {
             Ваші інструктажі, медичні огляди та атестація робочого місця — вся картина одним поглядом.
           </div>
 
-          {/* ── Три картки-світлофори ── */}
-          <div style={st.cardsRow}>
-            <StatusCard
-              section="briefings"
-              title="Інструктажі"
-              mainLine={briefingsAgg.mainLine}
-              dateLine={briefingsAgg.dateLine}
-              status={briefingsAgg.status}
-              selected={openSection === 'briefings'}
-              onClick={() => toggleSection('briefings')}
-            />
-            <StatusCard
-              section="medical"
-              title="Медичні огляди"
-              mainLine={medicalAgg.mainLine}
-              dateLine={medicalAgg.dateLine}
-              status={medicalAgg.status}
-              selected={openSection === 'medical'}
-              onClick={() => toggleSection('medical')}
-            />
-            <StatusCard
-              section="attestation"
-              title="Атестація робочого місця"
-              mainLine={attestationAgg.mainLine}
-              dateLine={attestationAgg.dateLine}
-              status={attestationAgg.status}
-              selected={openSection === 'attestation'}
-              onClick={() => toggleSection('attestation')}
-            />
-          </div>
+          {/* ── Дві колонки: основний контент + права колонка ── */}
+          <div style={{ display: 'flex', gap: 24, marginTop: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
-          {/* ── Детальна панель ── */}
-          {openSection && (
-            <div style={st.detailPanel} key={openSection}>
-              <div style={st.detailHeader}>
-                <div style={st.detailTitle}>
-                  <Emoji3D section={openSection} size={26} />
-                  {detailTitles[openSection]}
-                </div>
-                <button
-                  onClick={() => setOpenSection(null)}
-                  aria-label="Згорнути"
-                  style={{ padding: 6, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280' }}
-                >
-                  <X size={18} />
-                </button>
+            {/* Основна колонка */}
+            <div style={{ flex: '1 1 620px', minWidth: 0 }}>
+              {/* ── Три картки-світлофори ── */}
+              <div style={{ ...st.cardsRow, marginTop: 0 }}>
+                <StatusCard
+                  section="briefings"
+                  title="Інструктажі"
+                  mainLine={briefingsAgg.mainLine}
+                  dateLine={briefingsAgg.dateLine}
+                  status={briefingsAgg.status}
+                  selected={openSection === 'briefings'}
+                  onClick={() => toggleSection('briefings')}
+                />
+                <StatusCard
+                  section="medical"
+                  title="Медичні огляди"
+                  mainLine={medicalAgg.mainLine}
+                  dateLine={medicalAgg.dateLine}
+                  status={medicalAgg.status}
+                  selected={openSection === 'medical'}
+                  onClick={() => toggleSection('medical')}
+                />
+                <StatusCard
+                  section="attestation"
+                  title="Атестація робочого місця"
+                  mainLine={attestationAgg.mainLine}
+                  dateLine={attestationAgg.dateLine}
+                  status={attestationAgg.status}
+                  selected={openSection === 'attestation'}
+                  onClick={() => toggleSection('attestation')}
+                />
               </div>
-              {openSection === 'briefings' && <BriefingsDetail showToast={showToast} />}
-              {openSection === 'medical' && <MedicalDetail />}
-              {openSection === 'attestation' && (
-                <AttestationDetail cards={cards} onSignRequest={setSigningCard} />
+
+              {/* ── Детальна панель ── */}
+              {openSection && (
+                <div style={st.detailPanel} key={openSection}>
+                  <div style={st.detailHeader}>
+                    <div style={st.detailTitle}>
+                      <Emoji3D section={openSection} size={26} />
+                      {detailTitles[openSection]}
+                    </div>
+                    <button
+                      onClick={() => setOpenSection(null)}
+                      aria-label="Згорнути"
+                      style={{ padding: 6, backgroundColor: 'transparent', border: 'none', cursor: 'pointer', color: '#6b7280' }}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                  {openSection === 'briefings' && <BriefingsDetail showToast={showToast} />}
+                  {openSection === 'medical' && <MedicalDetail />}
+                  {openSection === 'attestation' && (
+                    <AttestationDetail cards={cards} onSignRequest={setSigningCard} />
+                  )}
+                </div>
               )}
             </div>
-          )}
+
+            {/* Права колонка — роль керівника */}
+            <aside style={{ flex: '0 1 320px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <CertificateCard showToast={showToast} />
+              <FeedbackCard showToast={showToast} />
+            </aside>
+          </div>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { TopBar } from '../components/TopBar';
 import { S, Toast, ModalShell, RightBlockHeader, Avatar } from './managerUi';
 import { PoaSection } from './ManagerPoa';
+import { SafetySection } from './ManagerSafety';
 import {
   Users, FileText, Briefcase, Calendar, BarChart3, Settings,
   ChevronDown, ChevronRight, ChevronUp, ChevronLeft, Bell,
@@ -167,11 +168,12 @@ const reports = [
   { title: 'Графік відпусток',         icon: <BarChart3 size={18} color="#9333ea" />,    iconBg: '#f3e8ff' },
 ];
 
-type Section = 'hr' | 'poa';
+type Section = 'hr' | 'poa' | 'safety';
 
 const sidebarNav: { label: string; icon: typeof Users; section?: Section }[] = [
   { label: 'Кадрові операції / відсутності', icon: Users,     section: 'hr' },
   { label: 'Довіреності / КЕП',              icon: FileText,  section: 'poa' },
+  { label: 'Охорона праці',                  icon: HardHat,   section: 'safety' },
   { label: 'Посадові інструкції',            icon: Briefcase },
   { label: 'Календар',                       icon: Calendar },
   { label: 'Звіти',                          icon: BarChart3 },
@@ -646,6 +648,7 @@ export const ManagerSpace = () => {
         </>)}
 
         {activeSection === 'poa' && <PoaSection showToast={showToast} />}
+        {activeSection === 'safety' && <SafetySection showToast={showToast} />}
       </div>
 
       {/* Floating help bubble */}
