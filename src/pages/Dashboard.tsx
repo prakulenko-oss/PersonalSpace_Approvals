@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -445,6 +445,11 @@ export const Dashboard = () => {
                   label: 'Довіреності\n/ КЕП', route: '/poa',
                   gradient: 'linear-gradient(135deg, #14b8a6, #0e7490)',
                   icon: <FileText size={26} color="#fff" />,
+                },
+                {
+                  label: 'Охорона\nПраці', route: '/safety',
+                  gradient: 'linear-gradient(135deg, #22c55e, #15803d)',
+                  icon: <HardHat size={26} color="#fff" />,
                 },
                 {
                   label: 'Оцінка', route: '',
