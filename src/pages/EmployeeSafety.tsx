@@ -6,23 +6,23 @@ import { Badge, Button, Checkbox } from '@fluentui/react-components';
 import {
   ShieldCheck, Stethoscope, FileSignature, ExternalLink,
   FileText, Info, X, PenLine,
-  HelpCircle, ChevronDown,
+  HelpCircle, ChevronDown, UserCheck, Link2, Contact, GraduationCap,
 } from 'lucide-react';
 import {
-  briefings, medicalExams, workplaceCards, instructorCertificate,
+  briefings, medicalExams, workplaceCards, instructorCertificate, internshipInfo, admissionDate,
   daysUntil, expiryStatus,
 } from '../data/safety';
 import type { ExpiryStatus, WorkplaceCard } from '../data/safety';
 
 /* ════════════════════════ СТАТУСИ ════════════════════════ */
 
-type SectionKey = 'briefings' | 'medical' | 'attestation';
+type SectionKey = 'briefings' | 'medical' | 'attestation' | 'internship';
 type CardStatus = 'ok' | 'warning' | 'critical';
 
 const statusVisual: Record<CardStatus, { accent: string; tint: string; badge: 'success' | 'warning' | 'danger'; label: string }> = {
   ok:       { accent: '#22c55e', tint: '#ffffff', badge: 'success', label: 'Все чинне' },
-  warning:  { accent: '#f59e0b', tint: '#fffbeb', badge: 'warning', label: 'Завершується' },
-  critical: { accent: '#ef4444', tint: '#fef2f2', badge: 'danger',  label: 'Критично' },
+  warning:  { accent: '#f59e0b', tint: '#ffffff', badge: 'warning', label: 'Завершується' },
+  critical: { accent: '#ef4444', tint: '#ffffff', badge: 'danger',  label: 'Критично' },
 };
 
 const worst = (statuses: ExpiryStatus[]): CardStatus => {
@@ -32,6 +32,23 @@ const worst = (statuses: ExpiryStatus[]): CardStatus => {
 };
 
 const daysWord = (d: number) => (d === 1 ? 'день' : d < 5 ? 'дні' : 'днів');
+
+/* Пігулка з лічильником днів — пастельний фон + кольоровий текст (зразок бізнесу) */
+const pillPalette = {
+  ok:       { bg: '#ecfdf5', text: '#10b981' },
+  soon:     { bg: '#fff7ed', text: '#f59e0b' },
+  critical: { bg: '#fff1f2', text: '#e11d48' },
+} as const;
+
+const DaysPill = ({ days, tone }: { days: number; tone: keyof typeof pillPalette }) => (
+  <span style={{
+    display: 'inline-block', padding: '3px 9px', borderRadius: 8,
+    backgroundColor: pillPalette[tone].bg, color: pillPalette[tone].text,
+    fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap',
+  }}>
+    {days} {daysWord(days)}
+  </span>
+);
 
 const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   const st = expiryStatus(validUntil);
@@ -43,11 +60,7 @@ const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <Badge appearance="tint" color={isCritical ? 'danger' : 'warning'}>{isCritical ? 'Критично' : 'Завершується'}</Badge>
-      {days != null && (
-        <span style={{ fontSize: 12, color: isCritical ? '#b91c1c' : '#b45309', fontWeight: 600 }}>
-          через {days} {daysWord(days)}
-        </span>
-      )}
+      {days != null && <DaysPill days={days} tone={isCritical ? 'critical' : 'soon'} />}
     </span>
   );
 };
@@ -57,15 +70,17 @@ const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
 const FLUENT = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets';
 
 const emojiSrc: Record<SectionKey, string> = {
-  briefings:   `${FLUENT}/Shield/3D/shield_3d.png`,
-  medical:     `${FLUENT}/Stethoscope/3D/stethoscope_3d.png`,
-  attestation: `${FLUENT}/Memo/3D/memo_3d.png`,
+  briefings:   `${FLUENT}/Construction%20worker/Default/3D/construction_worker_3d_default.png`,
+  medical:     `${FLUENT}/Health%20worker/Default/3D/health_worker_3d_default.png`,
+  attestation: `${FLUENT}/Clipboard/3D/clipboard_3d.png`,
+  internship:  `${FLUENT}/Handshake/3D/handshake_3d.png`,
 };
 
 const fallbackIcon: Record<SectionKey, ReactNode> = {
   briefings:   <ShieldCheck size={40} color="#2563eb" />,
   medical:     <Stethoscope size={40} color="#2563eb" />,
   attestation: <FileSignature size={40} color="#2563eb" />,
+  internship:  <UserCheck size={40} color="#2563eb" />,
 };
 
 const Emoji3D = ({ section, size = 64 }: { section: SectionKey; size?: number }) => {
@@ -89,7 +104,7 @@ const st: Record<string, CSSProperties> = {
   container: { maxWidth: 1500, width: '100%', margin: '0 auto', padding: '26px 32px 48px' },
   h1: { fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 },
   sub: { fontSize: 14, color: '#6b7280', marginTop: 6 },
-  cardsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18, marginTop: 24 },
+  cardsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(228px, 1fr))', gap: 14, marginTop: 24 },
   detailPanel: {
     marginTop: 22, backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
     boxShadow: '0 2px 8px rgba(15,60,120,0.06)', overflow: 'hidden',
@@ -142,28 +157,29 @@ const StatusCard = ({
         position: 'relative', cursor: 'pointer', borderRadius: 16,
         backgroundColor: v.tint,
         border: selected ? '2px solid #0078d4' : '1px solid #e2e8f0',
-        padding: selected ? '21px 21px 17px' : '22px 22px 18px',
+        padding: selected ? '17px 17px 13px' : '18px 18px 14px',
         boxShadow: selected ? '0 8px 22px rgba(0,120,212,0.16)' : '0 1px 4px rgba(15,60,120,0.06)',
         overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box',
       }}
     >
       {/* Кольорова смуга статусу */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, backgroundColor: v.accent, borderRadius: '16px 16px 0 0' }} />
 
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-        <Emoji3D section={section} />
+        <Emoji3D section={section} size={54} />
         <Badge appearance="tint" color={v.badge}>{v.label}</Badge>
       </div>
 
-      <div style={{ marginTop: 14, fontSize: 16.5, fontWeight: 700, color: '#111827' }}>{title}</div>
+      <div style={{ marginTop: 12, fontSize: 15.5, fontWeight: 700, color: '#111827' }}>{title}</div>
       <div style={{ marginTop: 7, fontSize: 14, color: '#374151', lineHeight: 1.45 }}>{mainLine}</div>
       {dateLine && (
-        <div style={{ marginTop: 4, fontSize: 18, fontWeight: 700, color: status === 'ok' ? '#15803d' : status === 'warning' ? '#b45309' : '#b91c1c' }}>
+        <div style={{ marginTop: 4, fontSize: 17, fontWeight: 700, color: status === 'ok' ? '#15803d' : status === 'warning' ? '#b45309' : '#b91c1c' }}>
           {dateLine}
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 12, fontSize: 12.5, fontWeight: 600, color: selected ? '#0078d4' : '#6b7280' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 'auto', paddingTop: 12, fontSize: 12.5, fontWeight: 600, color: selected ? '#0078d4' : '#6b7280' }}>
         Детальніше
         <ChevronDown size={14} style={{ transform: selected ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
       </div>
@@ -392,18 +408,17 @@ const AttestationDetail = ({
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>{c.cardNo}</div>
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
-              {c.position} · атестація {c.attestedAt}
-              {c.acquaintedAt && ` · ознайомлення ${c.acquaintedAt}`}
-              {c.resignBy && ` · перепідписання до ${c.resignBy}`}
+              {c.position}
+              {c.acquaintedAt && <> · ознайомлення <b style={{ color: '#111827' }}>{c.acquaintedAt}</b></>}
+              {c.resignBy && ` · чинна до ${c.resignBy}`}
             </div>
-            {c.reason && <div style={{ fontSize: 12.5, color: '#b45309', marginTop: 3 }}>{c.reason}</div>}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {c.kepSignedAt
-              ? <Badge appearance="tint" color="success">КЕП · {c.kepSignedAt}</Badge>
+              ? <Badge appearance="tint" color="success">Ознайомлено</Badge>
               : (
                 <>
-                  <Badge appearance="tint" color="warning">Очікує підписання</Badge>
+                  <Badge appearance="tint" color="warning">Очікує ознайомлення</Badge>
                   <Button appearance="primary" size="small" icon={<PenLine size={14} />} onClick={() => onSignRequest(c)}>
                     Ознайомитись і підписати
                   </Button>
@@ -425,9 +440,97 @@ const AttestationDetail = ({
   </div>
 );
 
+/* ════════════════════════ ДЕТАЛІ: СТАЖУВАННЯ / ДУБЛЮВАННЯ ════════════════════════ */
+
+const InternshipDetail = ({ showToast }: { showToast: (m: string) => void }) => {
+  const info = internshipInfo;
+  const admission = admissionDate(info);
+  const blockTitle: CSSProperties = {
+    fontSize: 12.5, fontWeight: 700, color: '#475569',
+    textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px',
+  };
+  return (
+    <div style={st.detailBody}>
+      {/* Блок 1: стажування (дублювання) на робочому місці */}
+      <div style={blockTitle}>Стажування (дублювання) на робочому місці</div>
+      {info.internship ? (
+        <div style={{ ...st.row, alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>
+              {info.internship.kind} · {info.internship.shifts} {info.internship.shifts === 1 ? 'зміна' : info.internship.shifts < 5 ? 'зміни' : 'змін'}
+            </div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
+              З {info.internship.from} до {info.internship.to}
+              {info.internship.signedAt && ` · підписано ${info.internship.signedAt}`}
+            </div>
+            {info.internship.verifiedBy && (
+              <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+                Знання перевірив, допуск здійснив: {info.internship.verifiedBy}
+              </div>
+            )}
+          </div>
+          <Badge appearance="tint" color={info.internship.status === 'Пройдено' ? 'success' : 'warning'}>
+            {info.internship.status}
+          </Badge>
+        </div>
+      ) : (
+        <div style={{ ...st.row, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+          <span style={{ fontSize: 13.5, color: '#6b7280' }}>Стажування / дублювання не призначалось</span>
+        </div>
+      )}
+
+      {/* Блок 2: звільнення від стажування / дублювання */}
+      <div style={{ ...blockTitle, marginTop: 18 }}>Звільнення від стажування / дублювання</div>
+      {info.exemption ? (
+        <div style={{ ...st.row, alignItems: 'flex-start' }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>Звільнення від стажування / дублювання</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>{info.exemption.orderNo}</div>
+            <div style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+              Знання перевірив, допуск здійснив: {info.exemption.verifiedBy}
+            </div>
+          </div>
+          <Badge appearance="tint" color="success">Звільнено</Badge>
+        </div>
+      ) : (
+        <div style={{ ...st.row, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+          <span style={{ fontSize: 13.5, color: '#6b7280' }}>Звільнення не оформлювалось</span>
+        </div>
+      )}
+
+      {/* Допуск до самостійної роботи (дата перевірки знань з відповідного блоку) */}
+      {admission && (
+        <>
+          <div style={{ ...blockTitle, marginTop: 18 }}>Допуск до самостійної роботи</div>
+          <div style={{ ...st.row, borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 14.5, color: '#111827' }}>Допущено до самостійної роботи з {admission}</div>
+              <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
+                Дата перевірки знань, допуск до роботи: {admission}
+              </div>
+            </div>
+            <Badge appearance="tint" color="success">Допущено</Badge>
+          </div>
+        </>
+      )}
+
+      <div style={st.callout}>
+        <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+        <div>
+          Дані про стажування, дублювання та допуск до самостійної роботи відображаються з системи Документообігу (docNet).
+          Повні документи (накази, розпорядження) доступні там
+          — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ════════════════════════ ПРАВА КОЛОНКА ════════════════════════ */
 
-/* Картка посвідчення керівника — за патерном «Мої страхові відомості» */
+/* Картка «Загальний курс з ОП» — за патерном «Мої страхові відомості».
+   ТЗ: відображається ЛИШЕ керівникам, які мають посвідчення; для інших блок прихований.
+   У прототипі демо-персона — керівник, тому блок видимий. */
 const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
   const cert = instructorCertificate;
   const status = expiryStatus(cert.validUntil);
@@ -440,13 +543,11 @@ const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
 
   return (
     <div style={{ backgroundColor: '#fff', border: '1px solid #93c5fd', borderRadius: 12, padding: '16px 18px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingBottom: 12, borderBottom: '2px solid #111827' }}>
-        <img
-          src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Identification%20card/3D/identification_card_3d.png"
-          alt="" width={26} height={26} style={{ display: 'block' }}
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
-        <span style={{ fontSize: 15.5, fontWeight: 700, color: '#111827' }}>Право проведення інструктажів</span>
+      <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, paddingBottom: 10, borderBottom: '2px solid #0078d4', marginBottom: -1 }}>
+          <GraduationCap size={18} color="#0078d4" />
+          <span style={{ fontSize: 15.5, fontWeight: 700, color: '#111827' }}>Загальний курс з ОП</span>
+        </div>
       </div>
 
       <div style={{ fontSize: 12.5, color: '#6b7280', margin: '10px 0 2px', lineHeight: 1.5 }}>
@@ -485,32 +586,35 @@ const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
   );
 };
 
-/* Швидкі посилання — інструкції, техкарти, контакти (SharePoint / docNet) */
+/* Корисні посилання — за портальним принципом (як у Страхуванні) */
 const QuickLinksCard = ({ showToast }: { showToast: (m: string) => void }) => {
   const links = [
-    { label: 'Інструкції з охорони праці', hint: 'SharePoint', icon: <FileText size={16} color="#2563eb" /> },
-    { label: 'Технологічні карти', hint: 'SharePoint', icon: <FileText size={16} color="#2563eb" /> },
-    { label: 'Контакти інженерів з ОП', hint: 'Довідник', icon: <HelpCircle size={16} color="#2563eb" /> },
+    { label: 'Інструкції з охорони праці', hint: 'SharePoint' },
+    { label: 'Технологічні карти', hint: 'SharePoint' },
   ];
   return (
-    <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 18px' }}>
-      <div style={{ fontSize: 15.5, fontWeight: 700, color: '#111827', paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
-        Швидкі посилання
+    <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 18px 8px' }}>
+      {/* Заголовок — за патерном «Контакти» */}
+      <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, paddingBottom: 10, borderBottom: '2px solid #0078d4', marginBottom: -1 }}>
+          <Link2 size={18} color="#0078d4" />
+          <span style={{ fontSize: 15.5, fontWeight: 700, color: '#111827' }}>Корисні посилання</span>
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', marginTop: 6 }}>
-        {links.map(l => (
+      <div style={{ display: 'flex', flexDirection: 'column', marginTop: 4 }}>
+        {links.map((l, i) => (
           <button
             key={l.label}
             onClick={() => showToast(`«${l.label}» відкриється у відповідному розділі (${l.hint})`)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '9px 2px',
+              display: 'flex', alignItems: 'center', gap: 7, padding: '12px 2px',
               backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
+              borderBottom: i === links.length - 1 ? 'none' : '1px solid #f1f5f9',
               fontFamily: 'inherit', fontSize: 13.5, color: '#111827', textAlign: 'left',
             }}
           >
-            {l.icon}
-            <span style={{ flex: 1 }}>{l.label}</span>
-            <ExternalLink size={13} color="#9ca3af" />
+            <span>{l.label}</span>
+            <ExternalLink size={13} color="#374151" />
           </button>
         ))}
       </div>
@@ -518,36 +622,36 @@ const QuickLinksCard = ({ showToast }: { showToast: (m: string) => void }) => {
   );
 };
 
-/* Жовта картка зворотного звʼязку — за патерном Страхування */
-const FeedbackCard = ({ showToast }: { showToast: (m: string) => void }) => (
-  <div
-    onClick={() => showToast('Форма звернення до інженера з охорони праці відкриється тут')}
-    style={{
-      backgroundColor: '#fdf6d8', border: '1px solid #f5e6a4', borderRadius: 12,
-      padding: '20px 18px', display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer',
-    }}
-  >
-    {/* Композиція: бульбашка + лайк, як у Страхуванні */}
-    <div style={{ position: 'relative', width: 62, height: 56, flexShrink: 0 }}>
-      <img
-        src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Speech%20balloon/3D/speech_balloon_3d.png"
-        alt="" width={44} height={44}
-        style={{ display: 'block', position: 'absolute', top: 0, left: 0 }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-      <img
-        src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Thumbs%20up/Default/3D/thumbs_up_3d_default.png"
-        alt="" width={36} height={36}
-        style={{ display: 'block', position: 'absolute', bottom: 0, right: 0 }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
+/* Контакти — за портальним зразком (синя рамка, роль + email) */
+const ContactsCard = () => {
+  const contacts = [
+    { role: 'Інженер з охорони праці', email: 'OP_SUPPORT@kyivstar.net' },
+    { role: 'Відповідальна особа за електрогосподарство', email: 'ENERGO.SAFETY@kyivstar.net' },
+  ];
+  return (
+    <div style={{ backgroundColor: '#fff', border: '1px solid #93c5fd', borderRadius: 12, padding: '16px 18px' }}>
+      <div style={{ borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, paddingBottom: 10, borderBottom: '2px solid #0078d4', marginBottom: -1 }}>
+          <Contact size={18} color="#0078d4" />
+          <span style={{ fontSize: 15.5, fontWeight: 700, color: '#111827' }}>Контакти</span>
+        </div>
+      </div>
+      <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {contacts.map(c => (
+          <div key={c.email}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{c.role}</div>
+            <a
+              href={`mailto:${c.email}`}
+              style={{ display: 'inline-block', marginTop: 6, fontSize: 13.5, color: '#2563eb', textDecoration: 'underline' }}
+            >
+              {c.email}
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
-    <div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>Зворотній звʼязок</div>
-      <div style={{ fontSize: 13.5, color: '#2563eb', fontWeight: 600, marginTop: 4 }}>Написати інженеру з ОП →</div>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ════════════════════════ СТОРІНКА ════════════════════════ */
 
@@ -608,12 +712,32 @@ export const EmployeeSafety = () => {
     };
   }, [cards]);
 
+  const internshipAgg = useMemo(() => {
+    if (internshipInfo.internship?.status === 'Триває') {
+      return {
+        status: 'warning' as CardStatus,
+        mainLine: `${internshipInfo.internship.kind} триває`,
+        dateLine: `до ${internshipInfo.internship.to}`,
+      };
+    }
+    const admission = admissionDate(internshipInfo);
+    if (admission) {
+      return {
+        status: 'ok' as CardStatus,
+        mainLine: 'Допуск до самостійної роботи',
+        dateLine: `з ${admission}`,
+      };
+    }
+    return { status: 'ok' as CardStatus, mainLine: 'Дані відсутні', dateLine: undefined };
+  }, []);
+
   /* Відкрита панель: за замовчуванням — перша секція, що потребує уваги */
   const [openSection, setOpenSection] = useState<SectionKey | null>(() => {
     const agg: [SectionKey, CardStatus][] = [
       ['briefings', briefingsAgg.status],
       ['medical', medicalAgg.status],
       ['attestation', attestationAgg.status],
+      ['internship', internshipAgg.status],
     ];
     return agg.find(([, s]) => s === 'critical')?.[0]
         ?? agg.find(([, s]) => s === 'warning')?.[0]
@@ -636,6 +760,7 @@ export const EmployeeSafety = () => {
     briefings: 'Проходження інструктажів',
     medical: 'Медичні огляди',
     attestation: 'Атестація робочого місця',
+    internship: 'Стажування / дублювання, допуск до роботи',
   };
 
   return (
@@ -693,6 +818,15 @@ export const EmployeeSafety = () => {
                   selected={openSection === 'attestation'}
                   onClick={() => toggleSection('attestation')}
                 />
+                <StatusCard
+                  section="internship"
+                  title="Стажування та допуск"
+                  mainLine={internshipAgg.mainLine}
+                  dateLine={internshipAgg.dateLine}
+                  status={internshipAgg.status}
+                  selected={openSection === 'internship'}
+                  onClick={() => toggleSection('internship')}
+                />
               </div>
 
               {/* ── Детальна панель ── */}
@@ -716,6 +850,7 @@ export const EmployeeSafety = () => {
                   {openSection === 'attestation' && (
                     <AttestationDetail cards={cards} onSignRequest={setSigningCard} />
                   )}
+                  {openSection === 'internship' && <InternshipDetail showToast={showToast} />}
                 </div>
               )}
             </div>
@@ -724,7 +859,7 @@ export const EmployeeSafety = () => {
             <aside style={{ flex: '0 1 320px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CertificateCard showToast={showToast} />
               <QuickLinksCard showToast={showToast} />
-              <FeedbackCard showToast={showToast} />
+              <ContactsCard />
             </aside>
           </div>
         </div>

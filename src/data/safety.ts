@@ -138,7 +138,7 @@ export type MedicalExam = {
 export const medicalExams: MedicalExam[] = [
   {
     id: 'm1', kind: 'Періодичний медичний огляд',
-    passedAt: '12.05.2026', nextAt: '12.05.2027',
+    passedAt: '12.07.2025', nextAt: '12.07.2026',
     clinic: 'МЦ «Здоровʼя Плюс»',
   },
   {
@@ -147,6 +147,39 @@ export const medicalExams: MedicalExam[] = [
     clinic: 'МЦ «Здоровʼя Плюс»',
   },
 ];
+
+/* ── Стажування / дублювання, допуск до роботи (поля журналу docNet) ── */
+export type InternshipInfo = {
+  /* Блок 1: стажування (дублювання) на робочому місці */
+  internship?: {
+    kind: 'Стажування' | 'Дублювання';
+    shifts: number;             // кількість змін
+    from: string;               // з (дати)
+    to: string;                 // до (дати)
+    signedAt?: string;          // дата підписання особи, яка пройшла
+    verifiedBy?: string;        // знання перевірив, допуск до роботи здійснив
+    admissionAt?: string;       // дата перевірки знань, допуск до роботи
+    status: 'Пройдено' | 'Триває';
+  };
+  /* Блок 2: звільнення від стажування/дублювання */
+  exemption?: {
+    orderNo: string;            // дата та номер наказу/розпорядження
+    verifiedBy: string;         // знання перевірив, допуск до роботи здійснив
+    admissionAt: string;        // дата перевірки знань, допуск до роботи
+  };
+};
+
+export const internshipInfo: InternshipInfo = {
+  exemption: {
+    orderNo: 'Наказ № 112-ОД від 12.03.2021',
+    verifiedBy: 'Дібровський М. С. — керівник підрозділу',
+    admissionAt: '15.03.2021',
+  },
+};
+
+/* Дата допуску до самостійної роботи — з того блоку, де вона зафіксована */
+export const admissionDate = (info: InternshipInfo): string | undefined =>
+  info.exemption?.admissionAt ?? info.internship?.admissionAt;
 
 /* ── Посвідчення керівника (право проведення інструктажів) ── */
 export type InstructorCertificate = {

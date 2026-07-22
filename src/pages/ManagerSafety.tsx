@@ -25,7 +25,16 @@ const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
       <Badge appearance="tint" color={isCritical ? 'danger' : 'warning'}>{isCritical ? 'Критично' : 'Завершується'}</Badge>
-      {days != null && <span style={{ fontSize: 12, color: isCritical ? '#b91c1c' : '#b45309', fontWeight: 600 }}>через {days} {daysWord(days)}</span>}
+      {days != null && (
+        <span style={{
+          display: 'inline-block', padding: '2px 8px', borderRadius: 8,
+          backgroundColor: isCritical ? '#fff1f2' : '#fff7ed',
+          color: isCritical ? '#e11d48' : '#f59e0b',
+          fontSize: 12, fontWeight: 600,
+        }}>
+          {days} {daysWord(days)}
+        </span>
+      )}
     </span>
   );
 };
