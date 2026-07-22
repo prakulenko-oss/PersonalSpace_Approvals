@@ -17,16 +17,16 @@ import type { ExpiryStatus, WorkplaceCard } from '../data/safety';
 /* ════════════════════════ СТАТУСИ ════════════════════════ */
 
 type SectionKey = 'briefings' | 'medical' | 'attestation';
-type CardStatus = 'ok' | 'warning' | 'expired';
+type CardStatus = 'ok' | 'warning' | 'critical';
 
 const statusVisual: Record<CardStatus, { accent: string; tint: string; badge: 'success' | 'warning' | 'danger'; label: string }> = {
-  ok:      { accent: '#22c55e', tint: '#ffffff', badge: 'success', label: 'Все актуально' },
-  warning: { accent: '#f59e0b', tint: '#fffbeb', badge: 'warning', label: 'Потребує уваги' },
-  expired: { accent: '#ef4444', tint: '#fef2f2', badge: 'danger',  label: 'Прострочено' },
+  ok:       { accent: '#22c55e', tint: '#ffffff', badge: 'success', label: 'Все чинне' },
+  warning:  { accent: '#f59e0b', tint: '#fffbeb', badge: 'warning', label: 'Завершується' },
+  critical: { accent: '#ef4444', tint: '#fef2f2', badge: 'danger',  label: 'Критично' },
 };
 
 const worst = (statuses: ExpiryStatus[]): CardStatus => {
-  if (statuses.includes('expired')) return 'expired';
+  if (statuses.includes('expired') || statuses.includes('critical')) return 'critical';
   if (statuses.includes('soon')) return 'warning';
   return 'ok';
 };
@@ -37,14 +37,19 @@ const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   const st = expiryStatus(validUntil);
   const days = validUntil ? daysUntil(validUntil) : null;
   if (st === 'none') return <Badge appearance="tint" color="informative">Безстроково</Badge>;
-  if (st === 'ok') return <Badge appearance="tint" color="success">Актуально</Badge>;
-  if (st === 'soon') return (
+  if (st === 'ok') return <Badge appearance="tint" color="success">Чинний</Badge>;
+  if (st === 'expired') return <Badge appearance="tint" color="danger">Прострочено</Badge>;
+  const isCritical = st === 'critical';
+  return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-      <Badge appearance="tint" color="warning">Завершується</Badge>
-      {days != null && <span style={{ fontSize: 12, color: '#b45309', fontWeight: 600 }}>через {days} {daysWord(days)}</span>}
+      <Badge appearance="tint" color={isCritical ? 'danger' : 'warning'}>{isCritical ? 'Критично' : 'Завершується'}</Badge>
+      {days != null && (
+        <span style={{ fontSize: 12, color: isCritical ? '#b91c1c' : '#b45309', fontWeight: 600 }}>
+          через {days} {daysWord(days)}
+        </span>
+      )}
     </span>
   );
-  return <Badge appearance="tint" color="danger">Прострочено</Badge>;
 };
 
 /* ════════════════════════ 3D ІКОНКИ (Fluent Emoji) ════════════════════════ */
@@ -309,7 +314,12 @@ const MedicalDetail = () => (
 
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-      <div>Періодичний медогляд є обовʼязковим. Про наближення дати наступного медогляду ви отримаєте нагадування.</div>
+      <div>
+        Періодичний медогляд є обовʼязковим. Про наближення дати наступного медогляду ви отримаєте нагадування.
+        <div style={{ marginTop: 6, fontSize: 12.5, color: '#3b5998' }}>
+          Джерело даних — медичні висновки (ELA); інтеграція в опрацюванні, склад полів уточнюється.
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -407,8 +417,9 @@ const AttestationDetail = ({
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
-        Карта умов праці перепідписується <b>раз на 5 років</b>, а також <b>при зміні посади</b> або <b>зміні умов праці</b>.
-        Підписання здійснюється КЕП безпосередньо в Кабінеті.
+        Тут відображається карта умов праці, з якою ви ознайомлені. Якщо термін дії карти не визначено,
+        орієнтовно застосовується логіка «дата ознайомлення + 5 років». Повний документ доступний
+        у системі Документообігу (docNet) відповідно до ваших прав доступу.
       </div>
     </div>
   </div>
@@ -470,6 +481,39 @@ const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
       >
         Переглянути посвідчення <ExternalLink size={14} />
       </button>
+    </div>
+  );
+};
+
+/* Швидкі посилання — інструкції, техкарти, контакти (SharePoint / docNet) */
+const QuickLinksCard = ({ showToast }: { showToast: (m: string) => void }) => {
+  const links = [
+    { label: 'Інструкції з охорони праці', hint: 'SharePoint', icon: <FileText size={16} color="#2563eb" /> },
+    { label: 'Технологічні карти', hint: 'SharePoint', icon: <FileText size={16} color="#2563eb" /> },
+    { label: 'Контакти інженерів з ОП', hint: 'Довідник', icon: <HelpCircle size={16} color="#2563eb" /> },
+  ];
+  return (
+    <div style={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 18px' }}>
+      <div style={{ fontSize: 15.5, fontWeight: 700, color: '#111827', paddingBottom: 10, borderBottom: '1px solid #f1f5f9' }}>
+        Швидкі посилання
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', marginTop: 6 }}>
+        {links.map(l => (
+          <button
+            key={l.label}
+            onClick={() => showToast(`«${l.label}» відкриється у відповідному розділі (${l.hint})`)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '9px 2px',
+              backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 13.5, color: '#111827', textAlign: 'left',
+            }}
+          >
+            {l.icon}
+            <span style={{ flex: 1 }}>{l.label}</span>
+            <ExternalLink size={13} color="#9ca3af" />
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -546,8 +590,10 @@ export const EmployeeSafety = () => {
   }, []);
 
   const attestationAgg = useMemo(() => {
+    /* Спрощений показ (домовленість з бізнесом 22.07.2026): без нагадувань
+       «потрібно підписати» — основне поле: дата ознайомлення з чинною картою */
     const pending = cards.filter(c => !c.kepSignedAt).length;
-    const signed = cards.find(c => c.kepSignedAt);
+    const current = cards.find(c => c.kepSignedAt);
     if (pending > 0) {
       return {
         status: 'warning' as CardStatus,
@@ -557,8 +603,8 @@ export const EmployeeSafety = () => {
     }
     return {
       status: 'ok' as CardStatus,
-      mainLine: 'Все підписано · наступне перепідписання',
-      dateLine: signed?.resignBy,
+      mainLine: `${current?.cardNo ?? 'Карта умов праці'} · ознайомлення`,
+      dateLine: current?.acquaintedAt,
     };
   }, [cards]);
 
@@ -569,7 +615,7 @@ export const EmployeeSafety = () => {
       ['medical', medicalAgg.status],
       ['attestation', attestationAgg.status],
     ];
-    return agg.find(([, s]) => s === 'expired')?.[0]
+    return agg.find(([, s]) => s === 'critical')?.[0]
         ?? agg.find(([, s]) => s === 'warning')?.[0]
         ?? null;
   });
@@ -677,6 +723,7 @@ export const EmployeeSafety = () => {
             {/* Права колонка — роль керівника */}
             <aside style={{ flex: '0 1 320px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CertificateCard showToast={showToast} />
+              <QuickLinksCard showToast={showToast} />
               <FeedbackCard showToast={showToast} />
             </aside>
           </div>

@@ -16,15 +16,17 @@ export const daysUntil = (dateStr: string): number | null => {
   return Math.round((d.getTime() - DEMO_TODAY.getTime()) / 86400000);
 };
 
-/* Статус за терміном дії: актуально / завершується (≤45 днів ≈ 1,5 міс) / прострочено */
-export type ExpiryStatus = 'ok' | 'soon' | 'expired' | 'none';
+/* Статус за терміном дії (шкала погоджена з бізнесом 22.07.2026):
+   чинний / завершується (≤30 днів) / критично (≤14 днів) / прострочено */
+export type ExpiryStatus = 'ok' | 'soon' | 'critical' | 'expired' | 'none';
 
 export const expiryStatus = (validUntil?: string): ExpiryStatus => {
   if (!validUntil) return 'none';
   const days = daysUntil(validUntil);
   if (days == null) return 'none';
   if (days < 0) return 'expired';
-  if (days <= 45) return 'soon';
+  if (days <= 14) return 'critical';
+  if (days <= 30) return 'soon';
   return 'ok';
 };
 
@@ -66,7 +68,7 @@ export const briefings: Briefing[] = [
   },
   {
     id: 'b3', kind: 'Повторний', note: 'останній пройдений',
-    passedAt: '15.02.2026', validUntil: '15.08.2026',
+    passedAt: '28.01.2026', validUntil: '28.07.2026',
     periodicity: '1 раз на 6 міс',
     instructions: [
       'Інструкція з охорони праці № 3 «Під час роботи з екранними пристроями (персональними компʼютерами та ноутбуками)»',
@@ -179,8 +181,9 @@ export const workplaceCards: WorkplaceCard[] = [
   {
     id: 'w2', cardNo: 'Карта умов праці № 214',
     position: 'Провідний фахівець з внутрішніх комунікацій',
-    attestedAt: '02.06.2026',
-    reason: 'Зміна посади — потрібне ознайомлення та підписання КЕП',
+    attestedAt: '02.06.2026', acquaintedAt: '05.06.2026',
+    kepSignedAt: '05.06.2026', resignBy: '05.06.2031',
+    reason: 'Оновлено у звʼязку зі зміною посади',
   },
   {
     id: 'w1', cardNo: 'Карта умов праці № 128',
