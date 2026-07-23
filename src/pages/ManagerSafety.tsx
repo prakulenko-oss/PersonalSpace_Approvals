@@ -1,13 +1,11 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Input, Dropdown, Option, Badge, Button, Tooltip, tokens } from '@fluentui/react-components';
+import { TabList, Tab, Input, Badge, Button, Tooltip } from '@fluentui/react-components';
 import {
-  Users, Zap, Search, ExternalLink, X, HardHat, Stethoscope, Contact, Link2,
-  ArrowUp, ArrowDown, ArrowUpDown, Info, CalendarClock, AlertTriangle, CheckCircle2, FileText,
-  LayoutGrid, List, GraduationCap, UserCheck, Download,
+  Users, Zap, Search, ExternalLink, X, HardHat, GraduationCap, Stethoscope,
+  ArrowUp, ArrowDown, ArrowUpDown, Info, CalendarClock, AlertTriangle, CheckCircle2,
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import { S, Drawer, RightBlockHeader } from './managerUi';
+import { S, Drawer } from './managerUi';
 import { daysUntil, expiryStatus } from '../data/safety';
 import type { ExpiryStatus } from '../data/safety';
 import { teamMembers, electricalRecords } from '../data/teamSafety';
@@ -16,6 +14,13 @@ import type { TeamMember } from '../data/teamSafety';
 /* ════════════════════════ ХЕЛПЕРИ ════════════════════════ */
 
 const daysWord = (d: number) => (d === 1 ? 'день' : d < 5 ? 'дні' : 'днів');
+
+const pillStyle = (critical: boolean): CSSProperties => ({
+  display: 'inline-block', padding: '2px 8px', borderRadius: 8,
+  backgroundColor: critical ? '#fff1f2' : '#fff7ed',
+  color: critical ? '#e11d48' : '#f59e0b',
+  fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap',
+});
 
 const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   const st = expiryStatus(validUntil);
@@ -27,40 +32,8 @@ const ExpiryBadge = ({ validUntil }: { validUntil?: string }) => {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
       <Badge appearance="tint" color={isCritical ? 'danger' : 'warning'}>{isCritical ? 'Критично' : 'Завершується'}</Badge>
-      {days != null && (
-        <span style={{
-          display: 'inline-block', padding: '2px 8px', borderRadius: 8,
-          backgroundColor: isCritical ? '#fff1f2' : '#fff7ed',
-          color: isCritical ? '#e11d48' : '#f59e0b',
-          fontSize: 12, fontWeight: 600,
-        }}>
-          {days} {daysWord(days)}
-        </span>
-      )}
+      {days != null && <span style={pillStyle(isCritical)}>{days} {daysWord(days)}</span>}
     </span>
-  );
-};
-
-/* Дата, залита кольором статусу (без бейджів поряд) */
-const DateCell = ({ status, date }: { status: ExpiryStatus; date?: string }) => {
-  if (!date || status === 'none') return <span style={{ color: '#9ca3af' }}>—</span>;
-  if (status === 'ok') return <span style={{ fontSize: 13, color: '#6b7280' }}>{date}</span>;
-  const critical = status === 'critical' || status === 'expired';
-  const days = daysUntil(date);
-  const hint = status === 'expired'
-    ? `Прострочено (${date})`
-    : days != null ? `Завершується через ${days} ${daysWord(days)}` : date;
-  return (
-    <Tooltip content={hint} relationship="label">
-      <span style={{
-        display: 'inline-block', padding: '3px 10px', borderRadius: 8,
-        backgroundColor: critical ? '#fff1f2' : '#fff7ed',
-        color: critical ? '#e11d48' : '#f59e0b',
-        fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'default',
-      }}>
-        {date}
-      </span>
-    </Tooltip>
   );
 };
 
@@ -72,13 +45,11 @@ const dateKey = (d?: string) => {
 const statusRank: Record<ExpiryStatus, number> = { expired: 0, critical: 1, soon: 2, ok: 3, none: 4 };
 
 /* ════════════════════════ ЗВЕДЕННЯ ПО СПІВРОБІТНИКУ ════════════════════════ */
-/* Сутності — як у працівника: Інструктажі, Медогляди, Атестація, Стажування
-   + Ел. Безпека (5-та, зʼявиться найближчим часом) */
 
-type EntityKey = 'briefings' | 'medical' | 'attestation' | 'internship' | 'electrical';
+type DomainKey = 'briefings' | 'trainings' | 'medical' | 'electrical';
 
 type Problem = {
-  entity: EntityKey;
+  domain: DomainKey;
   label: string;          // «Медогляд — через 6 днів (10.07.2026)»
   status: ExpiryStatus;
 };
@@ -86,12 +57,14 @@ type Problem = {
 type MemberSummary = {
   member: TeamMember;
   briefings: { status: ExpiryStatus; date?: string };
+  trainings: { status: ExpiryStatus; date?: string };
   medical: { status: ExpiryStatus; date?: string };
   attestation: { acquaintedAt: string };
   internship: { label: string; warn: boolean };
   electrical?: { status: ExpiryStatus; date?: string };
   problems: Problem[];
   worst: ExpiryStatus;
+  nearest?: string;
 };
 
 const problemPhrase = (title: string, status: ExpiryStatus, date?: string): string => {
@@ -104,6 +77,15 @@ const problemPhrase = (title: string, status: ExpiryStatus, date?: string): stri
 
 const buildSummaries = (): MemberSummary[] => teamMembers.map(m => {
   const briefings = { status: expiryStatus(m.repeatBriefing.validUntil), date: m.repeatBriefing.validUntil };
+
+  const nearestTraining = [...m.trainings].sort((a, b) => dateKey(a.validUntil).localeCompare(dateKey(b.validUntil)))[0];
+  const trainings = {
+    status: m.trainings.length
+      ? m.trainings.map(t => expiryStatus(t.validUntil)).sort((a, b) => statusRank[a] - statusRank[b])[0]
+      : ('none' as ExpiryStatus),
+    date: nearestTraining?.validUntil,
+  };
+
   const medical = { status: expiryStatus(m.medical.nextAt), date: m.medical.nextAt };
 
   const el = electricalRecords.find(r => r.memberId === m.id);
@@ -115,34 +97,45 @@ const buildSummaries = (): MemberSummary[] => teamMembers.map(m => {
       ? { label: `з ${m.internship.admissionAt}`, warn: false }
       : { label: '—', warn: false };
 
+  /* Відкриті питання — лише проблемні домени */
   const problems: Problem[] = [];
   const isProblem = (s: ExpiryStatus) => s === 'soon' || s === 'critical' || s === 'expired';
-  if (isProblem(briefings.status)) problems.push({ entity: 'briefings', status: briefings.status, label: problemPhrase('Повторний інструктаж', briefings.status, briefings.date) });
-  if (isProblem(medical.status)) problems.push({ entity: 'medical', status: medical.status, label: problemPhrase('Медогляд', medical.status, medical.date) });
-  if (electrical && isProblem(electrical.status)) problems.push({ entity: 'electrical', status: electrical.status, label: problemPhrase('Ел. безпека — перевірка знань', electrical.status, electrical.date) });
+  if (isProblem(briefings.status)) problems.push({ domain: 'briefings', status: briefings.status, label: problemPhrase('Повторний інструктаж', briefings.status, briefings.date) });
+  if (isProblem(trainings.status)) {
+    const worstTraining = m.trainings.filter(t => isProblem(expiryStatus(t.validUntil)))
+      .sort((a, b) => dateKey(a.validUntil).localeCompare(dateKey(b.validUntil)))[0];
+    problems.push({ domain: 'trainings', status: trainings.status, label: problemPhrase(worstTraining?.title ?? 'Навчання', trainings.status, worstTraining?.validUntil) });
+  }
+  if (isProblem(medical.status)) problems.push({ domain: 'medical', status: medical.status, label: problemPhrase('Медогляд', medical.status, medical.date) });
+  if (electrical && isProblem(electrical.status)) problems.push({ domain: 'electrical', status: electrical.status, label: problemPhrase('Ел. безпека — перевірка знань', electrical.status, electrical.date) });
 
-  const statuses = [briefings.status, medical.status, ...(electrical ? [electrical.status] : [])];
+  const statuses = [briefings.status, trainings.status, medical.status, ...(electrical ? [electrical.status] : [])];
   const worst = statuses.sort((a, b) => statusRank[a] - statusRank[b])[0];
+
+  const futureDates = [briefings.date, trainings.date, medical.date, electrical?.date]
+    .filter((d): d is string => !!d && (daysUntil(d) ?? -1) >= 0)
+    .sort((a, b) => dateKey(a).localeCompare(dateKey(b)));
 
   return {
     member: m,
-    briefings, medical,
+    briefings, trainings, medical,
     attestation: { acquaintedAt: m.attestation.acquaintedAt },
     internship, electrical,
     problems, worst,
+    nearest: futureDates[0],
   };
 });
 
 const summaries = buildSummaries();
 
-/* ════════════════════════ ІКОНКИ «ВІДКРИТИХ ПИТАНЬ» ════════════════════════ */
+/* ════════════════════════ КЛІТИНКИ ════════════════════════ */
 
-const entityIcon: Record<EntityKey, (color: string) => ReactNode> = {
-  briefings:   c => <HardHat size={17} color={c} />,
-  medical:     c => <Stethoscope size={17} color={c} />,
-  attestation: c => <FileText size={17} color={c} />,
-  internship:  c => <Users size={17} color={c} />,
-  electrical:  c => <Zap size={17} color={c} />,
+/* Іконки доменів для «Відкритих питань» (патерн Кадрових операцій) */
+const domainIcon: Record<DomainKey, (color: string) => ReactNode> = {
+  briefings:  c => <HardHat size={17} color={c} />,
+  trainings:  c => <GraduationCap size={17} color={c} />,
+  medical:    c => <Stethoscope size={17} color={c} />,
+  electrical: c => <Zap size={17} color={c} />,
 };
 
 const ProblemIcons = ({ problems }: { problems: Problem[] }) => {
@@ -156,12 +149,51 @@ const ProblemIcons = ({ problems }: { problems: Problem[] }) => {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       {problems.map(p => (
-        <Tooltip key={p.entity} content={p.label} relationship="label">
+        <Tooltip key={p.domain} content={p.label} relationship="label">
           <span style={{ display: 'inline-flex', cursor: 'default' }}>
-            {entityIcon[p.entity](p.status === 'soon' ? '#f59e0b' : '#ef4444')}
+            {domainIcon[p.domain](p.status === 'soon' ? '#f59e0b' : '#ef4444')}
           </span>
         </Tooltip>
       ))}
+    </span>
+  );
+};
+
+/* Тиха клітинка детального зрізу: норма мовчить, проблема — пігулка */
+const QuietCell = ({ status, date }: { status: ExpiryStatus; date?: string }) => {
+  if (!date || status === 'none') return <span style={{ color: '#9ca3af' }}>—</span>;
+  if (status === 'ok') return <span style={{ fontSize: 13, color: '#6b7280' }}>{date}</span>;
+  if (status === 'expired') {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 13, color: '#b91c1c', fontWeight: 600 }}>{date}</span>
+        <span style={{ fontSize: 11.5, color: '#b91c1c', fontWeight: 700 }}>прострочено</span>
+      </span>
+    );
+  }
+  const days = daysUntil(date);
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 13, color: '#111827', fontWeight: 600 }}>{date}</span>
+      {days != null && <span style={pillStyle(status === 'critical')}>{days} {daysWord(days)}</span>}
+    </span>
+  );
+};
+
+/* Клітинка «найближча дата» для Огляду */
+const NearestCell = ({ summary }: { summary: MemberSummary }) => {
+  if (summary.worst === 'expired') {
+    return <span style={pillStyle(true)}>прострочено</span>;
+  }
+  if (!summary.nearest) return <span style={{ color: '#9ca3af' }}>—</span>;
+  const days = daysUntil(summary.nearest);
+  if (summary.worst === 'ok' || days == null) {
+    return <span style={{ fontSize: 13, color: '#6b7280' }}>{summary.nearest}</span>;
+  }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 13, color: '#111827' }}>{summary.nearest}</span>
+      <span style={pillStyle(summary.worst === 'critical')}>{days} {daysWord(days)}</span>
     </span>
   );
 };
@@ -173,9 +205,8 @@ const rowStyle: CSSProperties = {
   padding: '11px 14px', border: '1px solid #eef2f7', borderRadius: 10, backgroundColor: '#fafcff',
 };
 
-const SectionTitle = ({ icon, children }: { icon?: ReactNode; children: ReactNode }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.4, margin: '20px 0 9px' }}>
-    {icon}
+const SectionTitle = ({ children }: { children: ReactNode }) => (
+  <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.4, margin: '20px 0 9px' }}>
     {children}
   </div>
 );
@@ -197,7 +228,7 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
 
       <div style={{ padding: '4px 24px 24px', overflowY: 'auto' }}>
         {/* Інструктажі */}
-        <SectionTitle icon={<HardHat size={15} color="#64748b" />}>Інструктажі</SectionTitle>
+        <SectionTitle>Інструктажі</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={rowStyle}>
             <div>
@@ -230,7 +261,7 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
         </div>
 
         {/* Медичні огляди */}
-        <SectionTitle icon={<Stethoscope size={15} color="#64748b" />}>Медичні огляди</SectionTitle>
+        <SectionTitle>Медичні огляди</SectionTitle>
         <div style={rowStyle}>
           <div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{m.medical.kind}</div>
@@ -242,7 +273,7 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
         </div>
 
         {/* Атестація робочого місця */}
-        <SectionTitle icon={<FileText size={15} color="#64748b" />}>Атестація робочого місця</SectionTitle>
+        <SectionTitle>Атестація робочого місця</SectionTitle>
         <div style={rowStyle}>
           <div>
             <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{m.attestation.cardNo}</div>
@@ -254,7 +285,7 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
         </div>
 
         {/* Стажування / допуск */}
-        <SectionTitle icon={<UserCheck size={15} color="#64748b" />}>Стажування / дублювання, допуск до роботи</SectionTitle>
+        <SectionTitle>Стажування / дублювання, допуск до роботи</SectionTitle>
         <div style={rowStyle}>
           {m.internship.ongoing ? (
             <>
@@ -275,10 +306,26 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
           )}
         </div>
 
+        {/* Навчання */}
+        <SectionTitle>Навчання</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {m.trainings.map(t => (
+            <div key={t.protocol} style={rowStyle}>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{t.title}</div>
+                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
+                  Протокол {t.protocol} · пройдено {t.passedAt} · чинне до {t.validUntil}
+                </div>
+              </div>
+              <ExpiryBadge validUntil={t.validUntil} />
+            </div>
+          ))}
+        </div>
+
         {/* Електробезпека */}
         {el && (
           <>
-            <SectionTitle icon={<Zap size={15} color="#64748b" />}>Електробезпека</SectionTitle>
+            <SectionTitle>Електробезпека</SectionTitle>
             <div style={{ ...rowStyle, alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{el.ruleFull} ({el.ruleName})</div>
@@ -294,22 +341,6 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
             </div>
           </>
         )}
-
-        {/* Навчання */}
-        <SectionTitle icon={<GraduationCap size={15} color="#64748b" />}>Навчання</SectionTitle>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {m.trainings.map(t => (
-            <div key={t.protocol} style={rowStyle}>
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{t.title}</div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
-                  Протокол {t.protocol} · пройдено {t.passedAt} · чинне до {t.validUntil}
-                </div>
-              </div>
-              <ExpiryBadge validUntil={t.validUntil} />
-            </div>
-          ))}
-        </div>
 
         {/* Дії — через docNet */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 22 }}>
@@ -333,124 +364,84 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
   );
 };
 
-
-/* ════════════════════════ ВИВАНТАЖЕННЯ В EXCEL ════════════════════════ */
-
-const statusLabel: Record<ExpiryStatus, string> = {
-  ok: 'Чинний', soon: 'Завершується', critical: 'Критично', expired: 'Прострочено', none: '—',
-};
-
-const exportTeamToExcel = () => {
-  const header = [
-    'ПІБ', 'Посада',
-    'Вступний інструктаж', 'Первинний інструктаж',
-    'Повторний: пройдено', 'Повторний: діє до', 'Повторний: періодичність', 'Повторний: статус',
-    'Подієві інструктажі (останні)',
-    'Медогляд: пройдено', 'Медогляд: наступний', 'Медогляд: статус',
-    'Атестація: карта умов праці', 'Атестація: дата ознайомлення', 'Атестація: чинна до',
-    'Стажування / допуск до роботи',
-    'Ел. безпека: правила', 'Ел. безпека: категорія персоналу',
-    'Ел. безпека: попередня група', 'Ел. безпека: необхідна група',
-    'Ел. безпека: попередня перевірка', 'Ел. безпека: наступна перевірка',
-    'Ел. безпека: періодичність', 'Ел. безпека: статус',
-    'Навчання (протоколи та терміни)',
-    'Відкриті питання',
-  ];
-
-  const rows = summaries.map(x => {
-    const m = x.member;
-    const el = electricalRecords.find(r => r.memberId === m.id);
-    return [
-      m.name, m.role,
-      m.introBriefingAt, m.primaryBriefingAt,
-      m.repeatBriefing.passedAt, m.repeatBriefing.validUntil, m.repeatBriefing.periodicity,
-      statusLabel[x.briefings.status],
-      (m.extraBriefings ?? []).map(b => `${b.kind} — ${b.passedAt}${b.reason ? ` (${b.reason})` : ''}`).join('; ') || '—',
-      m.medical.passedAt, m.medical.nextAt, statusLabel[x.medical.status],
-      m.attestation.cardNo, m.attestation.acquaintedAt, m.attestation.validTo,
-      m.internship.ongoing
-        ? `${m.internship.ongoing.kind} триває до ${m.internship.ongoing.to}`
-        : m.internship.admissionAt ? `Допущено з ${m.internship.admissionAt}` : '—',
-      el?.ruleName ?? '—', el?.personnelCategory ?? '—',
-      el?.prevGroup ?? '—', el?.requiredGroup ?? '—',
-      el?.lastCheck ?? '—', el?.nextCheck ?? '—',
-      el?.periodicity ?? '—', el ? statusLabel[x.electrical!.status] : '—',
-      m.trainings.map(t => `${t.title} (${t.protocol}, чинне до ${t.validUntil})`).join('; '),
-      x.problems.map(p => p.label).join('; ') || 'Все чинне',
-    ];
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-  ws['!cols'] = header.map((h, i) => ({ wch: Math.max(h.length + 2, ...rows.map(r => String(r[i] ?? '').length + 2), 12) }));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Охорона праці — команда');
-  XLSX.writeFile(wb, 'Охорона_праці_команда.xlsx');
-};
-
 /* ════════════════════════ СЕКЦІЯ ════════════════════════ */
 
+type SafetyTab = 'team' | 'electrical';
 type TeamView = 'overview' | 'detailed';
+type StatusFilter = 'all' | 'soon' | 'expired';
 type SortState = { col: 'name' | 'date'; dir: 1 | -1 };
 
-const statusFilterOptions = [
-  { value: '', label: 'Всі стани' },
-  { value: 'ok', label: 'Все чинне' },
-  { value: 'soon', label: 'Завершується' },
-  { value: 'critical', label: 'Критично' },
-  { value: 'expired', label: 'Прострочено' },
-];
-
-const entityFilterOptions: { value: '' | EntityKey; label: string }[] = [
-  { value: '', label: 'Всі сутності' },
-  { value: 'briefings', label: 'Інструктажі' },
-  { value: 'medical', label: 'Медичні огляди' },
-  { value: 'attestation', label: 'Атестація' },
-  { value: 'internship', label: 'Стажування / допуск' },
-  { value: 'electrical', label: 'Ел. безпека' },
-];
+const electricalRows = electricalRecords.map(r => {
+  const m = teamMembers.find(x => x.id === r.memberId)!;
+  return { ...r, name: m.name, role: m.role, status: expiryStatus(r.nextCheck) };
+});
 
 export const SafetySection = ({ showToast }: { showToast: (msg: string) => void }) => {
+  const [tab, setTab] = useState<SafetyTab>('team');
   const [view, setView] = useState<TeamView>('overview');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [entityFilter, setEntityFilter] = useState<'' | EntityKey>('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortState>({ col: 'date', dir: 1 });
   const [openSummary, setOpenSummary] = useState<MemberSummary | null>(null);
 
-  /* Права колонка: стани згортання блоків */
-  const [contactsOpen, setContactsOpen] = useState(true);
-  const [linksOpen, setLinksOpen] = useState(true);
+  /* KPI по активному табу */
+  const kpi = useMemo(() => {
+    if (tab === 'team') {
+      return {
+        total: summaries.length,
+        soon: summaries.filter(x => x.worst === 'soon').length,
+        expired: summaries.filter(x => x.worst === 'critical' || x.worst === 'expired').length,
+      };
+    }
+    return {
+      total: electricalRows.length,
+      soon: electricalRows.filter(r => r.status === 'soon').length,
+      expired: electricalRows.filter(r => r.status === 'critical' || r.status === 'expired').length,
+    };
+  }, [tab]);
 
-  /* KPI */
-  const kpi = useMemo(() => ({
-    total: summaries.length,
-    soon: summaries.filter(x => x.worst === 'soon').length,
-    expired: summaries.filter(x => x.worst === 'critical' || x.worst === 'expired').length,
-  }), []);
-
-  const kpiCards = [
-    { title: 'Співробітників у команді', value: kpi.total, accent: '#2563eb', iconBg: '#e3edfb', icon: <Users size={20} color="#2563eb" /> },
-    { title: 'Завершується (≤ 30 днів)', value: kpi.soon, accent: '#f59e0b', iconBg: '#fef3c7', icon: <CalendarClock size={20} color="#d97706" /> },
-    { title: 'Критично / Прострочено', value: kpi.expired, accent: '#ef4444', iconBg: '#fee2e2', icon: <AlertTriangle size={20} color="#dc2626" /> },
+  const kpiCards: { key: StatusFilter; title: string; value: number; accent: string; iconBg: string; icon: ReactNode }[] = [
+    {
+      key: 'all',
+      title: tab === 'team' ? 'Співробітників у команді' : 'Записів з ел. безпеки',
+      value: kpi.total, accent: '#2563eb', iconBg: '#e3edfb', icon: <Users size={20} color="#2563eb" />,
+    },
+    { key: 'soon', title: tab === 'team' ? 'Завершується (≤ 30 днів)' : 'Наближається перевірка (≤ 30 днів)', value: kpi.soon, accent: '#f59e0b', iconBg: '#fef3c7', icon: <CalendarClock size={20} color="#d97706" /> },
+    { key: 'expired', title: 'Критично / Прострочено', value: kpi.expired, accent: '#ef4444', iconBg: '#fee2e2', icon: <AlertTriangle size={20} color="#dc2626" /> },
   ];
 
-  /* Фільтрація + сортування */
+  /* Команда: фільтр + сортування */
   const filteredTeam = useMemo(() => {
     const result = summaries.filter(x => {
       const q = search.toLowerCase();
       const matchesSearch = x.member.name.toLowerCase().includes(q) || x.member.role.toLowerCase().includes(q);
-      const matchesStatus = !statusFilter || x.worst === statusFilter;
-      const matchesEntity = !entityFilter || x.problems.some(p => p.entity === entityFilter);
-      return matchesSearch && matchesStatus && matchesEntity;
+      const matchesStatus = statusFilter === 'all'
+        || (statusFilter === 'soon' ? x.worst === 'soon' : (x.worst === 'critical' || x.worst === 'expired'));
+      return matchesSearch && matchesStatus;
     });
     result.sort((a, b) => {
       if (sort.col === 'name') return a.member.name.localeCompare(b.member.name, 'uk') * sort.dir;
       const bySeverity = statusRank[a.worst] - statusRank[b.worst];
       if (bySeverity !== 0) return bySeverity * sort.dir;
-      return dateKey(a.briefings.date).localeCompare(dateKey(b.briefings.date)) * sort.dir;
+      return dateKey(a.nearest).localeCompare(dateKey(b.nearest)) * sort.dir;
     });
     return result;
-  }, [search, statusFilter, entityFilter, sort]);
+  }, [search, statusFilter, sort]);
+
+  const filteredElectrical = useMemo(() => {
+    const result = electricalRows.filter(r => {
+      const q = search.toLowerCase();
+      const matchesSearch = r.name.toLowerCase().includes(q) || r.ruleName.toLowerCase().includes(q)
+        || r.requiredGroup.toLowerCase().includes(q) || r.prevGroup.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === 'all'
+        || (statusFilter === 'expired' ? (r.status === 'critical' || r.status === 'expired') : r.status === statusFilter);
+      return matchesSearch && matchesStatus;
+    });
+    result.sort((a, b) => (sort.col === 'name'
+      ? a.name.localeCompare(b.name, 'uk')
+      : dateKey(a.nextCheck).localeCompare(dateKey(b.nextCheck))) * sort.dir);
+    return result;
+  }, [search, statusFilter, sort]);
 
   const toggleSort = (col: SortState['col']) =>
     setSort(prev => (prev.col === col ? { col, dir: prev.dir === 1 ? -1 : 1 } : { col, dir: 1 }));
@@ -460,299 +451,248 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
       ? <ArrowUpDown size={13} color="#9ca3af" />
       : sort.dir === 1 ? <ArrowUp size={13} color="#2563eb" /> : <ArrowDown size={13} color="#2563eb" />;
 
+  const openMemberById = (id: string) => {
+    const x = summaries.find(y => y.member.id === id);
+    if (x) setOpenSummary(x);
+  };
+
   const th: CSSProperties = {
     fontSize: 12.5, fontWeight: 600, color: '#475569', padding: '11px 14px',
     display: 'flex', alignItems: 'center', gap: 5, userSelect: 'none',
   };
   const td: CSSProperties = { fontSize: 13.5, color: '#111827', padding: '13px 14px', display: 'flex', alignItems: 'center', minWidth: 0 };
 
-  const overviewCols = '1.9fr 1.1fr 1.6fr';
-  const detailedCols = '1.7fr 1fr 1fr 1fr 1.15fr 1fr';
-  const gridCols = view === 'overview' ? overviewCols : detailedCols;
+  const overviewCols = '1.9fr 1.1fr 1.5fr 1.3fr';
+  const detailedCols = '1.55fr 1.05fr 1.05fr 1.05fr 1fr 1.1fr 1.05fr';
+  const elCols = '1.5fr 0.8fr 1.05fr 1.05fr 0.95fr 0.95fr 0.95fr 1.15fr';
+  const gridCols = tab === 'electrical' ? elCols : view === 'overview' ? overviewCols : detailedCols;
 
-  const contacts = [
-    { role: 'Інженер з охорони праці', email: 'OP_SUPPORT@kyivstar.net' },
-    { role: 'Відповідальна особа за електрогосподарство', email: 'ENERGO.SAFETY@kyivstar.net' },
-  ];
-
-  const quickLinks = [
-    { label: 'Інструкції з охорони праці', hint: 'SharePoint' },
-    { label: 'Технологічні карти', hint: 'SharePoint' },
-  ];
+  /* Сегмент-контрол зрізів */
+  const segBtn = (active: boolean): CSSProperties => ({
+    padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+    fontFamily: 'inherit', border: 'none', borderRadius: 7,
+    backgroundColor: active ? '#fff' : 'transparent',
+    color: active ? '#0078d4' : '#6b7280',
+    boxShadow: active ? '0 1px 3px rgba(15,60,120,0.15)' : 'none',
+  });
 
   return (
-    <>
-      {/* ═══ MAIN ═══ */}
-      <main style={S.main}>
-        {/* KPI Cards */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginBottom: 24, flexWrap: 'wrap' }}>
-          {kpiCards.map(k => (
-            <div key={k.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden', width: 270, boxSizing: 'border-box' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, backgroundColor: k.accent }} />
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{k.value}</div>
-                  <div style={{ fontSize: 13, color: '#374151', marginTop: 7 }}>{k.title}</div>
-                </div>
-                <div style={{ width: 42, height: 42, backgroundColor: k.iconBg, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {k.icon}
-                </div>
+    <main style={S.main}>
+      {/* KPI-картки (клік — фільтр) */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginBottom: 24, flexWrap: 'wrap' }}>
+        {kpiCards.map(k => (
+          <div
+            key={k.key}
+            onClick={() => setStatusFilter(prev => (prev === k.key ? 'all' : k.key))}
+            style={{
+              ...S.card,
+              borderColor: statusFilter === k.key && k.key !== 'all' ? k.accent : '#e3e3e3',
+              padding: '16px 18px', position: 'relative', overflow: 'hidden',
+              width: 270, boxSizing: 'border-box', cursor: 'pointer',
+            }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 4, backgroundColor: k.accent }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{k.value}</div>
+                <div style={{ fontSize: 13, color: '#374151', marginTop: 7 }}>{k.title}</div>
+              </div>
+              <div style={{ width: 42, height: 42, backgroundColor: k.iconBg, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {k.icon}
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Table block — форма як у Довіреностях */}
-        <div style={{ ...S.card, marginBottom: 24 }}>
-          {/* Search + filters + перемикач режимів відображення */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: '16px 18px 12px' }}>
-            <Input
-              value={search}
-              onChange={(_, d) => setSearch(d.value)}
-              placeholder="Пошук за ПІБ / посадою"
-              aria-label="Пошук"
-              contentBefore={<Search size={15} color={tokens.colorNeutralForeground3} />}
-              style={{ flex: '0 0 280px' }}
-            />
-            <Dropdown
-              value={statusFilterOptions.find(o => o.value === statusFilter)?.label ?? 'Всі стани'}
-              selectedOptions={[statusFilter]}
-              onOptionSelect={(_, d) => setStatusFilter(d.optionValue ?? '')}
-              aria-label="Фільтр за станом"
-              style={{ flex: '0 0 170px', minWidth: 0 }}
-            >
-              {statusFilterOptions.map(o => <Option key={o.label} value={o.value} text={o.label}>{o.label}</Option>)}
-            </Dropdown>
-            <Dropdown
-              value={entityFilterOptions.find(o => o.value === entityFilter)?.label ?? 'Всі сутності'}
-              selectedOptions={[entityFilter]}
-              onOptionSelect={(_, d) => setEntityFilter((d.optionValue ?? '') as '' | EntityKey)}
-              aria-label="Фільтр за сутністю"
-              style={{ flex: '0 0 200px', minWidth: 0 }}
-            >
-              {entityFilterOptions.map(o => <Option key={o.label} value={o.value} text={o.label}>{o.label}</Option>)}
-            </Dropdown>
-
-            {/* Перемикач режимів — як у Центрі затверджень */}
-            <div style={{
-              display: 'flex', alignItems: 'center', marginLeft: 'auto',
-              backgroundColor: tokens.colorNeutralBackground2, borderRadius: 8, padding: 2,
-            }}>
-              <Tooltip content="Огляд" relationship="label">
-                <Button
-                  appearance="subtle"
-                  icon={<LayoutGrid size={18} />}
-                  onClick={() => setView('overview')}
-                  style={{
-                    backgroundColor: view === 'overview' ? 'white' : 'transparent',
-                    color: view === 'overview' ? '#229FFF' : tokens.colorNeutralForeground3,
-                    borderRadius: 6, minWidth: 36, padding: 6,
-                    boxShadow: view === 'overview' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Детально" relationship="label">
-                <Button
-                  appearance="subtle"
-                  icon={<List size={18} />}
-                  onClick={() => setView('detailed')}
-                  style={{
-                    backgroundColor: view === 'detailed' ? 'white' : 'transparent',
-                    color: view === 'detailed' ? '#229FFF' : tokens.colorNeutralForeground3,
-                    borderRadius: 6, minWidth: 36, padding: 6,
-                    boxShadow: view === 'detailed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                />
-              </Tooltip>
-            </div>
-
-            <Tooltip content="Детальні дані по всіх співробітниках" relationship="label">
-              <Button
-                appearance="secondary"
-                icon={<Download size={15} />}
-                onClick={() => exportTeamToExcel()}
-              >
-                Вивантажити в Excel
-              </Button>
-            </Tooltip>
           </div>
+        ))}
+      </div>
 
-          {/* Легенда статусів — патерн Управління Командою */}
-          {(
-            <div style={{
-              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 18px',
-              padding: '9px 18px 12px', fontSize: 12.5, color: '#475569',
-            }}>
-              <span>Легенда статусів:</span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <HardHat size={15} color="#64748b" /> Інструктаж
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Stethoscope size={15} color="#64748b" /> Медогляд
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Zap size={15} color="#64748b" /> Ел. безпека
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff7ed', color: '#f59e0b', fontWeight: 600 }}>≤ 30 днів</span>
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff1f2', color: '#e11d48', fontWeight: 600 }}>≤ 14 днів / прострочено</span>
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={15} color="#22c55e" /> Все гаразд
-              </span>
+      {/* Таби + зрізи + пошук + місток у docNet */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <TabList
+            selectedValue={tab}
+            onTabSelect={(_, d) => { setTab(d.value as SafetyTab); setStatusFilter('all'); setSearch(''); }}
+          >
+            <Tab value="team" icon={<Users size={16} />}>Команда</Tab>
+            <Tab value="electrical" icon={<Zap size={16} />}>Ел. Безпека</Tab>
+          </TabList>
+
+          {tab === 'team' && (
+            <div style={{ display: 'inline-flex', gap: 2, padding: 3, backgroundColor: '#f1f5f9', borderRadius: 9 }}>
+              <button style={segBtn(view === 'overview')} onClick={() => setView('overview')}>Огляд</button>
+              <button style={segBtn(view === 'detailed')} onClick={() => setView('detailed')}>Детально</button>
             </div>
           )}
+        </div>
 
-          {/* Шапка таблиці */}
-          <div style={{ display: 'grid', gridTemplateColumns: gridCols, backgroundColor: '#f8fafc', borderTop: '1px solid #eef2f7', borderBottom: '1px solid #e2e8f0' }}>
-            <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('name')}>
-              Співробітник <SortIcon col="name" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <Input
+            contentBefore={<Search size={15} />}
+            placeholder={tab === 'team' ? 'Пошук: співробітник, посада…' : 'Пошук: співробітник, група…'}
+            value={search}
+            onChange={(_, d) => setSearch(d.value)}
+            style={{ minWidth: 250 }}
+          />
+          <Button
+            appearance="primary"
+            icon={<ExternalLink size={15} />}
+            onClick={() => showToast('Заявка на навчання формується в системі Документообігу (docNet)')}
+          >
+            Сформувати заявку в docNet
+          </Button>
+        </div>
+      </div>
+
+      {/* Таблиця */}
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', backgroundColor: '#fff' }}>
+        {/* Шапка */}
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols, backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+          <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('name')}>
+            {tab === 'electrical' ? 'Персонал' : 'Співробітник'} <SortIcon col="name" />
+          </div>
+          {tab === 'team' && view === 'overview' && (
+            <>
+              <div style={th}>Повторний до</div>
+              <div style={th}>Відкриті питання</div>
+              <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
+                Найближча дата <SortIcon col="date" />
+              </div>
+            </>
+          )}
+          {tab === 'team' && view === 'detailed' && (
+            <>
+              <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
+                Інструктажі <SortIcon col="date" />
+              </div>
+              <div style={th}>Навчання</div>
+              <div style={th}>Медогляди</div>
+              <div style={th}>Атестація</div>
+              <div style={th}>Стажування / допуск</div>
+              <div style={th}>Ел. Безпека</div>
+            </>
+          )}
+          {tab === 'electrical' && (
+            <>
+              <div style={th}>Назва Правил</div>
+              <div style={th}>Попередня група</div>
+              <div style={th}>Необхідна група</div>
+              <div style={th}>Попередня перевірка</div>
+              <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
+                Наступна перевірка <SortIcon col="date" />
+              </div>
+              <div style={th}>Періодичність</div>
+              <div style={th}>Статус</div>
+            </>
+          )}
+        </div>
+
+        {/* Рядки: Команда */}
+        {tab === 'team' && filteredTeam.map((x, i) => (
+          <div
+            key={x.member.id}
+            onClick={() => setOpenSummary(x)}
+            style={{
+              display: 'grid', gridTemplateColumns: gridCols, cursor: 'pointer',
+              borderBottom: i === filteredTeam.length - 1 ? 'none' : '1px solid #f1f5f9',
+              backgroundColor: '#fff',
+            }}
+          >
+            <div style={{ ...td, gap: 10 }}>
+              {(x.worst === 'soon' || x.worst === 'critical' || x.worst === 'expired') && (
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                  backgroundColor: x.worst === 'soon' ? '#f59e0b' : '#ef4444',
+                }} />
+              )}
+              <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                <span style={{ fontWeight: 600 }}>{x.member.name}</span>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>{x.member.role}</span>
+              </span>
             </div>
+
             {view === 'overview' ? (
               <>
-                <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
-                  Повторний до <SortIcon col="date" />
-                </div>
-                <div style={th}>Відкриті питання</div>
+                <div style={td}><QuietCell status={x.briefings.status} date={x.briefings.date} /></div>
+                <div style={td}><ProblemIcons problems={x.problems} /></div>
+                <div style={td}><NearestCell summary={x} /></div>
               </>
             ) : (
               <>
-                <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
-                  <HardHat size={14} color="#64748b" /> Інструктажі <SortIcon col="date" />
+                <div style={td}><QuietCell status={x.briefings.status} date={x.briefings.date} /></div>
+                <div style={td}><QuietCell status={x.trainings.status} date={x.trainings.date} /></div>
+                <div style={td}><QuietCell status={x.medical.status} date={x.medical.date} /></div>
+                <div style={td}><span style={{ fontSize: 13, color: '#6b7280' }}>{x.attestation.acquaintedAt}</span></div>
+                <div style={td}>
+                  <span style={{ fontSize: 13, color: x.internship.warn ? '#b45309' : '#6b7280', fontWeight: x.internship.warn ? 600 : 400 }}>
+                    {x.internship.label}
+                  </span>
                 </div>
-                <div style={th}><Stethoscope size={14} color="#64748b" /> Медогляди</div>
-                <div style={th}><FileText size={14} color="#64748b" /> Атестація</div>
-                <div style={th}><UserCheck size={14} color="#64748b" /> Стажування / допуск</div>
-                <div style={th}><Zap size={14} color="#64748b" /> Ел. Безпека</div>
+                <div style={td}>
+                  {x.electrical
+                    ? <QuietCell status={x.electrical.status} date={x.electrical.date} />
+                    : <span style={{ color: '#9ca3af' }}>—</span>}
+                </div>
               </>
             )}
           </div>
+        ))}
 
-          {/* Рядки */}
-          {filteredTeam.map((x, i) => (
-            <div
-              key={x.member.id}
-              onClick={() => setOpenSummary(x)}
-              style={{
-                display: 'grid', gridTemplateColumns: gridCols, cursor: 'pointer',
-                borderBottom: i === filteredTeam.length - 1 ? 'none' : '1px solid #f1f5f9',
-                backgroundColor: '#fff',
-              }}
-            >
-              <div style={{ ...td, flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                <span style={{ fontWeight: 600 }}>{x.member.name}</span>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>{x.member.role}</span>
-              </div>
-
-              {view === 'overview' ? (
-                <>
-                  <div style={td}><DateCell status={x.briefings.status} date={x.briefings.date} /></div>
-                  <div style={td}><ProblemIcons problems={x.problems} /></div>
-                </>
-              ) : (
-                <>
-                  <div style={td}><DateCell status={x.briefings.status} date={x.briefings.date} /></div>
-                  <div style={td}><DateCell status={x.medical.status} date={x.medical.date} /></div>
-                  <div style={td}><span style={{ fontSize: 13, color: '#6b7280' }}>{x.attestation.acquaintedAt}</span></div>
-                  <div style={td}>
-                    <span style={{ fontSize: 13, color: x.internship.warn ? '#b45309' : '#6b7280', fontWeight: x.internship.warn ? 600 : 400 }}>
-                      {x.internship.label}
-                    </span>
-                  </div>
-                  <div style={td}>
-                    {x.electrical
-                      ? <DateCell status={x.electrical.status} date={x.electrical.date} />
-                      : <span style={{ color: '#9ca3af' }}>—</span>}
-                  </div>
-                </>
-              )}
+        {/* Рядки: Ел. Безпека */}
+        {tab === 'electrical' && filteredElectrical.map((r, i) => (
+          <div
+            key={`${r.memberId}-${r.ruleName}`}
+            onClick={() => openMemberById(r.memberId)}
+            style={{
+              display: 'grid', gridTemplateColumns: gridCols, cursor: 'pointer',
+              borderBottom: i === filteredElectrical.length - 1 ? 'none' : '1px solid #f1f5f9',
+              backgroundColor: '#fff',
+            }}
+          >
+            <div style={{ ...td, flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+              <span style={{ fontWeight: 600 }}>{r.name}</span>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>{r.role}</span>
             </div>
-          ))}
+            <div style={{ ...td }} title={r.ruleFull}>{r.ruleName}</div>
+            <div style={{ ...td, fontSize: 13 }}>{r.prevGroup}</div>
+            <div style={{ ...td, fontSize: 13, fontWeight: 600 }}>{r.requiredGroup}</div>
+            <div style={td}>{r.lastCheck}</div>
+            <div style={td}><QuietCell status={r.status} date={r.nextCheck} /></div>
+            <div style={{ ...td, fontSize: 12.5, color: '#374151' }}>{r.periodicity}</div>
+            <div style={td}><ExpiryBadge validUntil={r.nextCheck} /></div>
+          </div>
+        ))}
 
-          {filteredTeam.length === 0 && (
-            <div style={{ padding: '28px 16px', textAlign: 'center', fontSize: 13.5, color: '#6b7280' }}>
-              Нічого не знайдено за поточним фільтром
-            </div>
-          )}
-        </div>
+        {((tab === 'team' && filteredTeam.length === 0) || (tab === 'electrical' && filteredElectrical.length === 0)) && (
+          <div style={{ padding: '28px 16px', textAlign: 'center', fontSize: 13.5, color: '#6b7280' }}>
+            Нічого не знайдено за поточним фільтром
+          </div>
+        )}
+      </div>
 
-        {/* Пояснення */}
-        <div style={{
-          display: 'flex', gap: 12, alignItems: 'flex-start', backgroundColor: '#eff6ff',
-          border: '1px solid #bfdbfe', borderRadius: 12, padding: '13px 16px',
-          fontSize: 13.5, color: '#1e3a8a', lineHeight: 1.5,
-        }}>
-          <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+      {/* Пояснення */}
+      <div style={{
+        display: 'flex', gap: 12, alignItems: 'flex-start', backgroundColor: '#eff6ff',
+        border: '1px solid #bfdbfe', borderRadius: 12, padding: '13px 16px', marginTop: 18,
+        fontSize: 13.5, color: '#1e3a8a', lineHeight: 1.5,
+      }}>
+        <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+        {tab === 'electrical' ? (
+          <div>
+            За <b>1 місяць</b> до дати наступної перевірки знань ви та працівник отримаєте автоматичне нагадування на електронну пошту.
+            Заявка на навчання з електробезпеки формується в системі Документообігу (docNet) та додатково погоджується
+            <b> відповідальною особою за електрогосподарство</b>.
+          </div>
+        ) : (
           <div>
             Відображаються працівники вашої гілки підпорядкування. Наведіть на іконку у «Відкритих питаннях», щоб побачити деталь,
             або клікніть на рядок для повної картини по співробітнику. Заявки та реєстрація інструктажів виконуються
-            в системі Документообігу (docNet); заявки з електробезпеки додатково погоджує відповідальна особа за електрогосподарство.
+            в системі Документообігу (docNet).
           </div>
-        </div>
-      </main>
-
-      {/* ═══ RIGHT COLUMN ═══ */}
-      <aside style={S.rightBar}>
-        {/* Контакти */}
-        <div style={S.card}>
-          <RightBlockHeader
-            icon={<Contact size={18} color="#2f6fde" />}
-            title="Контакти"
-            open={contactsOpen}
-            onToggle={() => setContactsOpen(o => !o)}
-          />
-          {contactsOpen && (
-            <div style={{ padding: '4px 16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {contacts.map(c => (
-                <div key={c.email}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{c.role}</div>
-                  <a
-                    href={`mailto:${c.email}`}
-                    style={{ display: 'inline-block', marginTop: 6, fontSize: 13.5, color: '#2563eb', textDecoration: 'underline' }}
-                  >
-                    {c.email}
-                  </a>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Корисні посилання */}
-        <div style={S.card}>
-          <RightBlockHeader
-            icon={<Link2 size={18} color="#2f6fde" />}
-            title="Корисні посилання"
-            open={linksOpen}
-            onToggle={() => setLinksOpen(o => !o)}
-          />
-          {linksOpen && (
-            <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column' }}>
-              {quickLinks.map((l, i) => (
-                <button
-                  key={l.label}
-                  onClick={() => showToast(`«${l.label}» відкриється у відповідному розділі (${l.hint})`)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 7, padding: '11px 2px',
-                    backgroundColor: 'transparent', border: 'none', cursor: 'pointer',
-                    borderBottom: i === quickLinks.length - 1 ? 'none' : '1px solid #f1f5f9',
-                    fontFamily: 'inherit', fontSize: 13.5, color: '#111827', textAlign: 'left',
-                  }}
-                >
-                  <span>{l.label}</span>
-                  <ExternalLink size={13} color="#374151" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
+        )}
+      </div>
 
       {openSummary && (
         <MemberDrawer summary={openSummary} onClose={() => setOpenSummary(null)} showToast={showToast} />
       )}
-    </>
+    </main>
   );
 };
