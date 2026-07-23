@@ -4,9 +4,9 @@ import { Input, Dropdown, Option, Badge, Button, Tooltip, tokens } from '@fluent
 import {
   Users, Zap, Search, ExternalLink, X, HardHat, Stethoscope, Contact, Link2,
   ArrowUp, ArrowDown, ArrowUpDown, Info, CalendarClock, AlertTriangle, CheckCircle2, FileText,
-  LayoutGrid, List, GraduationCap, UserCheck, Download,
+  LayoutGrid, List, GraduationCap, UserCheck, FileSpreadsheet,
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { S, Drawer, RightBlockHeader } from './managerUi';
 import { daysUntil, expiryStatus } from '../data/safety';
 import type { ExpiryStatus } from '../data/safety';
@@ -335,55 +335,108 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
 
 
 /* ════════════════════════ ВИВАНТАЖЕННЯ В EXCEL ════════════════════════ */
+/* Аркуш «Команда»: рядок = співробітник, сутності — групами колонок «Пройдено/Діє до».
+   Аркуш «Навчання»: довгий формат (рядок = навчання) для фільтрів. */
 
 const statusLabel: Record<ExpiryStatus, string> = {
   ok: 'Чинний', soon: 'Завершується', critical: 'Критично', expired: 'Прострочено', none: '—',
 };
 
+/* Стилі клітинок */
+const XS = {
+  head: { font: { bold: true, sz: 11 }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+          fill: { fgColor: { rgb: 'F1F5F9' } },
+          border: { top: { style: 'thin', color: { rgb: 'CBD5E1' } }, bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+                    left: { style: 'thin', color: { rgb: 'CBD5E1' } }, right: { style: 'thin', color: { rgb: 'CBD5E1' } } } },
+  cell: { alignment: { vertical: 'center' } },
+  soon: { alignment: { vertical: 'center' }, fill: { fgColor: { rgb: 'FEF3C7' } }, font: { color: { rgb: '92400E' }, bold: true } },
+  crit: { alignment: { vertical: 'center' }, fill: { fgColor: { rgb: 'FEE2E2' } }, font: { color: { rgb: 'B91C1C' }, bold: true } },
+} as const;
+
+const styledDate = (date: string | undefined, status: ExpiryStatus) => ({
+  v: date ?? '—',
+  t: 's' as const,
+  s: status === 'soon' ? XS.soon : (status === 'critical' || status === 'expired') ? XS.crit : XS.cell,
+});
+
 const exportTeamToExcel = () => {
-  const header = [
+  const wb = XLSX.utils.book_new();
+
+  /* ── Аркуш 1: Команда (матриця) ── */
+  const topRow = [
     'ПІБ', 'Посада',
-    'Вступний інструктаж', 'Первинний інструктаж',
-    'Повторний: пройдено', 'Повторний: діє до', 'Повторний: періодичність', 'Повторний: статус',
-    'Подієві інструктажі (останні)',
-    'Медогляд: пройдено', 'Медогляд: наступний', 'Медогляд: статус',
-    'Атестація: карта умов праці', 'Атестація: дата ознайомлення', 'Атестація: чинна до',
-    'Стажування / допуск до роботи',
-    'Ел. безпека: правила', 'Ел. безпека: категорія персоналу',
-    'Ел. безпека: попередня група', 'Ел. безпека: необхідна група',
-    'Ел. безпека: попередня перевірка', 'Ел. безпека: наступна перевірка',
-    'Ел. безпека: періодичність', 'Ел. безпека: статус',
-    'Навчання (протоколи та терміни)',
-    'Відкриті питання',
+    'Інструктажі', '', 'Медичні огляди', '', 'Атестація робочого місця', '',
+    'Стажування / допуск', 'Ел. безпека', '', 'Відкриті питання',
+  ];
+  const subRow = [
+    '', '',
+    'Пройдено', 'Діє до', 'Пройдено', 'Наступний', 'Ознайомлення', 'Чинна до',
+    'Допуск з', 'Перевірка', 'Наступна', '',
   ];
 
-  const rows = summaries.map(x => {
+  const dataRows = summaries.map(x => {
     const m = x.member;
     const el = electricalRecords.find(r => r.memberId === m.id);
     return [
-      m.name, m.role,
-      m.introBriefingAt, m.primaryBriefingAt,
-      m.repeatBriefing.passedAt, m.repeatBriefing.validUntil, m.repeatBriefing.periodicity,
-      statusLabel[x.briefings.status],
-      (m.extraBriefings ?? []).map(b => `${b.kind} — ${b.passedAt}${b.reason ? ` (${b.reason})` : ''}`).join('; ') || '—',
-      m.medical.passedAt, m.medical.nextAt, statusLabel[x.medical.status],
-      m.attestation.cardNo, m.attestation.acquaintedAt, m.attestation.validTo,
-      m.internship.ongoing
-        ? `${m.internship.ongoing.kind} триває до ${m.internship.ongoing.to}`
-        : m.internship.admissionAt ? `Допущено з ${m.internship.admissionAt}` : '—',
-      el?.ruleName ?? '—', el?.personnelCategory ?? '—',
-      el?.prevGroup ?? '—', el?.requiredGroup ?? '—',
-      el?.lastCheck ?? '—', el?.nextCheck ?? '—',
-      el?.periodicity ?? '—', el ? statusLabel[x.electrical!.status] : '—',
-      m.trainings.map(t => `${t.title} (${t.protocol}, чинне до ${t.validUntil})`).join('; '),
-      x.problems.map(p => p.label).join('; ') || 'Все чинне',
+      { v: m.name, t: 's', s: XS.cell },
+      { v: m.role, t: 's', s: XS.cell },
+      { v: m.repeatBriefing.passedAt, t: 's', s: XS.cell },
+      styledDate(m.repeatBriefing.validUntil, x.briefings.status),
+      { v: m.medical.passedAt, t: 's', s: XS.cell },
+      styledDate(m.medical.nextAt, x.medical.status),
+      { v: m.attestation.acquaintedAt, t: 's', s: XS.cell },
+      { v: m.attestation.validTo, t: 's', s: XS.cell },
+      { v: m.internship.ongoing ? `${m.internship.ongoing.kind} до ${m.internship.ongoing.to}` : m.internship.admissionAt ?? '—', t: 's', s: XS.cell },
+      { v: el?.lastCheck ?? '—', t: 's', s: XS.cell },
+      el ? styledDate(el.nextCheck, x.electrical!.status) : { v: '—', t: 's', s: XS.cell },
+      { v: x.problems.map(p => p.label).join('; ') || 'Все чинне', t: 's', s: XS.cell },
     ];
   });
 
-  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
-  ws['!cols'] = header.map((h, i) => ({ wch: Math.max(h.length + 2, ...rows.map(r => String(r[i] ?? '').length + 2), 12) }));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Охорона праці — команда');
+  const headTop = topRow.map(v => ({ v, t: 's' as const, s: XS.head }));
+  const headSub = subRow.map(v => ({ v, t: 's' as const, s: XS.head }));
+  const ws = XLSX.utils.aoa_to_sheet([headTop, headSub, ...dataRows]);
+
+  /* Обʼєднання: ПІБ/Посада/Стажування/Відкриті питання — вертикально; сутності — горизонтально */
+  ws['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },   // ПІБ
+    { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },   // Посада
+    { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } },   // Інструктажі
+    { s: { r: 0, c: 4 }, e: { r: 0, c: 5 } },   // Медогляди
+    { s: { r: 0, c: 6 }, e: { r: 0, c: 7 } },   // Атестація
+    { s: { r: 0, c: 8 }, e: { r: 1, c: 8 } },   // Стажування
+    { s: { r: 0, c: 9 }, e: { r: 0, c: 10 } },  // Ел. безпека
+    { s: { r: 0, c: 11 }, e: { r: 1, c: 11 } }, // Відкриті питання
+  ];
+  ws['!cols'] = [
+    { wch: 24 }, { wch: 34 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
+    { wch: 14 }, { wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 55 },
+  ];
+  ws['!freeze'] = { xSplit: 1, ySplit: 2 };
+  ws['!autofilter'] = { ref: `A2:L${dataRows.length + 2}` };
+  XLSX.utils.book_append_sheet(wb, ws, 'Команда');
+
+  /* ── Аркуш 2: Навчання (довгий формат) ── */
+  const tHead = ['ПІБ', 'Посада', 'Навчання', 'Протокол', 'Пройдено', 'Чинне до', 'Статус']
+    .map(v => ({ v, t: 's' as const, s: XS.head }));
+  const tRows = teamMembers.flatMap(m => m.trainings.map(t => {
+    const st = expiryStatus(t.validUntil);
+    return [
+      { v: m.name, t: 's', s: XS.cell },
+      { v: m.role, t: 's', s: XS.cell },
+      { v: t.title, t: 's', s: XS.cell },
+      { v: t.protocol, t: 's', s: XS.cell },
+      { v: t.passedAt, t: 's', s: XS.cell },
+      styledDate(t.validUntil, st),
+      { v: statusLabel[st], t: 's', s: st === 'soon' ? XS.soon : (st === 'critical' || st === 'expired') ? XS.crit : XS.cell },
+    ];
+  }));
+  const wsT = XLSX.utils.aoa_to_sheet([tHead, ...tRows]);
+  wsT['!cols'] = [{ wch: 24 }, { wch: 34 }, { wch: 40 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 14 }];
+  wsT['!freeze'] = { xSplit: 0, ySplit: 1 };
+  wsT['!autofilter'] = { ref: `A1:G${tRows.length + 1}` };
+  XLSX.utils.book_append_sheet(wb, wsT, 'Навчання');
+
   XLSX.writeFile(wb, 'Охорона_праці_команда.xlsx');
 };
 
@@ -567,13 +620,22 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
             </div>
 
             <Tooltip content="Детальні дані по всіх співробітниках" relationship="label">
-              <Button
-                appearance="secondary"
-                icon={<Download size={15} />}
+              <button
                 onClick={() => exportTeamToExcel()}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0B5C30'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#107C41'; }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  backgroundColor: '#107C41', color: '#fff',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
+                  transition: 'background-color .15s ease',
+                  boxShadow: '0 1px 3px rgba(16,124,65,0.35)',
+                }}
               >
-                Вивантажити в Excel
-              </Button>
+                <FileSpreadsheet size={16} />
+                Експорт Excel
+              </button>
             </Tooltip>
           </div>
 
