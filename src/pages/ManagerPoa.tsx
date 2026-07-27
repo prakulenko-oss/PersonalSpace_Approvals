@@ -6,13 +6,13 @@ import {
 import { DismissRegular, SendRegular } from '@fluentui/react-icons';
 import {
   AlarmClock, UserPlus, PenLine,
-  BarChart3, BookOpen, Search, Zap,
+  BarChart3, BookOpen, Search, Zap, ScrollText, Hourglass, Contact,
   ExternalLink, X, Download, Share2, Paperclip,
   ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Check,
   CheckCircle2, MinusCircle, FileSearch, Info,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell, Drawer, SuccessModal, useIsMobile, AnimStyles } from './managerUi';
-import { poaIcon, poaIconOrange, kepIcon, kepIconRed } from '../assets/poaIcons';
+import { poaIcon, kepIcon } from '../assets/poaIcons';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
@@ -151,14 +151,45 @@ const inProgressKepRow: DocRow = {
   ],
 };
 
-type KpiCard = { title: string; emoji: string; value: string; accent: string; iconBg: string; image?: string; tab: 'poa' | 'kep' };
+const FLUENT_3D = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets';
+
+type KpiCard = { title: string; value: string; accent: string; iconBg: string; img3d: string; fallback: 'scroll' | 'hourglass' | 'idcard' | 'alarm'; tab: 'poa' | 'kep' };
 
 const kpiCards = [
-  { title: 'Довіреності активні', emoji: '📜', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', image: poaIcon, tab: 'poa' },
-  { title: 'Довіреності < 30д',   emoji: '⏳', value: '3',  accent: '#f97316', iconBg: '#fdf3e3', image: poaIconOrange, tab: 'poa' },
-  { title: 'КЕП активні',         emoji: '🪪', value: '8',  accent: '#92C11D', iconBg: '#dcfce7', image: kepIcon, tab: 'kep' },
-  { title: 'КЕП < 30д',           emoji: '⏰', value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', image: kepIconRed, tab: 'kep' },
+  { title: 'Довіреності активні', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', img3d: `${FLUENT_3D}/Scroll/3D/scroll_3d.png`, fallback: 'scroll', tab: 'poa' },
+  { title: 'Довіреності < 30д',   value: '3',  accent: '#f97316', iconBg: '#fdf3e3', img3d: `${FLUENT_3D}/Hourglass%20not%20done/3D/hourglass_not_done_3d.png`, fallback: 'hourglass', tab: 'poa' },
+  { title: 'КЕП активні',         value: '8',  accent: '#92C11D', iconBg: '#dcfce7', img3d: `${FLUENT_3D}/Identification%20card/3D/identification_card_3d.png`, fallback: 'idcard', tab: 'kep' },
+  { title: 'КЕП < 30д',           value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', img3d: `${FLUENT_3D}/Alarm%20clock/3D/alarm_clock_3d.png`, fallback: 'alarm', tab: 'kep' },
 ] as KpiCard[];
+
+const kpiFallbackIcon: Record<KpiCard['fallback'], React.ReactNode> = {
+  scroll: <ScrollText size={22} color="#2f6fde" />,
+  hourglass: <Hourglass size={22} color="#f97316" />,
+  idcard: <Contact size={22} color="#4d7c0f" />,
+  alarm: <AlarmClock size={22} color="#e02f2f" />,
+};
+
+/* 3D-іконка KPI з фолбеком на Lucide за недоступності CDN */
+const Kpi3DIcon = ({ kpi }: { kpi: KpiCard }) => {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {kpiFallbackIcon[kpi.fallback]}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={kpi.img3d}
+      alt=""
+      width={44}
+      height={44}
+      style={{ display: 'block', filter: 'drop-shadow(0 5px 8px rgba(15,60,120,0.18))' }}
+      onError={() => setFailed(true)}
+    />
+  );
+};
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -346,13 +377,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                   <div style={{ fontSize: '26px', fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{kpi.value}</div>
                   <div style={{ fontSize: '13px', color: '#374151', marginTop: '7px' }}>{kpi.title}</div>
                 </div>
-                {kpi.image ? (
-                  <img src={kpi.image} alt={kpi.title} style={{ width: 42, height: 42, borderRadius: '9px', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                    {kpi.emoji}
-                  </div>
-                )}
+                <Kpi3DIcon kpi={kpi} />
               </div>
             </div>
           ))}

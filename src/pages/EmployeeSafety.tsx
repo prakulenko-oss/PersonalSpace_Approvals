@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { TopBar } from '../components/TopBar';
 import { S, Toast, ModalShell } from './managerUi';
-import { Badge, Button, Checkbox } from '@fluentui/react-components';
+import { Badge, Button, Checkbox, Switch } from '@fluentui/react-components';
 import {
   ShieldCheck, Stethoscope, FileSignature, ExternalLink,
   FileText, Info, X, PenLine,
@@ -17,12 +17,13 @@ import type { ExpiryStatus, WorkplaceCard } from '../data/safety';
 /* ════════════════════════ СТАТУСИ ════════════════════════ */
 
 type SectionKey = 'briefings' | 'medical' | 'attestation' | 'internship';
-type CardStatus = 'ok' | 'warning' | 'critical';
+type CardStatus = 'ok' | 'warning' | 'critical' | 'muted';
 
-const statusVisual: Record<CardStatus, { accent: string; tint: string; badge: 'success' | 'warning' | 'danger'; label: string }> = {
+const statusVisual: Record<CardStatus, { accent: string; tint: string; badge: 'success' | 'warning' | 'danger' | 'informative'; label: string }> = {
   ok:       { accent: '#22c55e', tint: '#ffffff', badge: 'success', label: 'Все чинне' },
   warning:  { accent: '#f59e0b', tint: '#ffffff', badge: 'warning', label: 'Завершується' },
   critical: { accent: '#ef4444', tint: '#ffffff', badge: 'danger',  label: 'Критично' },
+  muted:    { accent: '#cbd5e1', tint: '#ffffff', badge: 'informative', label: 'Не передбачено' },
 };
 
 const worst = (statuses: ExpiryStatus[]): CardStatus => {
@@ -104,7 +105,7 @@ const st: Record<string, CSSProperties> = {
   container: { maxWidth: 1500, width: '100%', margin: '0 auto', padding: '26px 32px 48px' },
   h1: { fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 },
   sub: { fontSize: 14, color: '#6b7280', marginTop: 6 },
-  cardsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(228px, 1fr))', gap: 14, marginTop: 24 },
+  cardsRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(196px, 1fr))', gap: 14, marginTop: 24 },
   detailPanel: {
     marginTop: 22, backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: 14,
     boxShadow: '0 2px 8px rgba(15,60,120,0.06)', overflow: 'hidden',
@@ -166,9 +167,9 @@ const StatusCard = ({
       {/* Кольорова смуга статусу */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, backgroundColor: v.accent, borderRadius: '16px 16px 0 0' }} />
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
         <Emoji3D section={section} size={54} />
-        <Badge appearance="tint" color={v.badge}>{v.label}</Badge>
+        <Badge appearance="tint" color={v.badge} style={{ whiteSpace: 'nowrap' }}>{v.label}</Badge>
       </div>
 
       <div style={{ marginTop: 12, fontSize: 15.5, fontWeight: 700, color: '#111827' }}>{title}</div>
@@ -292,21 +293,30 @@ const BriefingsDetail = ({ showToast }: { showToast: (m: string) => void }) => {
         })}
       </div>
 
-      {/* Місток в архів */}
-      <div style={{ ...st.row, marginTop: 14, backgroundColor: '#f8fafc' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FileText size={18} color="#475569" />
-          <span style={{ fontSize: 13.5, color: '#374151' }}>
-            Історія всіх пройдених інструктажів зберігається в системі Документообігу
-          </span>
+      {/* Місток в архів — єдиний формат колаутів */}
+      <div style={st.callout}>
+        <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+        <div>
+          Історія всіх пройдених інструктажів зберігається в системі Документообігу (docNet)
+          — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
         </div>
-        <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, whiteSpace: 'nowrap' }}>
-          Відкрити в docNet <ExternalLink size={14} />
-        </button>
       </div>
     </div>
   );
 };
+
+const NotApplicableBlock = ({ text, callout }: { text: string; callout: string }) => (
+  <div style={st.detailBody}>
+    <div style={{ ...st.row, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+      <span style={{ fontSize: 13.5, color: '#6b7280' }}>{text}</span>
+      <Badge appearance="tint" color="informative">Не передбачено</Badge>
+    </div>
+    <div style={st.callout}>
+      <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+      <div>{callout}</div>
+    </div>
+  </div>
+);
 
 /* ════════════════════════ ДЕТАЛІ: МЕДИЧНІ ОГЛЯДИ ════════════════════════ */
 
@@ -331,7 +341,9 @@ const MedicalDetail = () => (
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
-        Періодичний медогляд є обовʼязковим. Про наближення дати наступного медогляду ви отримаєте нагадування.
+        Періодичний медогляд проводиться для визначених категорій працівників. Про наближення дати ми
+        повідомимо завчасно: ваш керівник отримає нагадування та ініціює проведення — додаткових дій
+        від вас не потрібно.
         <div style={{ marginTop: 6, fontSize: 12.5, color: '#3b5998' }}>
           Джерело даних — медичні висновки (ELA); інтеграція в опрацюванні, склад полів уточнюється.
         </div>
@@ -410,7 +422,6 @@ const AttestationDetail = ({
             <div style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>
               {c.position}
               {c.acquaintedAt && <> · ознайомлення <b style={{ color: '#111827' }}>{c.acquaintedAt}</b></>}
-              {c.resignBy && ` · чинна до ${c.resignBy}`}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
@@ -432,7 +443,7 @@ const AttestationDetail = ({
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
-        Тут відображається карта умов праці, з якою ви ознайомлені. Якщо термін дії карти не визначено,
+        Ваше робоче місце атестоване — тут усе актуально. Якщо термін дії карти не визначено,
         орієнтовно застосовується логіка «дата ознайомлення + 5 років». Повний документ доступний
         у системі Документообігу (docNet) відповідно до ваших прав доступу.
       </div>
@@ -521,6 +532,47 @@ const InternshipDetail = ({ showToast }: { showToast: (m: string) => void }) => 
           Повні документи (накази, розпорядження) доступні там
           — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+
+/* Плейсхолдер 5-го розділу «Навчання» — поки без функціоналу (запит бізнесу) */
+const TrainingPlaceholderCard = () => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div
+      aria-disabled
+      style={{
+        position: 'relative', borderRadius: 16, backgroundColor: '#fff',
+        border: '1px dashed #cbd5e1',
+        padding: '18px 18px 14px',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column', height: '100%', boxSizing: 'border-box',
+        cursor: 'default',
+      }}
+    >
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 5, backgroundColor: '#cbd5e1', borderRadius: '16px 16px 0 0' }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        {failed
+          ? <GraduationCap size={40} color="#94a3b8" />
+          : (
+            <img
+              src="https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Graduation%20cap/3D/graduation_cap_3d.png"
+              alt="" width={54} height={54}
+              style={{ display: 'block', filter: 'grayscale(0.35) opacity(0.85) drop-shadow(0 6px 10px rgba(15,60,120,0.12))' }}
+              onError={() => setFailed(true)}
+            />
+          )}
+        <Badge appearance="tint" color="informative">Незабаром</Badge>
+      </div>
+      <div style={{ marginTop: 12, fontSize: 15.5, fontWeight: 700, color: '#475569' }}>Навчання</div>
+      <div style={{ marginTop: 7, fontSize: 14, color: '#94a3b8', lineHeight: 1.45 }}>
+        Скоро тут зʼявляться ваші курси, терміни дії та навчальні досягнення
+      </div>
+      <div style={{ marginTop: 'auto', paddingTop: 12, fontSize: 12.5, fontWeight: 600, color: '#cbd5e1' }}>
+        Детальніше
       </div>
     </div>
   );
@@ -656,6 +708,8 @@ const ContactsCard = () => {
 /* ════════════════════════ СТОРІНКА ════════════════════════ */
 
 export const EmployeeSafety = () => {
+  /* Демо-перемикач: «базовий профіль» — посада без медогляду, атестації та стажування */
+  const [demoBasic, setDemoBasic] = useState(false);
   const [cards, setCards] = useState(workplaceCards);
   const [signingCard, setSigningCard] = useState<WorkplaceCard | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -684,16 +738,24 @@ export const EmployeeSafety = () => {
   }, []);
 
   const medicalAgg = useMemo(() => {
+    if (demoBasic) {
+      return { status: 'muted' as CardStatus, mainLine: 'Не передбачено вашою посадою', dateLine: undefined };
+    }
     const next = medicalExams.find(m => m.nextAt);
     const status = worst([expiryStatus(next?.nextAt)]);
     return {
       status,
-      mainLine: status === 'ok' ? 'Періодичний медогляд пройдено · наступний' : 'Наступний медогляд',
+      mainLine: status === 'ok'
+        ? 'Періодичний медогляд пройдено · наступний'
+        : 'Час подбати про себе — наступний медогляд',
       dateLine: next?.nextAt,
     };
-  }, []);
+  }, [demoBasic]);
 
   const attestationAgg = useMemo(() => {
+    if (demoBasic) {
+      return { status: 'muted' as CardStatus, mainLine: 'Атестація для вашого робочого місця відсутня', dateLine: undefined };
+    }
     /* Спрощений показ (домовленість з бізнесом 22.07.2026): без нагадувань
        «потрібно підписати» — основне поле: дата ознайомлення з чинною картою */
     const pending = cards.filter(c => !c.kepSignedAt).length;
@@ -710,9 +772,12 @@ export const EmployeeSafety = () => {
       mainLine: `${current?.cardNo ?? 'Карта умов праці'} · ознайомлення`,
       dateLine: current?.acquaintedAt,
     };
-  }, [cards]);
+  }, [cards, demoBasic]);
 
   const internshipAgg = useMemo(() => {
+    if (demoBasic) {
+      return { status: 'muted' as CardStatus, mainLine: 'Стажування для вашої посади не передбачене', dateLine: undefined };
+    }
     if (internshipInfo.internship?.status === 'Триває') {
       return {
         status: 'warning' as CardStatus,
@@ -729,7 +794,7 @@ export const EmployeeSafety = () => {
       };
     }
     return { status: 'ok' as CardStatus, mainLine: 'Дані відсутні', dateLine: undefined };
-  }, []);
+  }, [demoBasic]);
 
   /* Відкрита панель: за замовчуванням — перша секція, що потребує уваги */
   const [openSection, setOpenSection] = useState<SectionKey | null>(() => {
@@ -756,6 +821,27 @@ export const EmployeeSafety = () => {
     showToast('Карту умов праці підписано КЕП ✅');
   };
 
+  /* Персональний рядок-підсумок: імʼя + агрегований стан + найближча критична річ */
+  const personalSummary = useMemo(() => {
+    const name = 'Павле'; // у продуктовій версії — імʼя користувача у кличному відмінку з Ульсімус
+    const agg: { label: string; status: CardStatus; dateLine?: string }[] = [
+      { label: 'інструктажі', status: briefingsAgg.status, dateLine: briefingsAgg.dateLine },
+      { label: 'медогляд', status: medicalAgg.status, dateLine: medicalAgg.dateLine },
+      { label: 'атестація', status: attestationAgg.status },
+      { label: 'стажування', status: internshipAgg.status },
+    ];
+    const applicable = agg.filter(a => a.status !== 'muted');
+    const critical = applicable.filter(a => a.status === 'critical');
+    const warning = applicable.filter(a => a.status === 'warning');
+    if (critical.length > 0) {
+      return `${name}, наближається ${critical[0].label === 'медогляд' ? 'медогляд' : `термін: ${critical[0].label}`} ${critical[0].dateLine ?? ''} — ваш керівник уже отримав нагадування та організує все необхідне.`;
+    }
+    if (warning.length > 0) {
+      return `${name}, загалом усе гаразд — ${warning.length === 1 ? 'одна дата наближається' : `${warning.length} дати наближаються`}, процес нагадувань уже працює.`;
+    }
+    return `${name}, у вас усе чинне — можна спокійно працювати.`;
+  }, [briefingsAgg, medicalAgg, attestationAgg, internshipAgg]);
+
   const detailTitles: Record<SectionKey, string> = {
     briefings: 'Проходження інструктажів',
     medical: 'Медичні огляди',
@@ -779,9 +865,17 @@ export const EmployeeSafety = () => {
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', backgroundColor: '#fff' }}>
         <div style={st.container}>
-          <h1 style={st.h1}>Охорона Праці</h1>
-          <div style={st.sub}>
-            Ваші інструктажі, медичні огляди та атестація робочого місця — вся картина одним поглядом.
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+            <div>
+              <h1 style={st.h1}>Охорона Праці</h1>
+              <div style={st.sub}>{personalSummary}</div>
+            </div>
+            {/* Демо-перемикач профілю (лише для прототипу) */}
+            <Switch
+              checked={demoBasic}
+              onChange={(_, d) => setDemoBasic(!!d.checked)}
+              label="Базовий профіль (демо)"
+            />
           </div>
 
           {/* ── Дві колонки: основний контент + права колонка ── */}
@@ -827,6 +921,7 @@ export const EmployeeSafety = () => {
                   selected={openSection === 'internship'}
                   onClick={() => toggleSection('internship')}
                 />
+                <TrainingPlaceholderCard />
               </div>
 
               {/* ── Детальна панель ── */}
@@ -846,11 +941,24 @@ export const EmployeeSafety = () => {
                     </button>
                   </div>
                   {openSection === 'briefings' && <BriefingsDetail showToast={showToast} />}
-                  {openSection === 'medical' && <MedicalDetail />}
-                  {openSection === 'attestation' && (
-                    <AttestationDetail cards={cards} onSignRequest={setSigningCard} />
-                  )}
-                  {openSection === 'internship' && <InternshipDetail showToast={showToast} />}
+                  {openSection === 'medical' && (demoBasic
+                    ? <NotApplicableBlock
+                        text="Медичний огляд для вашої посади не передбачений"
+                        callout="Періодичні медогляди проводяться лише для визначених категорій посад. Відсутність медогляду у вашому профілі — це нормально, жодних дій від вас не потрібно."
+                      />
+                    : <MedicalDetail />)}
+                  {openSection === 'attestation' && (demoBasic
+                    ? <NotApplicableBlock
+                        text="Атестація для вашого робочого місця відсутня"
+                        callout="Атестація робочих місць проводиться не для всіх посад. Її відсутність у вашому профілі — це нормально, робити нічого не потрібно."
+                      />
+                    : <AttestationDetail cards={cards} onSignRequest={setSigningCard} />)}
+                  {openSection === 'internship' && (demoBasic
+                    ? <NotApplicableBlock
+                        text="Стажування / дублювання для вашої посади не передбачене"
+                        callout="Стажування, дублювання та окремий допуск до роботи передбачені лише для окремих посад. Їх відсутність — це нормально, жодних дій від вас не потрібно."
+                      />
+                    : <InternshipDetail showToast={showToast} />)}
                 </div>
               )}
             </div>
@@ -892,4 +1000,4 @@ export const EmployeeSafety = () => {
   );
 };
 
-export default EmployeeSafety;////
+export default EmployeeSafety;

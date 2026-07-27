@@ -120,8 +120,8 @@ const colors = {
   successDark:    '#059669',
   warning:        '#F59E0B',
   warningBg:      '#FEF3C7',
-  gradientStart:  '#7C3AED',
-  gradientEnd:    '#2563EB',
+  gradientStart:  '#3B3DAD',
+  gradientEnd:    '#3BA3E8',
   openSystem:     '#0078d4',
   openSystemBg:   '#e6f2ff',
 } as const;
@@ -979,7 +979,7 @@ const useStyles = makeStyles({
     left: 0,
     right: 0,
     height: '6px',
-    background: 'linear-gradient(90deg, #229FFF 0%, #57338B 50%, #10B981 100%)',
+    background: 'linear-gradient(90deg, #3B3DAD 0%, #3BA3E8 50%, #50C0F0 100%)',
   },
   onboardingIcon: {
     width: '80px',
