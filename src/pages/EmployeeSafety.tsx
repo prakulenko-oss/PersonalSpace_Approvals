@@ -408,10 +408,11 @@ const KepSignModal = ({ card, onClose, onSigned }: { card: WorkplaceCard; onClos
 };
 
 const AttestationDetail = ({
-  cards, onSignRequest,
+  cards, onSignRequest, showToast,
 }: {
   cards: WorkplaceCard[];
   onSignRequest: (c: WorkplaceCard) => void;
+  showToast: (m: string) => void;
 }) => (
   <div style={st.detailBody}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -443,9 +444,9 @@ const AttestationDetail = ({
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
-        Ваше робоче місце атестоване — тут усе актуально. Якщо термін дії карти не визначено,
-        орієнтовно застосовується логіка «дата ознайомлення + 5 років». Повний документ доступний
-        у системі Документообігу (docNet) відповідно до ваших прав доступу.
+        Ваше робоче місце атестоване — тут усе актуально. Повний документ доступний
+        у системі Документообігу (docNet) відповідно до ваших прав доступу
+        — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
       </div>
     </div>
   </div>
@@ -952,7 +953,7 @@ export const EmployeeSafety = () => {
                         text="Атестація для вашого робочого місця відсутня"
                         callout="Атестація робочих місць проводиться не для всіх посад. Її відсутність у вашому профілі — це нормально, робити нічого не потрібно."
                       />
-                    : <AttestationDetail cards={cards} onSignRequest={setSigningCard} />)}
+                    : <AttestationDetail cards={cards} onSignRequest={setSigningCard} showToast={showToast} />)}
                   {openSection === 'internship' && (demoBasic
                     ? <NotApplicableBlock
                         text="Стажування / дублювання для вашої посади не передбачене"
