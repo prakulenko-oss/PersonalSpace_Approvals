@@ -50,8 +50,8 @@ export type TeamMember = {
   extraBriefings?: TeamExtraBriefing[]; // останні подієві (позаплановий/цільовий)
   trainings: TeamTraining[];
   medical: TeamMedical;
-  attestation: TeamAttestation;
-  internship: TeamInternship;
+  attestation?: TeamAttestation;   // відсутня для частини посад — це нормальний стан
+  internship?: TeamInternship;     // так само
 };
 
 /* ── Електробезпека (окремий таб; довідники — з вимог docNet) ── */
@@ -122,6 +122,7 @@ export const teamMembers: TeamMember[] = [
     internship: { admissionAt: '11.02.2019' },
     trainings: [
       { title: 'Охорона праці (загальне навчання)', protocol: '№ 38-ОП', passedAt: '12.08.2023', validUntil: '12.08.2026' },
+      { title: 'Навчання з електробезпеки (ПБЕЕС, III група до 1000 В)', protocol: '№ 07-ЕБ', passedAt: '28.07.2025', validUntil: '28.07.2026' },
     ],
   },
   {
@@ -129,8 +130,7 @@ export const teamMembers: TeamMember[] = [
     introBriefingAt: '03.06.2021', primaryBriefingAt: '04.06.2021',
     repeatBriefing: { passedAt: '10.03.2026', validUntil: '10.09.2026', periodicity: '1 раз на 6 міс' },
     medical: { kind: 'Періодичний медогляд', passedAt: '03.09.2025', nextAt: '03.09.2026' },
-    attestation: { cardNo: 'Карта умов праці № 142', acquaintedAt: '20.06.2024', validTo: '20.06.2029' },
-    internship: { admissionAt: '04.06.2021' },
+    /* атестація та стажування для цієї посади не передбачені (демо стану «відсутнє») */
     trainings: [
       { title: 'Охорона праці (загальне навчання)', protocol: '№ 51-ОП', passedAt: '15.10.2024', validUntil: '15.10.2027' },
     ],
@@ -185,6 +185,7 @@ export const teamMembers: TeamMember[] = [
     internship: { admissionAt: '31.01.2023' },
     trainings: [
       { title: 'Охорона праці (загальне навчання)', protocol: '№ 58-ОП', passedAt: '25.11.2025', validUntil: '25.11.2028' },
+      { title: 'Навчання з електробезпеки (ПБЕЕС, IV група до 1000 В)', protocol: '№ 11-ЕБ', passedAt: '18.06.2025', validUntil: '18.06.2026' },
     ],
   },
 ];

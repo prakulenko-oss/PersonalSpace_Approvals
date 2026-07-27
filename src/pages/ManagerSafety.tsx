@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Input, Dropdown, Option, Badge, Button, Tooltip, tokens } from '@fluentui/react-components';
+import { TabList, Tab, Input, Dropdown, Option, Badge, Button, Tooltip, tokens } from '@fluentui/react-components';
 import {
-  Users, Zap, Search, ExternalLink, X, HardHat, Stethoscope, Contact, Link2,
-  ArrowUp, ArrowDown, ArrowUpDown, Info, CalendarClock, AlertTriangle, CheckCircle2, FileText,
-  LayoutGrid, List, GraduationCap, UserCheck, FileSpreadsheet,
+  Users, Search, ExternalLink, X, HardHat, Stethoscope, Contact, Link2,
+  ArrowUp, ArrowDown, ArrowUpDown, Info, CalendarClock, AlertTriangle, ChevronLeft, ChevronRight,
+  GraduationCap, FileSpreadsheet, FileText, UserCheck,
 } from 'lucide-react';
 import * as XLSX from 'xlsx-js-style';
 import { S, Drawer, RightBlockHeader } from './managerUi';
 import { daysUntil, expiryStatus } from '../data/safety';
 import type { ExpiryStatus } from '../data/safety';
-import { teamMembers, electricalRecords } from '../data/teamSafety';
+import { teamMembers } from '../data/teamSafety';
 import type { TeamMember } from '../data/teamSafety';
 
 /* ════════════════════════ ХЕЛПЕРИ ════════════════════════ */
@@ -75,7 +75,7 @@ const statusRank: Record<ExpiryStatus, number> = { expired: 0, critical: 1, soon
 /* Сутності — як у працівника: Інструктажі, Медогляди, Атестація, Стажування
    + Ел. Безпека (5-та, зʼявиться найближчим часом) */
 
-type EntityKey = 'briefings' | 'medical' | 'attestation' | 'internship' | 'electrical';
+type EntityKey = 'briefings' | 'medical';
 
 type Problem = {
   entity: EntityKey;
@@ -87,9 +87,8 @@ type MemberSummary = {
   member: TeamMember;
   briefings: { status: ExpiryStatus; date?: string };
   medical: { status: ExpiryStatus; date?: string };
-  attestation: { acquaintedAt: string };
-  internship: { label: string; warn: boolean };
-  electrical?: { status: ExpiryStatus; date?: string };
+  attestation?: { acquaintedAt: string };          // відсутня — нормальний стан
+  internship: { label: string; warn: boolean };    // label '—', якщо не передбачене
   problems: Problem[];
   worst: ExpiryStatus;
 };
@@ -106,65 +105,38 @@ const buildSummaries = (): MemberSummary[] => teamMembers.map(m => {
   const briefings = { status: expiryStatus(m.repeatBriefing.validUntil), date: m.repeatBriefing.validUntil };
   const medical = { status: expiryStatus(m.medical.nextAt), date: m.medical.nextAt };
 
-  const el = electricalRecords.find(r => r.memberId === m.id);
-  const electrical = el ? { status: expiryStatus(el.nextCheck), date: el.nextCheck } : undefined;
-
-  const internship = m.internship.ongoing
-    ? { label: `${m.internship.ongoing.kind} до ${m.internship.ongoing.to}`, warn: true }
-    : m.internship.admissionAt
-      ? { label: `з ${m.internship.admissionAt}`, warn: false }
-      : { label: '—', warn: false };
-
   const problems: Problem[] = [];
   const isProblem = (s: ExpiryStatus) => s === 'soon' || s === 'critical' || s === 'expired';
   if (isProblem(briefings.status)) problems.push({ entity: 'briefings', status: briefings.status, label: problemPhrase('Повторний інструктаж', briefings.status, briefings.date) });
   if (isProblem(medical.status)) problems.push({ entity: 'medical', status: medical.status, label: problemPhrase('Медогляд', medical.status, medical.date) });
-  if (electrical && isProblem(electrical.status)) problems.push({ entity: 'electrical', status: electrical.status, label: problemPhrase('Ел. безпека — перевірка знань', electrical.status, electrical.date) });
 
-  const statuses = [briefings.status, medical.status, ...(electrical ? [electrical.status] : [])];
+  const statuses = [briefings.status, medical.status];
   const worst = statuses.sort((a, b) => statusRank[a] - statusRank[b])[0];
 
+  const internship = m.internship?.ongoing
+    ? { label: `${m.internship.ongoing.kind} до ${m.internship.ongoing.to}`, warn: true }
+    : m.internship?.admissionAt
+      ? { label: `з ${m.internship.admissionAt}`, warn: false }
+      : { label: '—', warn: false };
+
   return {
-    member: m,
-    briefings, medical,
-    attestation: { acquaintedAt: m.attestation.acquaintedAt },
-    internship, electrical,
+    member: m, briefings, medical,
+    attestation: m.attestation ? { acquaintedAt: m.attestation.acquaintedAt } : undefined,
+    internship,
     problems, worst,
   };
 });
 
 const summaries = buildSummaries();
 
-/* ════════════════════════ ІКОНКИ «ВІДКРИТИХ ПИТАНЬ» ════════════════════════ */
+/* Вкладка «Навчання»: рядок = навчання (демо-дані до підключення реєстру) */
+const trainingRows = teamMembers.flatMap(m => m.trainings.map(t => ({
+  memberId: m.id, name: m.name, role: m.role,
+  title: t.title, protocol: t.protocol,
+  passedAt: t.passedAt, validUntil: t.validUntil,
+  status: expiryStatus(t.validUntil),
+})));
 
-const entityIcon: Record<EntityKey, (color: string) => ReactNode> = {
-  briefings:   c => <HardHat size={17} color={c} />,
-  medical:     c => <Stethoscope size={17} color={c} />,
-  attestation: c => <FileText size={17} color={c} />,
-  internship:  c => <Users size={17} color={c} />,
-  electrical:  c => <Zap size={17} color={c} />,
-};
-
-const ProblemIcons = ({ problems }: { problems: Problem[] }) => {
-  if (problems.length === 0) {
-    return (
-      <Tooltip content="Все чинне" relationship="label">
-        <span style={{ display: 'inline-flex' }}><CheckCircle2 size={18} color="#22c55e" /></span>
-      </Tooltip>
-    );
-  }
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-      {problems.map(p => (
-        <Tooltip key={p.entity} content={p.label} relationship="label">
-          <span style={{ display: 'inline-flex', cursor: 'default' }}>
-            {entityIcon[p.entity](p.status === 'soon' ? '#f59e0b' : '#ef4444')}
-          </span>
-        </Tooltip>
-      ))}
-    </span>
-  );
-};
 
 /* ════════════════════════ DRAWER: ДОСЬЄ СПІВРОБІТНИКА ════════════════════════ */
 
@@ -182,7 +154,6 @@ const SectionTitle = ({ icon, children }: { icon?: ReactNode; children: ReactNod
 
 const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary; onClose: () => void; showToast: (m: string) => void }) => {
   const m = summary.member;
-  const el = electricalRecords.find(r => r.memberId === m.id);
   return (
     <Drawer width={540} onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 24px 0' }}>
@@ -196,6 +167,47 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
       </div>
 
       <div style={{ padding: '4px 24px 24px', overflowY: 'auto' }}>
+        {/* Управлінський підсумок — спершу висновок, потім деталі */}
+        {(() => {
+          const trainingProblems = m.trainings
+            .map(t => ({ st: expiryStatus(t.validUntil), t }))
+            .filter(x => x.st === 'soon' || x.st === 'critical' || x.st === 'expired')
+            .map(x => problemPhrase(x.t.title, x.st, x.t.validUntil));
+          const allProblems = [...summary.problems.map(pr => pr.label), ...trainingProblems];
+          const worstAll: ExpiryStatus = summary.worst === 'ok' && trainingProblems.length > 0
+            ? 'soon'
+            : summary.worst;
+          const isRed = worstAll === 'critical' || worstAll === 'expired';
+          const isYellow = worstAll === 'soon';
+          return (
+            <div style={{
+              marginTop: 14, padding: '13px 16px', borderRadius: 12,
+              border: `1px solid ${isRed ? '#fecaca' : isYellow ? '#fde68a' : '#bbf7d0'}`,
+              backgroundColor: isRed ? '#fff7f7' : isYellow ? '#fffdf5' : '#f6fdf9',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <Badge appearance="tint" color={isRed ? 'danger' : isYellow ? 'warning' : 'success'}>
+                  {isRed ? 'Критично' : isYellow ? 'Завершується' : 'Все чинне'}
+                </Badge>
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: '#111827' }}>
+                  Відкритих питань: {allProblems.length}
+                </span>
+              </div>
+              {allProblems.length > 0 ? (
+                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {allProblems.map(t => (
+                    <div key={t} style={{ fontSize: 12.5, color: '#374151' }}>· {t}</div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ marginTop: 6, fontSize: 12.5, color: '#4b5563' }}>
+                  Жодних дій не потрібно — всі терміни чинні.
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Інструктажі */}
         <SectionTitle icon={<HardHat size={15} color="#64748b" />}>Інструктажі</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -243,56 +255,50 @@ const MemberDrawer = ({ summary, onClose, showToast }: { summary: MemberSummary;
 
         {/* Атестація робочого місця */}
         <SectionTitle icon={<FileText size={15} color="#64748b" />}>Атестація робочого місця</SectionTitle>
-        <div style={rowStyle}>
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{m.attestation.cardNo}</div>
-            <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
-              Ознайомлення <b style={{ color: '#111827' }}>{m.attestation.acquaintedAt}</b> · чинна до {m.attestation.validTo}
+        {m.attestation ? (
+          <div style={rowStyle}>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{m.attestation.cardNo}</div>
+              <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
+                Ознайомлення <b style={{ color: '#111827' }}>{m.attestation.acquaintedAt}</b>
+              </div>
             </div>
+            <Badge appearance="tint" color="success">Ознайомлено</Badge>
           </div>
-          <Badge appearance="tint" color="success">Ознайомлено</Badge>
-        </div>
+        ) : (
+          <div style={{ ...rowStyle, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+            <span style={{ fontSize: 13, color: '#6b7280' }}>Атестація для робочого місця відсутня — це нормальний стан для цієї посади</span>
+            <Badge appearance="tint" color="informative">Не передбачено</Badge>
+          </div>
+        )}
 
         {/* Стажування / допуск */}
         <SectionTitle icon={<UserCheck size={15} color="#64748b" />}>Стажування / дублювання, допуск до роботи</SectionTitle>
-        <div style={rowStyle}>
-          {m.internship.ongoing ? (
-            <>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>
-                {m.internship.ongoing.kind} триває до {m.internship.ongoing.to}
-              </div>
-              <Badge appearance="tint" color="warning">Триває</Badge>
-            </>
-          ) : m.internship.admissionAt ? (
-            <>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>
-                Допущено до самостійної роботи з {m.internship.admissionAt}
-              </div>
-              <Badge appearance="tint" color="success">Допущено</Badge>
-            </>
-          ) : (
-            <span style={{ fontSize: 13.5, color: '#6b7280' }}>Дані відсутні</span>
-          )}
-        </div>
-
-        {/* Електробезпека */}
-        {el && (
-          <>
-            <SectionTitle icon={<Zap size={15} color="#64748b" />}>Електробезпека</SectionTitle>
-            <div style={{ ...rowStyle, alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>{el.ruleFull} ({el.ruleName})</div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 3 }}>Персонал: {el.personnelCategory}</div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
-                  Група: {el.prevGroup} → <b style={{ color: '#111827' }}>{el.requiredGroup}</b>
+        {m.internship ? (
+          <div style={rowStyle}>
+            {m.internship.ongoing ? (
+              <>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>
+                  {m.internship.ongoing.kind} триває до {m.internship.ongoing.to}
                 </div>
-                <div style={{ fontSize: 12.5, color: '#6b7280', marginTop: 2 }}>
-                  Перевірка знань: {el.lastCheck} · наступна {el.nextCheck} · {el.periodicity}
+                <Badge appearance="tint" color="warning">Триває</Badge>
+              </>
+            ) : m.internship.admissionAt ? (
+              <>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: '#111827' }}>
+                  Допущено до самостійної роботи з {m.internship.admissionAt}
                 </div>
-              </div>
-              <ExpiryBadge validUntil={el.nextCheck} />
-            </div>
-          </>
+                <Badge appearance="tint" color="success">Допущено</Badge>
+              </>
+            ) : (
+              <span style={{ fontSize: 13.5, color: '#6b7280' }}>Дані відсутні</span>
+            )}
+          </div>
+        ) : (
+          <div style={{ ...rowStyle, backgroundColor: '#fafafa', border: '1px dashed #d1d5db' }}>
+            <span style={{ fontSize: 13, color: '#6b7280' }}>Стажування / допуск для цієї посади не передбачені</span>
+            <Badge appearance="tint" color="informative">Не передбачено</Badge>
+          </div>
         )}
 
         {/* Навчання */}
@@ -365,18 +371,17 @@ const exportTeamToExcel = () => {
   /* ── Аркуш 1: Команда (матриця) ── */
   const topRow = [
     'ПІБ', 'Посада',
-    'Інструктажі', '', 'Медичні огляди', '', 'Атестація робочого місця', '',
-    'Стажування / допуск', 'Ел. безпека', '', 'Відкриті питання',
+    'Інструктажі', '', 'Медичні огляди', '', 'Атестація',
+    'Стажування / допуск',
   ];
   const subRow = [
     '', '',
-    'Пройдено', 'Діє до', 'Пройдено', 'Наступний', 'Ознайомлення', 'Чинна до',
-    'Допуск з', 'Перевірка', 'Наступна', '',
+    'Пройдено', 'Діє до', 'Пройдено', 'Наступний', 'Ознайомлення',
+    'Допуск з',
   ];
 
   const dataRows = summaries.map(x => {
     const m = x.member;
-    const el = electricalRecords.find(r => r.memberId === m.id);
     return [
       { v: m.name, t: 's', s: XS.cell },
       { v: m.role, t: 's', s: XS.cell },
@@ -384,12 +389,8 @@ const exportTeamToExcel = () => {
       styledDate(m.repeatBriefing.validUntil, x.briefings.status),
       { v: m.medical.passedAt, t: 's', s: XS.cell },
       styledDate(m.medical.nextAt, x.medical.status),
-      { v: m.attestation.acquaintedAt, t: 's', s: XS.cell },
-      { v: m.attestation.validTo, t: 's', s: XS.cell },
-      { v: m.internship.ongoing ? `${m.internship.ongoing.kind} до ${m.internship.ongoing.to}` : m.internship.admissionAt ?? '—', t: 's', s: XS.cell },
-      { v: el?.lastCheck ?? '—', t: 's', s: XS.cell },
-      el ? styledDate(el.nextCheck, x.electrical!.status) : { v: '—', t: 's', s: XS.cell },
-      { v: x.problems.map(p => p.label).join('; ') || 'Все чинне', t: 's', s: XS.cell },
+      { v: m.attestation?.acquaintedAt ?? '—', t: 's', s: XS.cell },
+      { v: m.internship?.ongoing ? `${m.internship.ongoing.kind} до ${m.internship.ongoing.to}` : m.internship?.admissionAt ?? '—', t: 's', s: XS.cell },
     ];
   });
 
@@ -403,17 +404,15 @@ const exportTeamToExcel = () => {
     { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },   // Посада
     { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } },   // Інструктажі
     { s: { r: 0, c: 4 }, e: { r: 0, c: 5 } },   // Медогляди
-    { s: { r: 0, c: 6 }, e: { r: 0, c: 7 } },   // Атестація
-    { s: { r: 0, c: 8 }, e: { r: 1, c: 8 } },   // Стажування
-    { s: { r: 0, c: 9 }, e: { r: 0, c: 10 } },  // Ел. безпека
-    { s: { r: 0, c: 11 }, e: { r: 1, c: 11 } }, // Відкриті питання
+    { s: { r: 0, c: 6 }, e: { r: 1, c: 6 } },   // Атестація (Ознайомлення)
+    { s: { r: 0, c: 7 }, e: { r: 1, c: 7 } },   // Стажування / допуск
   ];
   ws['!cols'] = [
     { wch: 24 }, { wch: 34 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 },
-    { wch: 14 }, { wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 55 },
+    { wch: 14 }, { wch: 22 },
   ];
   ws['!freeze'] = { xSplit: 1, ySplit: 2 };
-  ws['!autofilter'] = { ref: `A2:L${dataRows.length + 2}` };
+  ws['!autofilter'] = { ref: `A2:H${dataRows.length + 2}` };
   XLSX.utils.book_append_sheet(wb, ws, 'Команда');
 
   /* ── Аркуш 2: Навчання (довгий формат) ── */
@@ -442,7 +441,6 @@ const exportTeamToExcel = () => {
 
 /* ════════════════════════ СЕКЦІЯ ════════════════════════ */
 
-type TeamView = 'overview' | 'detailed';
 type SortState = { col: 'name' | 'date'; dir: 1 | -1 };
 
 const statusFilterOptions = [
@@ -454,16 +452,15 @@ const statusFilterOptions = [
 ];
 
 const entityFilterOptions: { value: '' | EntityKey; label: string }[] = [
-  { value: '', label: 'Всі сутності' },
-  { value: 'briefings', label: 'Інструктажі' },
-  { value: 'medical', label: 'Медичні огляди' },
-  { value: 'attestation', label: 'Атестація' },
-  { value: 'internship', label: 'Стажування / допуск' },
-  { value: 'electrical', label: 'Ел. безпека' },
+  { value: '', label: 'Всі відкриті питання' },
+  { value: 'briefings', label: 'Питання: інструктажі' },
+  { value: 'medical', label: 'Питання: медогляди' },
 ];
 
 export const SafetySection = ({ showToast }: { showToast: (msg: string) => void }) => {
-  const [view, setView] = useState<TeamView>('overview');
+  const [tab, setTab] = useState<'team' | 'trainings'>('team');
+  const TRAINING_PAGE_SIZE = 6;
+  const [trainingPage, setTrainingPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [entityFilter, setEntityFilter] = useState<'' | EntityKey>('');
   const [search, setSearch] = useState('');
@@ -487,6 +484,20 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
     { title: 'Критично / Прострочено', value: kpi.expired, accent: '#ef4444', iconBg: '#fee2e2', icon: <AlertTriangle size={20} color="#dc2626" /> },
   ];
 
+  /* Фільтрація вкладки «Навчання» */
+  const filteredTrainings = useMemo(() => {
+    const result = trainingRows.filter(r => {
+      const q = search.toLowerCase();
+      const matchesSearch = r.name.toLowerCase().includes(q) || r.title.toLowerCase().includes(q) || r.protocol.toLowerCase().includes(q);
+      const matchesStatus = !statusFilter || r.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    result.sort((a, b) => (sort.col === 'name'
+      ? a.name.localeCompare(b.name, 'uk')
+      : dateKey(a.validUntil).localeCompare(dateKey(b.validUntil))) * sort.dir);
+    return result;
+  }, [search, statusFilter, sort]);
+
   /* Фільтрація + сортування */
   const filteredTeam = useMemo(() => {
     const result = summaries.filter(x => {
@@ -505,6 +516,11 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
     return result;
   }, [search, statusFilter, entityFilter, sort]);
 
+  /* Пагінація вкладки «Навчання» — за патерном Довіреностей */
+  const trainingTotalPages = Math.max(1, Math.ceil(filteredTrainings.length / TRAINING_PAGE_SIZE));
+  const trainingSafePage = Math.min(trainingPage, trainingTotalPages);
+  const pagedTrainings = filteredTrainings.slice((trainingSafePage - 1) * TRAINING_PAGE_SIZE, trainingSafePage * TRAINING_PAGE_SIZE);
+
   const toggleSort = (col: SortState['col']) =>
     setSort(prev => (prev.col === col ? { col, dir: prev.dir === 1 ? -1 : 1 } : { col, dir: 1 }));
 
@@ -519,9 +535,9 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
   };
   const td: CSSProperties = { fontSize: 13.5, color: '#111827', padding: '13px 14px', display: 'flex', alignItems: 'center', minWidth: 0 };
 
-  const overviewCols = '1.9fr 1.1fr 1.6fr';
-  const detailedCols = '1.7fr 1fr 1fr 1fr 1.15fr 1fr';
-  const gridCols = view === 'overview' ? overviewCols : detailedCols;
+  const teamCols = '1.7fr 1.15fr 1.05fr 1.05fr 1.15fr';
+  const trainingCols = '1.6fr 1.9fr 0.85fr 0.9fr 1fr 1.15fr';
+  const gridCols = tab === 'trainings' ? trainingCols : teamCols;
 
   const contacts = [
     { role: 'Інженер з охорони праці', email: 'OP_SUPPORT@kyivstar.net' },
@@ -557,12 +573,23 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
 
         {/* Table block — форма як у Довіреностях */}
         <div style={{ ...S.card, marginBottom: 24 }}>
+          {/* Tabs: Команда / Навчання */}
+          <div style={{ padding: '6px 12px', borderBottom: '1px solid #eef2f7' }}>
+            <TabList
+              selectedValue={tab}
+              onTabSelect={(_, d) => { setTab(d.value as 'team' | 'trainings'); setStatusFilter(''); setEntityFilter(''); setSearch(''); setTrainingPage(1); }}
+            >
+              <Tab value="team">Команда</Tab>
+              <Tab value="trainings">Навчання</Tab>
+            </TabList>
+          </div>
+
           {/* Search + filters + перемикач режимів відображення */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: '16px 18px 12px' }}>
             <Input
               value={search}
-              onChange={(_, d) => setSearch(d.value)}
-              placeholder="Пошук за ПІБ / посадою"
+              onChange={(_, d) => { setSearch(d.value); setTrainingPage(1); }}
+              placeholder={tab === 'team' ? 'Пошук за ПІБ / посадою' : 'Пошук: ПІБ, навчання, протокол'}
               aria-label="Пошук"
               contentBefore={<Search size={15} color={tokens.colorNeutralForeground3} />}
               style={{ flex: '0 0 280px' }}
@@ -570,62 +597,30 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
             <Dropdown
               value={statusFilterOptions.find(o => o.value === statusFilter)?.label ?? 'Всі стани'}
               selectedOptions={[statusFilter]}
-              onOptionSelect={(_, d) => setStatusFilter(d.optionValue ?? '')}
+              onOptionSelect={(_, d) => { setStatusFilter(d.optionValue ?? ''); setTrainingPage(1); }}
               aria-label="Фільтр за станом"
               style={{ flex: '0 0 170px', minWidth: 0 }}
             >
               {statusFilterOptions.map(o => <Option key={o.label} value={o.value} text={o.label}>{o.label}</Option>)}
             </Dropdown>
-            <Dropdown
-              value={entityFilterOptions.find(o => o.value === entityFilter)?.label ?? 'Всі сутності'}
+            {tab === 'team' && <Dropdown
+              value={entityFilterOptions.find(o => o.value === entityFilter)?.label ?? 'Всі відкриті питання'}
               selectedOptions={[entityFilter]}
               onOptionSelect={(_, d) => setEntityFilter((d.optionValue ?? '') as '' | EntityKey)}
               aria-label="Фільтр за сутністю"
               style={{ flex: '0 0 200px', minWidth: 0 }}
             >
               {entityFilterOptions.map(o => <Option key={o.label} value={o.value} text={o.label}>{o.label}</Option>)}
-            </Dropdown>
-
-            {/* Перемикач режимів — як у Центрі затверджень */}
-            <div style={{
-              display: 'flex', alignItems: 'center', marginLeft: 'auto',
-              backgroundColor: tokens.colorNeutralBackground2, borderRadius: 8, padding: 2,
-            }}>
-              <Tooltip content="Огляд" relationship="label">
-                <Button
-                  appearance="subtle"
-                  icon={<LayoutGrid size={18} />}
-                  onClick={() => setView('overview')}
-                  style={{
-                    backgroundColor: view === 'overview' ? 'white' : 'transparent',
-                    color: view === 'overview' ? '#229FFF' : tokens.colorNeutralForeground3,
-                    borderRadius: 6, minWidth: 36, padding: 6,
-                    boxShadow: view === 'overview' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                />
-              </Tooltip>
-              <Tooltip content="Детально" relationship="label">
-                <Button
-                  appearance="subtle"
-                  icon={<List size={18} />}
-                  onClick={() => setView('detailed')}
-                  style={{
-                    backgroundColor: view === 'detailed' ? 'white' : 'transparent',
-                    color: view === 'detailed' ? '#229FFF' : tokens.colorNeutralForeground3,
-                    borderRadius: 6, minWidth: 36, padding: 6,
-                    boxShadow: view === 'detailed' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                  }}
-                />
-              </Tooltip>
-            </div>
+            </Dropdown>}
 
             <Tooltip content="Детальні дані по всіх співробітниках" relationship="label">
               <button
+                data-export
                 onClick={() => exportTeamToExcel()}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#0B5C30'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#107C41'; }}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  display: 'inline-flex', alignItems: 'center', gap: 8, marginLeft: 'auto',
                   padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
                   backgroundColor: '#107C41', color: '#fff',
                   fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600,
@@ -640,30 +635,21 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
           </div>
 
           {/* Легенда статусів — патерн Управління Командою */}
-          {(
+          {tab === 'team' && (
             <div style={{
               display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 18px',
               padding: '9px 18px 12px', fontSize: 12.5, color: '#475569',
             }}>
               <span>Легенда статусів:</span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <HardHat size={15} color="#64748b" /> Інструктаж
+                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff7ed', color: '#f59e0b', fontWeight: 600 }}>дата</span>
+                завершується ≤ 30 днів
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Stethoscope size={15} color="#64748b" /> Медогляд
+                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff1f2', color: '#e11d48', fontWeight: 600 }}>дата</span>
+                критично ≤ 14 днів / прострочено
               </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <Zap size={15} color="#64748b" /> Ел. безпека
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff7ed', color: '#f59e0b', fontWeight: 600 }}>≤ 30 днів</span>
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ padding: '1px 8px', borderRadius: 8, backgroundColor: '#fff1f2', color: '#e11d48', fontWeight: 600 }}>≤ 14 днів / прострочено</span>
-              </span>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={15} color="#22c55e" /> Все гаразд
-              </span>
+              <span style={{ color: '#94a3b8' }}>сіра дата — чинне · «—» — не передбачено для посади</span>
             </div>
           )}
 
@@ -672,28 +658,94 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
             <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('name')}>
               Співробітник <SortIcon col="name" />
             </div>
-            {view === 'overview' ? (
+            {tab === 'trainings' ? (
               <>
+                <div style={th}><GraduationCap size={14} color="#64748b" /> Навчання</div>
+                <div style={th}>Протокол</div>
+                <div style={th}>Пройдено</div>
                 <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
-                  Повторний до <SortIcon col="date" />
+                  Чинне до <SortIcon col="date" />
                 </div>
-                <div style={th}>Відкриті питання</div>
+                <div style={th}>Статус</div>
               </>
             ) : (
               <>
                 <div style={{ ...th, cursor: 'pointer' }} onClick={() => toggleSort('date')}>
-                  <HardHat size={14} color="#64748b" /> Інструктажі <SortIcon col="date" />
+                  <HardHat size={14} color="#64748b" /> Повторний до <SortIcon col="date" />
                 </div>
-                <div style={th}><Stethoscope size={14} color="#64748b" /> Медогляди</div>
+                <div style={th}><Stethoscope size={14} color="#64748b" /> Медогляд</div>
                 <div style={th}><FileText size={14} color="#64748b" /> Атестація</div>
                 <div style={th}><UserCheck size={14} color="#64748b" /> Стажування / допуск</div>
-                <div style={th}><Zap size={14} color="#64748b" /> Ел. Безпека</div>
               </>
             )}
           </div>
 
-          {/* Рядки */}
-          {filteredTeam.map((x, i) => (
+          {/* Рядки: Навчання */}
+          {tab === 'trainings' && pagedTrainings.map((r, i) => (
+            <div
+              key={`${r.memberId}-${r.protocol}`}
+              onClick={() => { const x = summaries.find(y => y.member.id === r.memberId); if (x) setOpenSummary(x); }}
+              style={{
+                display: 'grid', gridTemplateColumns: gridCols, cursor: 'pointer',
+                borderBottom: i === pagedTrainings.length - 1 ? 'none' : '1px solid #f1f5f9',
+                backgroundColor: '#fff',
+              }}
+            >
+              <div style={{ ...td, flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+                <span style={{ fontWeight: 600 }}>{r.name}</span>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>{r.role}</span>
+              </div>
+              <div style={td}>{r.title}</div>
+              <div style={{ ...td, fontSize: 13 }}>{r.protocol}</div>
+              <div style={{ ...td, fontSize: 13, color: '#6b7280' }}>{r.passedAt}</div>
+              <div style={td}><DateCell status={r.status} date={r.validUntil} /></div>
+              <div style={td}><ExpiryBadge validUntil={r.validUntil} /></div>
+            </div>
+          ))}
+          {tab === 'trainings' && filteredTrainings.length === 0 && (
+            <div style={{ padding: '28px 16px', textAlign: 'center', fontSize: 13.5, color: '#6b7280' }}>
+              Нічого не знайдено за поточним фільтром
+            </div>
+          )}
+          {tab === 'trainings' && filteredTrainings.length > TRAINING_PAGE_SIZE && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, padding: '14px 18px' }}>
+              <span style={{ fontSize: 12.5, color: '#6b7280' }}>
+                Показано {(trainingSafePage - 1) * TRAINING_PAGE_SIZE + 1}–{Math.min(trainingSafePage * TRAINING_PAGE_SIZE, filteredTrainings.length)} з {filteredTrainings.length}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button
+                  onClick={() => setTrainingPage(pg => Math.max(1, pg - 1))}
+                  disabled={trainingSafePage === 1}
+                  aria-label="Попередня сторінка"
+                  style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: 7, cursor: trainingSafePage === 1 ? 'default' : 'pointer', color: trainingSafePage === 1 ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <ChevronLeft size={15} />
+                </button>
+                {Array.from({ length: trainingTotalPages }, (_, n) => n + 1).map(pg => (
+                  <button
+                    key={pg}
+                    onClick={() => setTrainingPage(pg)}
+                    aria-label={`Сторінка ${pg}`}
+                    aria-current={pg === trainingSafePage ? 'page' : undefined}
+                    style={{ minWidth: 30, height: 30, padding: '0 8px', borderRadius: 7, cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'inherit', border: pg === trainingSafePage ? '1px solid #2563eb' : '1px solid #e5e7eb', backgroundColor: pg === trainingSafePage ? '#eaf3fd' : '#fff', color: pg === trainingSafePage ? '#2563eb' : '#374151' }}
+                  >
+                    {pg}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setTrainingPage(pg => Math.min(trainingTotalPages, pg + 1))}
+                  disabled={trainingSafePage === trainingTotalPages}
+                  aria-label="Наступна сторінка"
+                  style={{ width: 30, height: 30, border: '1px solid #e5e7eb', backgroundColor: '#fff', borderRadius: 7, cursor: trainingSafePage === trainingTotalPages ? 'default' : 'pointer', color: trainingSafePage === trainingTotalPages ? '#d1d5db' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Рядки: Команда */}
+          {tab === 'team' && filteredTeam.map((x, i) => (
             <div
               key={x.member.id}
               onClick={() => setOpenSummary(x)}
@@ -708,32 +760,22 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
                 <span style={{ fontSize: 12, color: '#6b7280' }}>{x.member.role}</span>
               </div>
 
-              {view === 'overview' ? (
-                <>
-                  <div style={td}><DateCell status={x.briefings.status} date={x.briefings.date} /></div>
-                  <div style={td}><ProblemIcons problems={x.problems} /></div>
-                </>
-              ) : (
-                <>
-                  <div style={td}><DateCell status={x.briefings.status} date={x.briefings.date} /></div>
-                  <div style={td}><DateCell status={x.medical.status} date={x.medical.date} /></div>
-                  <div style={td}><span style={{ fontSize: 13, color: '#6b7280' }}>{x.attestation.acquaintedAt}</span></div>
-                  <div style={td}>
-                    <span style={{ fontSize: 13, color: x.internship.warn ? '#b45309' : '#6b7280', fontWeight: x.internship.warn ? 600 : 400 }}>
-                      {x.internship.label}
-                    </span>
-                  </div>
-                  <div style={td}>
-                    {x.electrical
-                      ? <DateCell status={x.electrical.status} date={x.electrical.date} />
-                      : <span style={{ color: '#9ca3af' }}>—</span>}
-                  </div>
-                </>
-              )}
+              <div style={td}><DateCell status={x.briefings.status} date={x.briefings.date} /></div>
+              <div style={td}><DateCell status={x.medical.status} date={x.medical.date} /></div>
+              <div style={td}>
+                <span style={{ fontSize: 13, color: x.attestation ? '#6b7280' : '#9ca3af' }}>
+                  {x.attestation?.acquaintedAt ?? '—'}
+                </span>
+              </div>
+              <div style={td}>
+                <span style={{ fontSize: 13, color: x.internship.warn ? '#b45309' : x.internship.label === '—' ? '#9ca3af' : '#6b7280', fontWeight: x.internship.warn ? 600 : 400 }}>
+                  {x.internship.label}
+                </span>
+              </div>
             </div>
           ))}
 
-          {filteredTeam.length === 0 && (
+          {tab === 'team' && filteredTeam.length === 0 && (
             <div style={{ padding: '28px 16px', textAlign: 'center', fontSize: 13.5, color: '#6b7280' }}>
               Нічого не знайдено за поточним фільтром
             </div>
@@ -747,11 +789,20 @@ export const SafetySection = ({ showToast }: { showToast: (msg: string) => void 
           fontSize: 13.5, color: '#1e3a8a', lineHeight: 1.5,
         }}>
           <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+          {tab === 'trainings' ? (
+          <div>
+            Демо-дані. Джерело — майбутній єдиний реєстр навчань (автоматичне зчитування протоколів
+            з електронного архіву); наразі облік ведеться вручну. Заявки на навчання формуються
+            в системі Документообігу (docNet); за ~1,5 місяця до завершення терміну ви та інженер
+            з охорони праці отримаєте автоматичне нагадування.
+          </div>
+          ) : (
           <div>
             Відображаються працівники вашої гілки підпорядкування. Наведіть на іконку у «Відкритих питаннях», щоб побачити деталь,
             або клікніть на рядок для повної картини по співробітнику. Заявки та реєстрація інструктажів виконуються
-            в системі Документообігу (docNet); заявки з електробезпеки додатково погоджує відповідальна особа за електрогосподарство.
+            в системі Документообігу (docNet).
           </div>
+          )}
         </div>
       </main>
 

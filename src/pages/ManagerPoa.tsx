@@ -151,45 +151,14 @@ const inProgressKepRow: DocRow = {
   ],
 };
 
-const FLUENT_3D = 'https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets';
-
-type KpiCard = { title: string; value: string; accent: string; iconBg: string; img3d: string; fallback: 'scroll' | 'hourglass' | 'idcard' | 'alarm'; tab: 'poa' | 'kep' };
+type KpiCard = { title: string; value: string; accent: string; iconBg: string; icon: React.ReactNode; tab: 'poa' | 'kep' };
 
 const kpiCards = [
-  { title: 'Довіреності активні', value: '12', accent: '#2f6fde', iconBg: '#fdf0d5', img3d: `${FLUENT_3D}/Scroll/3D/scroll_3d.png`, fallback: 'scroll', tab: 'poa' },
-  { title: 'Довіреності < 30д',   value: '3',  accent: '#f97316', iconBg: '#fdf3e3', img3d: `${FLUENT_3D}/Hourglass%20not%20done/3D/hourglass_not_done_3d.png`, fallback: 'hourglass', tab: 'poa' },
-  { title: 'КЕП активні',         value: '8',  accent: '#92C11D', iconBg: '#dcfce7', img3d: `${FLUENT_3D}/Identification%20card/3D/identification_card_3d.png`, fallback: 'idcard', tab: 'kep' },
-  { title: 'КЕП < 30д',           value: '2',  accent: '#e02f2f', iconBg: '#fce7f3', img3d: `${FLUENT_3D}/Alarm%20clock/3D/alarm_clock_3d.png`, fallback: 'alarm', tab: 'kep' },
+  { title: 'Довіреності активні', value: '12', accent: '#2f6fde', iconBg: '#e3edfb', icon: <ScrollText size={20} color="#2f6fde" />, tab: 'poa' },
+  { title: 'Довіреності < 30д',   value: '3',  accent: '#f97316', iconBg: '#ffedd5', icon: <Hourglass size={20} color="#ea580c" />, tab: 'poa' },
+  { title: 'КЕП активні',         value: '8',  accent: '#92C11D', iconBg: '#ecf5d9', icon: <Contact size={20} color="#4d7c0f" />, tab: 'kep' },
+  { title: 'КЕП < 30д',           value: '2',  accent: '#e02f2f', iconBg: '#fee2e2', icon: <AlarmClock size={20} color="#dc2626" />, tab: 'kep' },
 ] as KpiCard[];
-
-const kpiFallbackIcon: Record<KpiCard['fallback'], React.ReactNode> = {
-  scroll: <ScrollText size={22} color="#2f6fde" />,
-  hourglass: <Hourglass size={22} color="#f97316" />,
-  idcard: <Contact size={22} color="#4d7c0f" />,
-  alarm: <AlarmClock size={22} color="#e02f2f" />,
-};
-
-/* 3D-іконка KPI з фолбеком на Lucide за недоступності CDN */
-const Kpi3DIcon = ({ kpi }: { kpi: KpiCard }) => {
-  const [failed, setFailed] = useState(false);
-  if (failed) {
-    return (
-      <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {kpiFallbackIcon[kpi.fallback]}
-      </div>
-    );
-  }
-  return (
-    <img
-      src={kpi.img3d}
-      alt=""
-      width={44}
-      height={44}
-      style={{ display: 'block', filter: 'drop-shadow(0 5px 8px rgba(15,60,120,0.18))' }}
-      onError={() => setFailed(true)}
-    />
-  );
-};
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -377,7 +346,9 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                   <div style={{ fontSize: '26px', fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{kpi.value}</div>
                   <div style={{ fontSize: '13px', color: '#374151', marginTop: '7px' }}>{kpi.title}</div>
                 </div>
-                <Kpi3DIcon kpi={kpi} />
+                <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {kpi.icon}
+                </div>
               </div>
             </div>
           ))}
