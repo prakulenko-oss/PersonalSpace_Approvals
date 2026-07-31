@@ -6,10 +6,10 @@ import { Badge, Button, Checkbox, Switch } from '@fluentui/react-components';
 import {
   ShieldCheck, Stethoscope, FileSignature, ExternalLink,
   FileText, Info, X, PenLine,
-  HelpCircle, ChevronDown, UserCheck, Link2, Contact, GraduationCap,
+  HelpCircle, ChevronDown, UserCheck, Link2, Contact, GraduationCap, PlayCircle,
 } from 'lucide-react';
 import {
-  briefings, medicalExams, workplaceCards, instructorCertificate, internshipInfo, admissionDate,
+  briefings, medicalExams, workplaceCards, instructorCertificate, internshipInfo, admissionDate, attestationCardInDocNet,
   daysUntil, expiryStatus,
 } from '../data/safety';
 import type { ExpiryStatus, WorkplaceCard } from '../data/safety';
@@ -341,11 +341,12 @@ const MedicalDetail = () => (
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
       <div>
-        Періодичний медогляд проводиться для визначених категорій працівників. Про наближення дати ми
-        повідомимо завчасно: ваш керівник отримає нагадування та ініціює проведення — додаткових дій
-        від вас не потрібно.
-        <div style={{ marginTop: 6, fontSize: 12.5, color: '#3b5998' }}>
-          Джерело даних — медичні висновки (ELA); інтеграція в опрацюванні, склад полів уточнюється.
+        Обовʼязковий медичний огляд проводиться для визначення стану здоровʼя та професійної придатності
+        працівників до виконання певних видів робіт.
+        <div style={{ marginTop: 6 }}>
+          Якщо Ваша посада (професія) відноситься до «Переліку категорій працівників ПрАТ «Київстар»,
+          які підлягають обовʼязковому медичному огляду», Вам завчасно надійде інформація про дату
+          проходження медичного огляду.
         </div>
       </div>
     </div>
@@ -443,11 +444,21 @@ const AttestationDetail = ({
 
     <div style={st.callout}>
       <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
-      <div>
-        Ваше робоче місце атестоване — тут усе актуально. Повний документ доступний
-        у системі Документообігу (docNet) відповідно до ваших прав доступу
-        — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
-      </div>
+      {attestationCardInDocNet ? (
+        <div>
+          Ваше робоче місце атестовано. Відомості щодо оцінки факторів виробничого середовища
+          та трудового процесу, умов праці викладені у Карті умов праці, яка знаходиться
+          в системі Документообігу
+          — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ ...S.btnLink, padding: 0, fontSize: 13.5 }}>відкрити в docNet <ExternalLink size={13} /></button>
+        </div>
+      ) : (
+        <div>
+          Ваше робоче місце було атестоване у 2018 році. Умови праці на робочому місці допустимі.
+          Через дію воєнного стану строки проведення чергової атестації продовжені відповідно
+          до законодавства, тому результати попередньої атестації залишаються чинними.
+          Підстав для занепокоєння немає.
+        </div>
+      )}
     </div>
   </div>
 );
@@ -641,7 +652,8 @@ const CertificateCard = ({ showToast }: { showToast: (m: string) => void }) => {
 
 /* Корисні посилання — за портальним принципом (як у Страхуванні) */
 const QuickLinksCard = ({ showToast }: { showToast: (m: string) => void }) => {
-  const links = [
+  const links: { label: string; hint: string; icon?: ReactNode }[] = [
+    { label: 'Вступний інструктаж', hint: 'відео', icon: <PlayCircle size={15} color="#2563eb" /> },
     { label: 'Інструкції з охорони праці', hint: 'SharePoint' },
     { label: 'Технологічні карти', hint: 'SharePoint' },
   ];
@@ -666,6 +678,7 @@ const QuickLinksCard = ({ showToast }: { showToast: (m: string) => void }) => {
               fontFamily: 'inherit', fontSize: 13.5, color: '#111827', textAlign: 'left',
             }}
           >
+            {l.icon}
             <span>{l.label}</span>
             <ExternalLink size={13} color="#374151" />
           </button>
@@ -945,7 +958,7 @@ export const EmployeeSafety = () => {
                   {openSection === 'medical' && (demoBasic
                     ? <NotApplicableBlock
                         text="Медичний огляд для вашої посади не передбачений"
-                        callout="Періодичні медогляди проводяться лише для визначених категорій посад. Відсутність медогляду у вашому профілі — це нормально, жодних дій від вас не потрібно."
+                        callout="Ваша посада (професія) не відноситься до «Переліку категорій працівників ПрАТ «Київстар», які підлягають обовʼязковому медичному огляду», тому проходження медогляду для вас не передбачене. Це нормально — жодних дій від вас не потрібно."
                       />
                     : <MedicalDetail />)}
                   {openSection === 'attestation' && (demoBasic
@@ -957,7 +970,7 @@ export const EmployeeSafety = () => {
                   {openSection === 'internship' && (demoBasic
                     ? <NotApplicableBlock
                         text="Стажування / дублювання для вашої посади не передбачене"
-                        callout="Стажування, дублювання та окремий допуск до роботи передбачені лише для окремих посад. Їх відсутність — це нормально, жодних дій від вас не потрібно."
+                        callout="Для Вашої посади стажування/дублювання не передбачено. Їх відсутність — це нормально, жодних дій від вас не потрібно."
                       />
                     : <InternshipDetail showToast={showToast} />)}
                 </div>
