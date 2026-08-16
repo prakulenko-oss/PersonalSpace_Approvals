@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell, Drawer, SuccessModal, useIsMobile, AnimStyles } from './managerUi';
 import { poaIcon, kepIcon } from '../assets/poaIcons';
+import { heroPoa, heroKep } from '../assets/heroImages';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
@@ -46,11 +47,30 @@ type DocRow = {
   kepState?: 'Чинний' | 'Нечинний';
   daysLeft?: number;             // для КЕП — підсвітка термінів
   basis?: string;                // підстава (стовпчик на табі КЕП)
+  owner?: 'self' | 'manager';    // мітка для режиму співробітника: «Ви» / «Керівник»
 };
 
 const poaRows: DocRow[] = [
   {
+    name: 'Тарас Мрійник', role: 'Спеціальна довіреність', endDate: '28.07.2026', status: 'active', file: 'dov_007.pdf',
+    owner: 'self',
+    detail: {
+      regNumber: '118-2026', regDateTime: '28.07.2025, 11:02', state: 'Чинна',
+      poaKind: 'спеціальна',
+      summary: 'Довіреність на право підписання актів приймання-передачі обладнання в межах проєктів дирекції',
+      termYears: '1 рік', termFrom: '28.07.2025', termTo: '28.07.2026',
+      issuedTo: 'Мрійник Т.О.',
+      issuedToCompany: [
+        'Мрійник Т.О. (5556667778889 - 15 - Бізнес-підрозділ інформаційних технологій Менеджер продукту)',
+      ],
+      signer: 'Соколенко О.В. (ТОВ «Тестова Компанія» Президент)',
+      author: 'Зореславська А.М. (02 - Відділ підтримки операційної діяльності Радник з юридичних питань)',
+      daysLeft: 24,
+    },
+  },
+  {
     name: 'Місяченко А.Л.', role: 'Т.в.о. директора', endDate: '11.09.2026', status: 'active', file: 'dov_004.pdf',
+    owner: 'manager',
     detail: {
       regNumber: '92-2026', regDateTime: '11.03.2026, 16:18', state: 'Чинна',
       poaKind: 'т.в.о.',
@@ -142,6 +162,7 @@ const kepRows: DocRow[] = [
 const inProgressKepRow: DocRow = {
   name: 'Тарас Мрійник', role: 'Підписант документів', endDate: '31.12.2026', status: 'active', file: 'kep_request_001',
   basis: 'Управлінське рішення',
+  owner: 'self',
   progress: [
     { label: 'Заявку створено',                            date: '10.06.2026, 14:32', status: 'done' },
     { label: 'Передано в систему контролю прав доступу',   date: '10.06.2026, 14:33', status: 'done' },
@@ -159,6 +180,42 @@ const kpiCards = [
   { title: 'КЕП активні',         value: '8',  accent: '#92C11D', iconBg: '#ecf5d9', icon: <Contact size={20} color="#4d7c0f" />, tab: 'kep' },
   { title: 'КЕП < 30д',           value: '2',  accent: '#e02f2f', iconBg: '#fee2e2', icon: <AlarmClock size={20} color="#dc2626" />, tab: 'kep' },
 ] as KpiCard[];
+
+/* ═══ Hero-банер співробітника — перенесено з затвердженого макета (компактна висота) ═══ */
+const heroFloatKeyframes = `
+@keyframes poaHeroFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}`;
+
+const EmployeeHero = ({ tone, heading, subtext, image }: {
+  tone: 'blue' | 'yellow'; heading: string; subtext: string; image: string;
+}) => (
+  <section style={{
+    position: 'relative', overflow: 'hidden', borderRadius: 20, marginBottom: 20,
+    background: 'linear-gradient(105deg, #e6f6fd 0%, #f4fbff 46%, #ffffff 100%)',
+    boxShadow: '0 6px 24px rgba(0,63,125,.06)', border: '1px solid #e6edf4',
+  }}>
+    <style>{heroFloatKeyframes}</style>
+    {/* декоративні блоби */}
+    <span style={{ pointerEvents: 'none', position: 'absolute', top: -60, left: -40, width: 170, height: 170, borderRadius: '50%', opacity: 0.5, background: 'radial-gradient(circle, #bfe9fa 0%, transparent 68%)' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: -70, left: '36%', width: 180, height: 180, borderRadius: '50%', opacity: 0.4, background: 'radial-gradient(circle, #ffe98a 0%, transparent 68%)' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', top: 22, right: '36%', width: 9, height: 9, borderRadius: '50%', backgroundColor: '#FFD100', opacity: 0.7 }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: 22, right: '44%', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#00A0E3', opacity: 0.6 }} />
+
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, padding: '18px 28px' }}>
+      <div style={{ minWidth: 0 }}>
+        <span style={{ display: 'inline-block', width: 40, height: 6, borderRadius: 999, marginBottom: 10, backgroundColor: tone === 'blue' ? '#00A0E3' : '#FFD100' }} />
+        <h1 style={{ margin: 0, fontSize: 21, lineHeight: 1.25, fontWeight: 800, color: '#002B5C' }}>{heading}</h1>
+        <p style={{ margin: '7px 0 0', maxWidth: 520, fontSize: 13.5, lineHeight: 1.5, color: '#6B7A90' }}>{subtext}</p>
+      </div>
+      <img
+        src={image} alt="" width={132} height={132}
+        style={{ flexShrink: 0, objectFit: 'contain', filter: 'drop-shadow(0 14px 22px rgba(0,63,125,.14))', animation: 'poaHeroFloat 6s ease-in-out infinite' }}
+      />
+    </div>
+  </section>
+);
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -336,7 +393,49 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
       {/* ═══ MAIN ═══ */}
       <main style={S.main}>
 
-        {/* KPI Cards */}
+        {/* Hero-банер співробітника: лише про ВЛАСНІ документи */}
+        {mode === 'employee' && (() => {
+          if (tab === 'poa') {
+            const my = poaRows.find(r => r.owner === 'self');
+            const dl = my?.detail?.daysLeft;
+            if (my && dl != null && dl <= 30) {
+              return <EmployeeHero tone="blue" image={heroPoa}
+                heading={`Ваша довіреність спливає через ${dl} ${dl === 1 ? 'день' : dl < 5 ? 'дні' : 'днів'}`}
+                subtext={`Продовжимо заздалегідь — довіреність чинна до ${my.endDate}. Замовити продовження можна через «Створити довіреність» праворуч.`} />;
+            }
+            if (my) {
+              return <EmployeeHero tone="blue" image={heroPoa}
+                heading="Ваша довіреність чинна"
+                subtext={`Діє до ${my.endDate}. Ми нагадаємо заздалегідь, коли наблизиться термін.`} />;
+            }
+            return <EmployeeHero tone="blue" image={heroPoa}
+              heading="У вас немає активних довіреностей"
+              subtext="Замовити нову можна у два кліки — кнопка «Створити довіреність» праворуч." />;
+          }
+          const myKep = [inProgressKepRow, ...kepRows].find(r => r.owner === 'self');
+          if (myKep?.progress) {
+            const current = myKep.progress.find(st => st.status === 'current');
+            return <EmployeeHero tone="yellow" image={heroKep}
+              heading="Ваш КЕП майже готовий"
+              subtext={`Заявка на етапі «${current?.label ?? 'опрацювання'}» — зазвичай це 1–2 дні. Клікніть по рядку заявки, щоб побачити весь шлях.`} />;
+          }
+          if (myKep && myKep.daysLeft != null && myKep.daysLeft <= 30) {
+            return <EmployeeHero tone="yellow" image={heroKep}
+              heading={`Ваш КЕП діє ще ${myKep.daysLeft} ${myKep.daysLeft === 1 ? 'день' : myKep.daysLeft < 5 ? 'дні' : 'днів'}`}
+              subtext="Оновимо за 2 хвилини — без візитів і паперів." />;
+          }
+          if (myKep) {
+            return <EmployeeHero tone="yellow" image={heroKep}
+              heading="Ваш КЕП чинний"
+              subtext={`Діє до ${myKep.endDate}. Ми нагадаємо заздалегідь про оновлення.`} />;
+          }
+          return <EmployeeHero tone="yellow" image={heroKep}
+            heading="У вас поки немає КЕП"
+            subtext="Замовити електронний підпис можна через «Замовити КЕП» праворуч." />;
+        })()}
+
+        {/* KPI Cards — лише в режимі менеджера */}
+        {mode === 'manager' && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginBottom: '24px' }}>
           {kpiCards.filter(kpi => kpi.tab === tab).map(kpi => (
             <div key={kpi.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden', width: '270px', boxSizing: 'border-box' }}>
@@ -353,6 +452,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             </div>
           ))}
         </div>
+        )}
 
         {/* Table block */}
         <div style={{ ...S.card, marginBottom: '24px' }}>
@@ -362,8 +462,12 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               selectedValue={tab}
               onTabSelect={(_, d) => { setTab(d.value as 'poa' | 'kep'); setSelectedDoc(null); setPage(1); }}
             >
-              <Tab value="poa">Довіреності</Tab>
-              <Tab value="kep">КЕП</Tab>
+              <Tab value="poa">
+                Довіреності{mode === 'employee' && <span style={{ marginLeft: 7, padding: '1px 8px', borderRadius: 999, fontSize: 11, fontWeight: 800, backgroundColor: tab === 'poa' ? '#e3f4fd' : '#f1f4f8', color: tab === 'poa' ? '#0072a8' : '#6b7a90' }}>{poaRows.length}</span>}
+              </Tab>
+              <Tab value="kep">
+                КЕП{mode === 'employee' && <span style={{ marginLeft: 7, padding: '1px 8px', borderRadius: 999, fontSize: 11, fontWeight: 800, backgroundColor: tab === 'kep' ? '#e3f4fd' : '#f1f4f8', color: tab === 'kep' ? '#0072a8' : '#6b7a90' }}>{kepRows.length + 1 + createdRows.length}</span>}
+              </Tab>
             </TabList>
           </div>
 
@@ -490,6 +594,12 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '8px' }}>
                       <span style={{ fontWeight: 600, color: '#111827', fontSize: '14px' }}>{r.name}</span>
+                      {mode === 'employee' && r.owner === 'self' && (
+                        <Badge appearance="tint" color="brand" size="small" style={{ marginLeft: 7 }}>Ви</Badge>
+                      )}
+                      {mode === 'employee' && r.owner === 'manager' && (
+                        <Badge appearance="tint" color="informative" size="small" style={{ marginLeft: 7 }}>Керівник</Badge>
+                      )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>{stateCell}</div>
                     </div>
                     <div style={{ fontSize: '12.5px', color: '#6b7280', marginBottom: '4px' }}>
@@ -667,10 +777,30 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             onToggle={() => setInstrOpen(o => !o)}
           />
           {instrOpen && (
-            <div style={{ padding: '2px 16px 16px' }}>
-              <div style={{ textAlign: 'center', padding: '14px 0', fontSize: '13px', color: '#9ca3af' }}>
-                Наповнення розділу в роботі
-              </div>
+            <div style={{ padding: '2px 16px 12px' }}>
+              {[
+                { title: 'Як оформити довіреність', caption: 'Покрокова інструкція · 3 хв' },
+                { title: 'Види довіреностей', caption: 'Загальна, спеціальна, т.в.о.' },
+                { title: 'Є питання?', caption: 'Відповімо протягом робочого дня' },
+              ].map(it => (
+                <button
+                  key={it.title}
+                  onClick={() => showToast(`Відкривається: ${it.title}`)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2,
+                    width: '100%', padding: '9px 10px', marginBottom: 4,
+                    background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer',
+                    fontFamily: 'inherit', textAlign: 'left',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#f4f8fc'; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                >
+                  <span style={{ fontSize: 13.5, fontWeight: 600, color: '#2f6fde', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    {it.title} <ExternalLink size={12} />
+                  </span>
+                  <span style={{ fontSize: 12, color: '#9ca3af' }}>{it.caption}</span>
+                </button>
+              ))}
             </div>
           )}
         </div>
