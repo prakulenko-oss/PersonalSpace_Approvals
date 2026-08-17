@@ -1,19 +1,18 @@
 import { useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
-  TabList, Tab, Input, Dropdown, Option, Button, Badge, Textarea, Checkbox, Field, tokens,
+  TabList, Tab, Input, Dropdown, Option, Button, Badge, Textarea, Checkbox, Field, tokens, Tooltip,
 } from '@fluentui/react-components';
 import { DismissRegular, SendRegular } from '@fluentui/react-icons';
 import {
   AlarmClock, UserPlus, PenLine,
-  BarChart3, BookOpen, Search, Zap, ScrollText, Hourglass, Contact,
+  BarChart3, BookOpen, Search, Zap, ScrollText,
   ExternalLink, X, Download, Share2, Paperclip,
   ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, Check,
   CheckCircle2, MinusCircle, FileSearch, Info,
 } from 'lucide-react';
 import { S, RightBlockHeader, ModalShell, Drawer, SuccessModal, useIsMobile, AnimStyles } from './managerUi';
-import { poaIcon, kepIcon } from '../assets/poaIcons';
-import { heroPoa, heroKep } from '../assets/heroImages';
+import { heroPoa, heroKep, kpiPoa3d, kpiKep3d, bannerCloudPoa, bannerCloudKep } from '../assets/heroImages';
 
 /* ════════════════════════ DATA ════════════════════════ */
 
@@ -50,6 +49,7 @@ type DocRow = {
   owner?: 'self' | 'manager';    // мітка для режиму співробітника: «Ви» / «Керівник»
 };
 
+/* Демо-дата порталу: 04.07.2026 (єдина для всіх модулів; синхронізовано з Охороною праці) */
 const poaRows: DocRow[] = [
   {
     name: 'Тарас Мрійник', role: 'Спеціальна довіреність', endDate: '28.07.2026', status: 'active', file: 'dov_007.pdf',
@@ -102,12 +102,12 @@ const poaRows: DocRow[] = [
     },
   },
   {
-    name: 'Мирослава Квіткова', role: 'Фінансові операції', endDate: '02.07.2026', status: 'expiring', file: 'dov_002.pdf',
+    name: 'Мирослава Квіткова', role: 'Фінансові операції', endDate: '25.07.2026', status: 'expiring', file: 'dov_002.pdf',
     detail: {
       regNumber: '14-2026', regDateTime: '02.07.2025, 09:15', state: 'Чинна',
       poaKind: 'спеціальна',
       summary: 'Довіреність на підписання фінансових документів та здійснення банківських операцій у межах ліміту',
-      termYears: '1', termFrom: '02.07.2025', termTo: '02.07.2026',
+      termYears: '1', termFrom: '02.07.2025', termTo: '25.07.2026',
       daysLeft: 21,
       issuedTo: 'Квіткова М.С.',
       issuedToCompany: [
@@ -134,12 +134,12 @@ const poaRows: DocRow[] = [
     },
   },
   {
-    name: 'Джерелько Дмитро', role: 'Закупівлі', endDate: '20.06.2026', status: 'expiring', file: 'dov_005.pdf',
+    name: 'Джерелько Дмитро', role: 'Закупівлі', endDate: '12.07.2026', status: 'expiring', file: 'dov_005.pdf',
     detail: {
       regNumber: '41-2026', regDateTime: '20.06.2025, 11:30', state: 'Чинна',
       poaKind: 'спеціальна',
       summary: 'Довіреність на укладання договорів закупівлі товарів та послуг у межах ліміту',
-      termYears: '1', termFrom: '20.06.2025', termTo: '20.06.2026',
+      termYears: '1', termFrom: '20.06.2025', termTo: '12.07.2026',
       daysLeft: 8,
       issuedTo: 'Джерелько Д.О.',
       issuedToCompany: [
@@ -152,9 +152,9 @@ const poaRows: DocRow[] = [
 ];
 
 const kepRows: DocRow[] = [
-  { name: 'Орест Вигадко',      role: 'КЕП особистий',           endDate: '15.03.2026', status: 'active',   file: 'kep_001.zs2', kepState: 'Чинний',   basis: 'Наказ про призначення на посаду' },
-  { name: 'Мирослава Квіткова', role: 'КЕП печатка організації', endDate: '02.07.2026', status: 'expiring', file: 'kep_002.zs2', kepState: 'Чинний',   daysLeft: 21, basis: 'Управлінське рішення' },
-  { name: 'Соломія Хмаркова',   role: 'КЕП особистий',           endDate: '19.06.2026', status: 'expiring', file: 'kep_003.zs2', kepState: 'Чинний',   daysLeft: 7,  basis: 'Наказ про т.в.о.' },
+  { name: 'Орест Вигадко',      role: 'КЕП особистий',           endDate: '15.03.2027', status: 'active',   file: 'kep_001.zs2', kepState: 'Чинний',   basis: 'Наказ про призначення на посаду' },
+  { name: 'Мирослава Квіткова', role: 'КЕП печатка організації', endDate: '25.07.2026', status: 'expiring', file: 'kep_002.zs2', kepState: 'Чинний',   daysLeft: 21, basis: 'Управлінське рішення' },
+  { name: 'Соломія Хмаркова',   role: 'КЕП особистий',           endDate: '11.07.2026', status: 'expiring', file: 'kep_003.zs2', kepState: 'Чинний',   daysLeft: 7,  basis: 'Наказ про т.в.о.' },
   { name: 'Зорепадов Гнат Юхимович', role: 'КЕП особистий',      endDate: '11.01.2026', status: 'expired',  file: 'kep_004.zs2', kepState: 'Нечинний', basis: 'Наказ про призначення на посаду' },
 ];
 
@@ -172,20 +172,19 @@ const inProgressKepRow: DocRow = {
   ],
 };
 
-type KpiCard = { title: string; value: string; accent: string; iconBg: string; icon: React.ReactNode; tab: 'poa' | 'kep' };
-
-const kpiCards = [
-  { title: 'Довіреності активні', value: '12', accent: '#2f6fde', iconBg: '#e3edfb', icon: <ScrollText size={20} color="#2f6fde" />, tab: 'poa' },
-  { title: 'Довіреності < 30д',   value: '3',  accent: '#f97316', iconBg: '#ffedd5', icon: <Hourglass size={20} color="#ea580c" />, tab: 'poa' },
-  { title: 'КЕП активні',         value: '8',  accent: '#92C11D', iconBg: '#ecf5d9', icon: <Contact size={20} color="#4d7c0f" />, tab: 'kep' },
-  { title: 'КЕП < 30д',           value: '2',  accent: '#e02f2f', iconBg: '#fee2e2', icon: <AlarmClock size={20} color="#dc2626" />, tab: 'kep' },
-] as KpiCard[];
+/* Єдина кольорова мова KPI по всіх модулях: добре = зелений #22C55E,
+   наближається / протерміновано = помаранчевий #F97316.
+   Значення обчислюються з демо-даних усередині секції (див. kpiCards у PoaSection). */
 
 /* ═══ Hero-банер співробітника — перенесено з затвердженого макета (компактна висота) ═══ */
 const heroFloatKeyframes = `
 @keyframes poaHeroFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-7px); }
+}
+@keyframes poaOrbFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }`;
 
 const EmployeeHero = ({ tone, heading, subtext, image }: {
@@ -193,29 +192,46 @@ const EmployeeHero = ({ tone, heading, subtext, image }: {
 }) => (
   <section style={{
     position: 'relative', overflow: 'hidden', borderRadius: 20, marginBottom: 20,
-    background: 'linear-gradient(105deg, #e6f6fd 0%, #f4fbff 46%, #ffffff 100%)',
+    background: 'linear-gradient(105deg, #eef6fd 0%, #f5fafe 55%, #fbfdff 100%)',
     boxShadow: '0 6px 24px rgba(0,63,125,.06)', border: '1px solid #e6edf4',
   }}>
     <style>{heroFloatKeyframes}</style>
-    {/* декоративні блоби */}
-    <span style={{ pointerEvents: 'none', position: 'absolute', top: -60, left: -40, width: 170, height: 170, borderRadius: '50%', opacity: 0.5, background: 'radial-gradient(circle, #bfe9fa 0%, transparent 68%)' }} />
-    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: -70, left: '36%', width: 180, height: 180, borderRadius: '50%', opacity: 0.4, background: 'radial-gradient(circle, #ffe98a 0%, transparent 68%)' }} />
-    <span style={{ pointerEvents: 'none', position: 'absolute', top: 22, right: '36%', width: 9, height: 9, borderRadius: '50%', backgroundColor: '#FFD100', opacity: 0.7 }} />
-    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: 22, right: '44%', width: 6, height: 6, borderRadius: '50%', backgroundColor: '#00A0E3', opacity: 0.6 }} />
+
+    {/* Запечений хмарний фон з референсного макета (правий край) */}
+    <img
+      src={tone === 'blue' ? bannerCloudPoa : bannerCloudKep} alt="" aria-hidden
+      style={{ position: 'absolute', top: 0, right: 0, height: '100%', width: 'auto', pointerEvents: 'none' }}
+    />
+
+    {/* 3D-сфери та кільце — позиції у px від правого краю, стабільні на будь-якій ширині */}
+    <span style={{ pointerEvents: 'none', position: 'absolute', top: 22, right: 330, width: 19, height: 19, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #9fdcf7 0%, #2ea7e0 78%)', boxShadow: '0 4px 8px rgba(0,100,160,.25)', animation: 'poaOrbFloat 5s ease-in-out infinite' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: 26, right: 385, width: 12, height: 12, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #ffe98a 0%, #f2bf00 75%)', boxShadow: '0 3px 6px rgba(200,150,0,.3)', animation: 'poaOrbFloat 6.5s ease-in-out .8s infinite' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', top: 12, right: 236, width: 14, height: 14, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #baf3dc 0%, #2fc98e 78%)', boxShadow: '0 3px 7px rgba(10,120,90,.25)', animation: 'poaOrbFloat 5.6s ease-in-out .4s infinite' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: 18, right: 214, width: 16, height: 16, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #ffe98a 0%, #f2bf00 75%)', boxShadow: '0 3px 7px rgba(200,150,0,.28)', animation: 'poaOrbFloat 7s ease-in-out 1.2s infinite' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', top: 16, right: 52, width: 17, height: 17, borderRadius: '50%', border: '4px solid #8fd7c9', backgroundColor: 'transparent', opacity: 0.85, animation: 'poaOrbFloat 6s ease-in-out .6s infinite' }} />
+    <span style={{ pointerEvents: 'none', position: 'absolute', bottom: 16, right: 120, width: 7, height: 7, borderRadius: '50%', backgroundColor: '#00A0E3', opacity: 0.55 }} />
 
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, padding: '18px 28px' }}>
       <div style={{ minWidth: 0 }}>
-        <span style={{ display: 'inline-block', width: 40, height: 6, borderRadius: 999, marginBottom: 10, backgroundColor: tone === 'blue' ? '#00A0E3' : '#FFD100' }} />
         <h1 style={{ margin: 0, fontSize: 21, lineHeight: 1.25, fontWeight: 800, color: '#002B5C' }}>{heading}</h1>
         <p style={{ margin: '7px 0 0', maxWidth: 520, fontSize: 13.5, lineHeight: 1.5, color: '#6B7A90' }}>{subtext}</p>
       </div>
       <img
-        src={image} alt="" width={132} height={132}
-        style={{ flexShrink: 0, objectFit: 'contain', filter: 'drop-shadow(0 14px 22px rgba(0,63,125,.14))', animation: 'poaHeroFloat 6s ease-in-out infinite' }}
+        src={image} alt="" width={168} height={168}
+        style={{ flexShrink: 0, objectFit: 'contain', marginRight: 64, marginTop: -6, marginBottom: -6, filter: 'drop-shadow(0 14px 22px rgba(0,63,125,.14))', animation: 'poaHeroFloat 6s ease-in-out infinite' }}
       />
     </div>
   </section>
 );
+
+/* Українська плюралізація днів: 1 день · 2–4 дні · 5+ днів (11–14 — завжди днів) */
+const daysWord = (n: number) => {
+  const d10 = n % 10, d100 = n % 100;
+  if (d100 >= 11 && d100 <= 14) return 'днів';
+  if (d10 === 1) return 'день';
+  if (d10 >= 2 && d10 <= 4) return 'дні';
+  return 'днів';
+};
 
 const poaFilterOptions = [
   { value: '',         label: 'Всі' },
@@ -249,9 +265,9 @@ const StateBadge = ({ state }: { state: string }) => {
 };
 
 /* Порожній стан: за перемикачем — емпатичний (картинка + текст) або сухий */
-const EmptyState = ({ empathetic, filtered, tab, onCreate, onClear }: {
+const EmptyState = ({ empathetic, filtered, tab, onClear }: {
   empathetic: boolean; filtered: boolean; tab: 'poa' | 'kep';
-  onCreate: () => void; onClear: () => void;
+  onClear: () => void;
 }) => {
   if (filtered) {
     return (
@@ -269,23 +285,23 @@ const EmptyState = ({ empathetic, filtered, tab, onCreate, onClear }: {
       </div>
     );
   }
-  const img = tab === 'poa' ? poaIcon : kepIcon;
-  return (
-    <div style={{ textAlign: 'center', padding: '40px 24px' }}>
-      <img src={img} alt="" style={{ width: 72, height: 72, borderRadius: '16px', objectFit: 'cover', margin: '0 auto 18px', display: 'block', opacity: 0.95 }} />
-      <div style={{ fontSize: '16px', fontWeight: 600, color: '#1f2937', marginBottom: '8px' }}>
-        {tab === 'poa' ? 'Тут зберігатимуться ваші довіреності' : 'Тут зберігатимуться ваші КЕП'}
+  {
+    /* Єдиний порожній стан для обох ролей: без кнопки-дубля —
+       primary «Створити довіреність / Замовити КЕП» вже є праворуч у Швидких діях */
+    return (
+      <div style={{ textAlign: 'center', padding: '44px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, fontSize: '16px', fontWeight: 600, color: '#1f2937', marginBottom: '8px' }}>
+          {tab === 'poa' ? <ScrollText size={19} color="#2f6fde" /> : <PenLine size={19} color="#2f6fde" />}
+          {tab === 'poa' ? 'Тут зберігатимуться ваші довіреності' : 'Тут з\u02bcявиться ваш електронний підпис'}
+        </div>
+        <div style={{ fontSize: '13.5px', color: '#6b7280', maxWidth: '380px', margin: '0 auto', lineHeight: 1.55 }}>
+          {tab === 'poa'
+            ? 'Поки що порожньо — і це нормально. Коли знадобиться діяти від імені компанії, оформлення займе кілька хвилин — кнопка «Створити довіреність» праворуч.'
+            : 'КЕП поки не оформлений — і це ок. Коли знадобиться, замовлення займе кілька хвилин — кнопка «Замовити КЕП» праворуч.'}
+        </div>
       </div>
-      <div style={{ fontSize: '13.5px', color: '#6b7280', maxWidth: '360px', margin: '0 auto 20px', lineHeight: 1.5 }}>
-        {tab === 'poa'
-          ? 'Поки що порожньо — і це нормально. Коли знадобиться діяти від імені компанії, оформлення довіреності займе кілька хвилин, а ми проведемо вас за руку.'
-          : 'Поки що порожньо. Коли знадобиться електронний підпис, оформлення КЕП займе кілька хвилин — ми поруч на кожному кроці.'}
-      </div>
-      <Button appearance="primary" icon={tab === 'poa' ? <UserPlus size={16} /> : <PenLine size={16} />} onClick={onCreate}>
-        {tab === 'poa' ? 'Створити довіреність' : 'Оформити КЕП'}
-      </Button>
-    </div>
-  );
+    );
+  }
 };
 
 const SortHeader = <C extends string>({ label, col, sort, onSort }: {
@@ -336,6 +352,8 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
 
   // Демо-перемикач: емпатичний порожній стан (на погодження з бізнесом)
   const [empatheticEmpty, setEmpatheticEmpty] = useState(true);
+  // Демо-перемикач станів банера співробітника: «як у даних» / все гаразд / немає власних
+  const [demoSelfState, setDemoSelfState] = useState<'live' | 'ok' | 'none'>('live');
   const [emptyPreview, setEmptyPreview] = useState(false);
 
   const rows = tab === 'poa' ? poaRows : [inProgressKepRow, ...createdRows, ...kepRows];
@@ -343,9 +361,11 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
 
   // Сортування: колонка + напрямок. За замовчуванням — за датою закінчення (найтерміновіші вгорі)
   type SortCol = 'name' | 'kind' | 'endDate' | 'state' | 'basis';
-  const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 }>({ col: 'endDate', dir: 1 });
+  /* null = тріаж за замовчуванням: спливаючі чинні → чинні → у роботі → нечинні */
+  const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 } | null>(null);
+  const [kpiFilter, setKpiFilter] = useState<'active' | 'soon' | null>(null);
   const toggleSort = (col: SortCol) =>
-    setSort(prev => prev.col === col && prev.dir === 1 ? { col, dir: -1 } : { col, dir: 1 });
+    setSort(prev => prev?.col === col && prev.dir === 1 ? { col, dir: -1 } : { col, dir: 1 });
 
   // Пагінація
   const PAGE_SIZE = 10;
@@ -367,20 +387,58 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
           : kepState === statusFilter
       );
       const matchesKind = !kindFilter || (r.detail?.poaKind ?? r.kind ?? '') === kindFilter;
-      return matchesSearch && matchesStatus && matchesKind;
+      /* Фільтр від клікабельних KPI-карток */
+      const isValid = tab === 'poa' ? r.detail?.state === 'Чинна' : (!r.progress && r.kepState === 'Чинний');
+      const dl = tab === 'poa' ? r.detail?.daysLeft : r.daysLeft;
+      const matchesKpi = !kpiFilter || (isValid && (kpiFilter === 'active' || (dl ?? 999) <= 30));
+      return matchesSearch && matchesStatus && matchesKind && matchesKpi;
     });
-    const val = (r: DocRow): string => {
-      switch (sort.col) {
-        case 'name':    return r.name;
-        case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '') : r.role;
-        case 'endDate': return r.endDate === '—' ? '99999999' : dateKey(r.endDate);
-        case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : (r.progress ? 'в роботі' : (r.kepState ?? ''));
-        case 'basis':   return r.basis ?? '';
-      }
-    };
-    result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
+    if (sort) {
+      const val = (r: DocRow): string => {
+        switch (sort.col) {
+          case 'name':    return r.name;
+          case 'kind':    return tab === 'poa' ? (r.detail?.poaKind ?? r.kind ?? '') : r.role;
+          case 'endDate': return r.endDate === '—' ? '99999999' : dateKey(r.endDate);
+          case 'state':   return tab === 'poa' ? (r.detail?.state ?? '') : (r.progress ? 'в роботі' : (r.kepState ?? ''));
+          case 'basis':   return r.basis ?? '';
+        }
+      };
+      result.sort((a, b) => val(a).localeCompare(val(b), 'uk') * sort.dir);
+    } else {
+      /* Тріаж за замовчуванням: спливаючі чинні → чинні → у роботі → нечинні; всередині — за датою */
+      const rank = (r: DocRow): number => {
+        if (tab === 'poa') {
+          if (r.detail?.state === 'Чинна') return (r.detail?.daysLeft ?? 999) <= 30 ? 0 : 1;
+          return 3;
+        }
+        if (r.progress) return 2;
+        if (r.kepState === 'Чинний') return (r.daysLeft ?? 999) <= 30 ? 0 : 1;
+        return 3;
+      };
+      result.sort((a, b) =>
+        rank(a) - rank(b) ||
+        (a.endDate === '—' ? '99999999' : dateKey(a.endDate)).localeCompare(b.endDate === '—' ? '99999999' : dateKey(b.endDate)));
+    }
     return result;
-  }, [rows, tab, search, statusFilter, kindFilter, sort]);
+  }, [rows, tab, search, statusFilter, kindFilter, kpiFilter, sort]);
+
+  /* KPI та Статистика — обчислюються з демо-даних (єдине джерело істини) */
+  const poaActive = poaRows.filter(r => r.detail?.state === 'Чинна').length;
+  const poaSoon = poaRows.filter(r => r.detail?.state === 'Чинна' && (r.detail?.daysLeft ?? 999) <= 30).length;
+  const allKep = [...kepRows, ...createdRows];
+  const kepActive = allKep.filter(r => !r.progress && r.kepState === 'Чинний').length;
+  const kepSoon = allKep.filter(r => !r.progress && r.kepState === 'Чинний' && (r.daysLeft ?? 999) <= 30).length;
+
+  const kpiCards: { key: 'active' | 'soon'; title: string; value: number; accent: string; img: string }[] =
+    tab === 'poa'
+      ? [
+          { key: 'active', title: 'Довіреності чинні', value: poaActive, accent: '#22C55E', img: kpiPoa3d },
+          { key: 'soon', title: 'Довіреності < 30 днів', value: poaSoon, accent: '#F97316', img: kpiPoa3d },
+        ]
+      : [
+          { key: 'active', title: 'КЕП чинні', value: kepActive, accent: '#22C55E', img: kpiKep3d },
+          { key: 'soon', title: 'КЕП < 30 днів', value: kepSoon, accent: '#F97316', img: kpiKep3d },
+        ];
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -396,57 +454,101 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
         {/* Hero-банер співробітника: лише про ВЛАСНІ документи */}
         {mode === 'employee' && (() => {
           if (tab === 'poa') {
+            if (demoSelfState === 'none') {
+              return <EmployeeHero tone="blue" image={heroPoa}
+                heading="Тарасе, у вас поки немає власної довіреності"
+                subtext="У списку нижче — довіреності колег вашої функції. Коли знадобиться власна, оформлення займе кілька хвилин — кнопка «Створити довіреність» праворуч." />;
+            }
+            if (demoSelfState === 'ok') {
+              return <EmployeeHero tone="blue" image={heroPoa}
+                heading="Тарасе, з вашою довіреністю все гаразд"
+                subtext="Діє до 15.03.2027. Ми нагадаємо заздалегідь, коли наблизиться термін." />;
+            }
             const my = poaRows.find(r => r.owner === 'self');
             const dl = my?.detail?.daysLeft;
             if (my && dl != null && dl <= 30) {
               return <EmployeeHero tone="blue" image={heroPoa}
-                heading={`Ваша довіреність спливає через ${dl} ${dl === 1 ? 'день' : dl < 5 ? 'дні' : 'днів'}`}
+                heading={`Тарасе, ваша довіреність спливає через ${dl} ${daysWord(dl)}`}
                 subtext={`Продовжимо заздалегідь — довіреність чинна до ${my.endDate}. Замовити продовження можна через «Створити довіреність» праворуч.`} />;
             }
             if (my) {
               return <EmployeeHero tone="blue" image={heroPoa}
-                heading="Ваша довіреність чинна"
+                heading="Тарасе, з вашою довіреністю все гаразд"
                 subtext={`Діє до ${my.endDate}. Ми нагадаємо заздалегідь, коли наблизиться термін.`} />;
             }
             return <EmployeeHero tone="blue" image={heroPoa}
-              heading="У вас немає активних довіреностей"
-              subtext="Замовити нову можна у два кліки — кнопка «Створити довіреність» праворуч." />;
+              heading="Тарасе, у вас поки немає власної довіреності"
+              subtext="У списку нижче — довіреності колег вашої функції. Коли знадобиться власна, оформлення займе кілька хвилин — кнопка «Створити довіреність» праворуч." />;
+          }
+          if (demoSelfState === 'none') {
+            return <EmployeeHero tone="yellow" image={heroKep}
+              heading="Тарасе, у вас поки немає КЕП"
+              subtext="У списку нижче — підписи колег вашої функції. Коли знадобиться власний, замовлення займе кілька хвилин — кнопка «Замовити КЕП» праворуч." />;
+          }
+          if (demoSelfState === 'ok') {
+            return <EmployeeHero tone="yellow" image={heroKep}
+              heading="Тарасе, ваш КЕП чинний"
+              subtext="Діє до 31.12.2026. Ми нагадаємо заздалегідь про оновлення." />;
           }
           const myKep = [inProgressKepRow, ...kepRows].find(r => r.owner === 'self');
           if (myKep?.progress) {
             const current = myKep.progress.find(st => st.status === 'current');
             return <EmployeeHero tone="yellow" image={heroKep}
-              heading="Ваш КЕП майже готовий"
+              heading="Тарасе, ваш КЕП майже готовий"
               subtext={`Заявка на етапі «${current?.label ?? 'опрацювання'}» — зазвичай це 1–2 дні. Клікніть по рядку заявки, щоб побачити весь шлях.`} />;
           }
           if (myKep && myKep.daysLeft != null && myKep.daysLeft <= 30) {
             return <EmployeeHero tone="yellow" image={heroKep}
-              heading={`Ваш КЕП діє ще ${myKep.daysLeft} ${myKep.daysLeft === 1 ? 'день' : myKep.daysLeft < 5 ? 'дні' : 'днів'}`}
+              heading={`Тарасе, ваш КЕП діє ще ${myKep.daysLeft} ${daysWord(myKep.daysLeft)}`}
               subtext="Оновимо за 2 хвилини — без візитів і паперів." />;
           }
           if (myKep) {
             return <EmployeeHero tone="yellow" image={heroKep}
-              heading="Ваш КЕП чинний"
+              heading="Тарасе, ваш КЕП чинний"
               subtext={`Діє до ${myKep.endDate}. Ми нагадаємо заздалегідь про оновлення.`} />;
           }
           return <EmployeeHero tone="yellow" image={heroKep}
-            heading="У вас поки немає КЕП"
-            subtext="Замовити електронний підпис можна через «Замовити КЕП» праворуч." />;
+            heading="Тарасе, у вас поки немає КЕП"
+            subtext="У списку нижче — підписи колег вашої функції. Коли знадобиться власний, замовлення займе кілька хвилин — кнопка «Замовити КЕП» праворуч." />;
         })()}
 
         {/* KPI Cards — лише в режимі менеджера */}
         {mode === 'manager' && (
         <div style={{ display: 'flex', justifyContent: 'center', gap: '18px', marginBottom: '24px' }}>
-          {kpiCards.filter(kpi => kpi.tab === tab).map(kpi => (
-            <div key={kpi.title} style={{ ...S.card, borderColor: '#e3e3e3', padding: '16px 18px', position: 'relative', overflow: 'hidden', width: '270px', boxSizing: 'border-box' }}>
+          {kpiCards.map(kpi => (
+            <div
+              key={kpi.title}
+              role="button"
+              tabIndex={0}
+              aria-pressed={kpiFilter === kpi.key}
+              title={kpiFilter === kpi.key ? 'Зняти фільтр' : 'Показати в таблиці'}
+              onClick={() => { setKpiFilter(f => f === kpi.key ? null : kpi.key); setPage(1); }}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setKpiFilter(f => f === kpi.key ? null : kpi.key); setPage(1); } }}
+              style={{
+                ...S.card,
+                borderColor: kpiFilter === kpi.key ? kpi.accent : '#e3e3e3',
+                borderWidth: kpiFilter === kpi.key ? 2 : 1,
+                backgroundColor: kpiFilter === kpi.key ? `${kpi.accent}0d` : '#fff',
+                padding: '16px 18px', position: 'relative', overflow: 'hidden',
+                width: '300px', boxSizing: 'border-box', cursor: 'pointer',
+              }}
+            >
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', backgroundColor: kpi.accent }} />
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: '26px', fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{kpi.value}</div>
                   <div style={{ fontSize: '13px', color: '#374151', marginTop: '7px' }}>{kpi.title}</div>
                 </div>
-                <div style={{ width: 42, height: 42, backgroundColor: kpi.iconBg, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {kpi.icon}
+                <div style={{
+                  width: 66, height: 66, borderRadius: 14,
+                  backgroundColor: kpi.key === 'active' ? '#f0fdf4' : '#fff7ed',
+                  border: `1px solid ${kpi.key === 'active' ? '#bbf7d0' : '#fed7aa'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <img
+                    src={kpi.img} alt="" width={54} height={54}
+                    style={{ objectFit: 'contain', display: 'block' }}
+                  />
                 </div>
               </div>
             </div>
@@ -460,7 +562,7 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
           <div style={{ padding: '6px 12px', borderBottom: '1px solid #eef2f7' }}>
             <TabList
               selectedValue={tab}
-              onTabSelect={(_, d) => { setTab(d.value as 'poa' | 'kep'); setSelectedDoc(null); setPage(1); }}
+              onTabSelect={(_, d) => { setTab(d.value as 'poa' | 'kep'); setSelectedDoc(null); setPage(1); setKpiFilter(null); }}
             >
               <Tab value="poa">
                 Довіреності{mode === 'employee' && <span style={{ marginLeft: 7, padding: '1px 8px', borderRadius: 999, fontSize: 11, fontWeight: 800, backgroundColor: tab === 'poa' ? '#e3f4fd' : '#f1f4f8', color: tab === 'poa' ? '#0072a8' : '#6b7a90' }}>{poaRows.length}</span>}
@@ -516,6 +618,22 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               onChange={(_, d) => setEmptyPreview(!!d.checked)}
               label="Демо: показати порожній стан"
             />
+            {mode === 'employee' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, color: '#6b7280' }}>Демо: мій стан</span>
+                <Dropdown
+                  value={demoSelfState === 'live' ? 'Як у даних' : demoSelfState === 'ok' ? 'Все гаразд' : 'Немає власних'}
+                  selectedOptions={[demoSelfState]}
+                  onOptionSelect={(_, d) => setDemoSelfState((d.optionValue as 'live' | 'ok' | 'none') ?? 'live')}
+                  aria-label="Демо: стан власних документів"
+                  style={{ minWidth: 150 }}
+                >
+                  <Option value="live" text="Як у даних">Як у даних</Option>
+                  <Option value="ok" text="Все гаразд">Все гаразд</Option>
+                  <Option value="none" text="Немає власних">Немає власних</Option>
+                </Dropdown>
+              </div>
+            )}
             {emptyPreview && (
               <Checkbox
                 checked={empatheticEmpty}
@@ -544,7 +662,6 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                 empathetic={empatheticEmpty}
                 filtered={false}
                 tab={tab}
-                onCreate={() => (tab === 'poa' ? setCreateOpen(true) : setKepOpen(true))}
                 onClear={() => {}}
               />
             ) : (<>
@@ -580,8 +697,12 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               );
               const actions = tab === 'poa' && !r.progress && (
                 <>
-                  <Button appearance="subtle" size="small" icon={<Download size={16} />} aria-label="Завантажити довіреність" title="Завантажити довіреність" onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }} />
-                  <Button appearance="subtle" size="small" icon={<Share2 size={16} />} aria-label="Поділитися довіреністю" title="Поділитися довіреністю" onClick={e => { e.stopPropagation(); setShareDoc(r); }} />
+                  <Tooltip content={tab === 'poa' ? 'Завантажити довіреність (PDF)' : 'Завантажити сертифікат'} relationship="label">
+                    <Button appearance="subtle" size="small" icon={<Download size={16} />} onClick={e => { e.stopPropagation(); showToast(`Завантажується файл ${r.file}...`); }} />
+                  </Tooltip>
+                  <Tooltip content="Поділитися посиланням" relationship="label">
+                    <Button appearance="subtle" size="small" icon={<Share2 size={16} />} onClick={e => { e.stopPropagation(); setShareDoc(r); }} />
+                  </Tooltip>
                 </>
               );
 
@@ -644,7 +765,6 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                 empathetic={empatheticEmpty}
                 filtered={!!search || !!statusFilter || !!kindFilter}
                 tab={tab}
-                onCreate={() => (tab === 'poa' ? setCreateOpen(true) : setKepOpen(true))}
                 onClear={() => { setSearch(''); setStatusFilter(''); setKindFilter(''); setPage(1); }}
               />
             )}
@@ -673,6 +793,23 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             )}
           </div>
         </div>
+
+        {/* Легенда охоплення — лише для співробітника */}
+        {mode === 'employee' && (
+          <div style={{
+            display: 'flex', gap: 12, alignItems: 'flex-start',
+            padding: '13px 16px', borderRadius: 12, marginBottom: 24,
+            backgroundColor: '#eff6ff', border: '1px solid #dbeafe',
+            fontSize: 13.5, lineHeight: 1.55, color: '#1e3a5f',
+          }}>
+            <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              Тут зібрані довіреності всіх колег вашої функції — щоб ви завжди бачили, хто поруч
+              має право підпису. Шукаєте довіреність поза своєю функцією? Повний реєстр — у системі
+              Документообігу — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: '#2f6fde', display: 'inline-flex', alignItems: 'center', gap: 4 }}>відкрити в docNet <ExternalLink size={12} /></button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ═══ RIGHT COLUMN ═══ */}
@@ -726,42 +863,42 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
               <div style={{ padding: '2px 16px 18px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
                   <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього довіреностей</span>
-                  <span style={{ fontWeight: 700, color: '#111827' }}>15</span>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{poaRows.length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
                   <span style={{ color: '#6b7280' }}>загальна</span>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>6</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>{poaRows.filter(r => r.detail?.poaKind === 'загальна').length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
                   <span style={{ color: '#6b7280' }}>спеціальна</span>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>{poaRows.filter(r => r.detail?.poaKind === 'спеціальна').length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
                   <span style={{ color: '#6b7280' }}>т.в.о.</span>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>2</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>{poaRows.filter(r => r.detail?.poaKind === 'т.в.о.').length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
-                  <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
-                  <span style={{ fontWeight: 700, color: '#f97316' }}>5</span>
+                  <span style={{ color: '#4b5563' }}>Закінчуються ≤ 30 днів</span>
+                  <span style={{ fontWeight: 700, color: '#f97316' }}>{poaSoon}</span>
                 </div>
               </div>
             ) : (
               <div style={{ padding: '2px 16px 18px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '13px' }}>
                   <span style={{ color: '#4b5563', fontWeight: 600 }}>Всього КЕП</span>
-                  <span style={{ fontWeight: 700, color: '#111827' }}>10</span>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{allKep.length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '9px', fontSize: '13px', paddingLeft: '14px' }}>
                   <span style={{ color: '#6b7280' }}>особистий</span>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>7</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>{allKep.filter(r => r.role.includes('особист')).length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px', fontSize: '13px', paddingLeft: '14px' }}>
                   <span style={{ color: '#6b7280' }}>печатка організації</span>
-                  <span style={{ fontWeight: 600, color: '#374151' }}>3</span>
+                  <span style={{ fontWeight: 600, color: '#374151' }}>{allKep.filter(r => r.role.includes('печатка')).length}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', borderTop: '1px solid #eef2f7', paddingTop: '12px' }}>
-                  <span style={{ color: '#4b5563' }}>Закінчуються цього місяця</span>
-                  <span style={{ fontWeight: 700, color: '#f97316' }}>2</span>
+                  <span style={{ color: '#4b5563' }}>Закінчуються ≤ 30 днів</span>
+                  <span style={{ fontWeight: 700, color: '#f97316' }}>{kepSoon}</span>
                 </div>
               </div>
             )
@@ -902,7 +1039,7 @@ const PoaDetailDrawer = ({ row, detail, onClose, showToast }: {
         {/* Шапка: номер + стан + дата реєстрації */}
         <div style={{ marginBottom: '22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
-            <img src={poaIcon} alt="Довіреність" style={{ width: 40, height: 40, borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+            <img src={kpiPoa3d} alt="Довіреність" style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontSize: '19px', fontWeight: 700, color: '#111827' }}>Довіреність № {detail.regNumber}</span>
             <span style={{ padding: '3px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '99px', backgroundColor: stateBadge.bg, color: stateBadge.color }}>
               {detail.state}
@@ -1037,7 +1174,7 @@ const PoaShareModal = ({ row, onClose, onSent }: {
         {/* Callout */}
         <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src={poaIcon} alt="Довіреність" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+            <img src={kpiPoa3d} alt="Довіреність" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>
               Довіреність № {row.detail?.regNumber ?? '—'}
             </span>
@@ -1197,7 +1334,7 @@ ${people}
         {/* Callout */}
         <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src={poaIcon} alt="Довіреність" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+            <img src={kpiPoa3d} alt="Довіреність" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>Запит на оформлення нової довіреності</span>
           </div>
           <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>
@@ -1408,7 +1545,7 @@ const KepProgressDrawer = ({ row, onClose }: { row: DocRow; onClose: () => void 
       {/* Шапка */}
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
-          <img src={kepIcon} alt="КЕП" style={{ width: 40, height: 40, borderRadius: '9px', objectFit: 'cover', flexShrink: 0 }} />
+          <img src={kpiKep3d} alt="КЕП" style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }} />
           <span style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>Заявка на КЕП</span>
           <span style={{ padding: '3px 12px', fontSize: '12px', fontWeight: 600, borderRadius: '99px', backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
             В роботі
@@ -1492,7 +1629,7 @@ const KepRequestModal = ({ onClose, onSent }: { onClose: () => void; onSent: (in
         {/* Callout */}
         <div style={{ backgroundColor: '#fdf8ec', border: '1px solid #f0e3bd', borderRadius: '10px', padding: '12px 15px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img src={kepIcon} alt="КЕП" style={{ width: 30, height: 30, borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+            <img src={kpiKep3d} alt="КЕП" style={{ width: 30, height: 30, objectFit: 'contain', flexShrink: 0 }} />
             <span style={{ fontWeight: 600, fontSize: '13.5px', color: '#1f2937' }}>Заявка на оформлення КЕП</span>
           </div>
           <div style={{ fontSize: '13px', color: '#4b5563', marginTop: '6px', marginLeft: '40px' }}>
