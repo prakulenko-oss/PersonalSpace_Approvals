@@ -456,8 +456,8 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
           if (tab === 'poa') {
             if (demoSelfState === 'none') {
               return <EmployeeHero tone="blue" image={heroPoa}
-                heading="Тарасе, у вас поки немає власної довіреності"
-                subtext="У списку нижче — довіреності колег вашої функції. Коли знадобиться власна, оформлення займе кілька хвилин — кнопка «Створити довіреність» праворуч." />;
+                heading="Тарасе, наразі у вас немає чинної довіреності"
+                subtext="У списку нижче відображаються довіреності працівників вашого структурного підрозділу. Якщо вам знадобиться довіреність, розпочніть процес її оформлення за допомогою кнопки «Створити довіреність» праворуч." />;
             }
             if (demoSelfState === 'ok') {
               return <EmployeeHero tone="blue" image={heroPoa}
@@ -468,8 +468,8 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
             const dl = my?.detail?.daysLeft;
             if (my && dl != null && dl <= 30) {
               return <EmployeeHero tone="blue" image={heroPoa}
-                heading={`Тарасе, ваша довіреність спливає через ${dl} ${daysWord(dl)}`}
-                subtext={`Продовжимо заздалегідь — довіреність чинна до ${my.endDate}. Замовити продовження можна через «Створити довіреність» праворуч.`} />;
+                heading={`Тарасе, термін дії вашої довіреності спливає через ${dl} ${daysWord(dl)}`}
+                subtext={`Завчасно подбайте про оформлення нової довіреності. Поточна довіреність чинна до ${my.endDate}. Для початку оформлення натисніть «Створити довіреність» праворуч.`} />;
             }
             if (my) {
               return <EmployeeHero tone="blue" image={heroPoa}
@@ -477,8 +477,8 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
                 subtext={`Діє до ${my.endDate}. Ми нагадаємо заздалегідь, коли наблизиться термін.`} />;
             }
             return <EmployeeHero tone="blue" image={heroPoa}
-              heading="Тарасе, у вас поки немає власної довіреності"
-              subtext="У списку нижче — довіреності колег вашої функції. Коли знадобиться власна, оформлення займе кілька хвилин — кнопка «Створити довіреність» праворуч." />;
+              heading="Тарасе, наразі у вас немає чинної довіреності"
+              subtext="У списку нижче відображаються довіреності працівників вашого структурного підрозділу. Якщо вам знадобиться довіреність, розпочніть процес її оформлення за допомогою кнопки «Створити довіреність» праворуч." />;
           }
           if (demoSelfState === 'none') {
             return <EmployeeHero tone="yellow" image={heroKep}
@@ -804,9 +804,9 @@ export const PoaSection = ({ showToast, mode = 'manager' }: { showToast: (msg: s
           }}>
             <Info size={18} style={{ flexShrink: 0, marginTop: 1 }} />
             <div>
-              Тут зібрані довіреності всіх колег вашої функції — щоб ви завжди бачили, хто поруч
-              має право підпису. Шукаєте довіреність поза своєю функцією? Повний реєстр — у системі
-              Документообігу — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: '#2f6fde', display: 'inline-flex', alignItems: 'center', gap: 4 }}>відкрити в docNet <ExternalLink size={12} /></button>
+              Тут зібрані довіреності працівників вашого структурного підрозділу — щоб ви завжди
+              бачили, хто поруч має право підпису. Шукаєте довіреність поза своїм підрозділом?
+              Повний реєстр — у системі Документообігу — <button onClick={() => showToast('Відкривається система Документообігу (docNet)')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5, fontWeight: 600, color: '#2f6fde', display: 'inline-flex', alignItems: 'center', gap: 4 }}>відкрити в docNet <ExternalLink size={12} /></button>
             </div>
           </div>
         )}
