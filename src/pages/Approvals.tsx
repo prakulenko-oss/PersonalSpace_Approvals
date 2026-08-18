@@ -1,5 +1,4 @@
 import { mockTasks, mockArchivedTasks, mockTeamRequests } from '../data/approvals';
-import { approvalsHeroArt } from '../assets/heroImages';
 import type { Task, ArchivedTask, TeamRequest } from '../types';
 import { TopBar } from '../components/TopBar';
 import { useState, useCallback, useMemo, useEffect } from 'react';
@@ -351,43 +350,28 @@ const useStyles = makeStyles({
   // HERO HEADER
   // ============================================
   heroHeader: {
-    /* Градієнт знятий із затвердженого макета + мʼякі світлові плями */
-    /* Світлий hero: фон-градієнт відтворює ліву частину затвердженого макета */
-    background: 'linear-gradient(100deg, #D9F3FE 0%, #E7F6FD 34%, #F4FBFE 62%, #FDFDFB 100%)',
-    padding: `${spacing.xxxl} ${spacing.xxxl}`,
+    background: `linear-gradient(135deg, ${colors.gradientStart} 0%, ${colors.gradientEnd} 100%)`,
+    padding: `${spacing.xxl} ${spacing.xxxl}`,
     margin: `${spacing.xl} ${spacing.xxl}`,
-    color: '#002B5C',
+    color: 'white',
     position: 'relative' as const,
     overflow: 'hidden',
     minHeight: '100px',
     borderRadius: '16px',
-    border: '1px solid #E3EEF6',
-    boxShadow: '0 6px 20px rgba(0, 63, 125, 0.07)',
-  },
-  heroArt: {
-    position: 'absolute' as const,
-    top: 0,
-    right: 0,
-    height: '100%',
-    width: 'auto',
-    pointerEvents: 'none' as const,
+    boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)',
   },
   heroContent: {
     position: 'relative' as const,
     zIndex: 1,
-    maxWidth: '58%',
   },
   heroTitle: {
-    fontSize: '27px',
-    fontWeight: 800,
-    color: '#002B5C',
-    marginBottom: spacing.sm,
+    fontSize: '24px',
+    fontWeight: 700,
+    marginBottom: spacing.xs,
   },
   heroSubtitle: {
-    fontSize: '14.5px',
-    color: '#5B6B80',
-    lineHeight: 1.5,
-    maxWidth: '520px',
+    fontSize: '14px',
+    opacity: 0.9,
   },
   heroDecor1: {
     position: 'absolute' as const,
@@ -1242,15 +1226,6 @@ const useStyles = makeStyles({
 // MAIN COMPONENT
 // ============================================
 
-/* Українська плюралізація завдань: 1 завдання · 2–4 завдання · 5+ завдань */
-const tasksWord = (n: number) => {
-  const d10 = n % 10, d100 = n % 100;
-  if (d100 >= 11 && d100 <= 14) return 'завдань';
-  if (d10 === 1) return 'завдання';
-  if (d10 >= 2 && d10 <= 4) return 'завдання';
-  return 'завдань';
-};
-
 export const Approvals = () => {
   const styles = useStyles();
   const toasterId = useId('toaster');
@@ -1430,23 +1405,6 @@ export const Approvals = () => {
       setAttachmentsLoaded(true);
     }, 1500);
   }, []);
-
-  /* Кількість завдань у кожній категорії — рахується з даних поточного розділу,
-     без урахування самого фільтра категорій (пошук враховується) */
-  const categoryCounts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    const matchesSearch = (t: typeof tasks[number]) => !q ||
-      t.contractor.toLowerCase().includes(q) ||
-      t.summary.toLowerCase().includes(q) ||
-      t.preparedBy.toLowerCase().includes(q) ||
-      t.number.toLowerCase().includes(q);
-    const pool = tasks.filter(matchesSearch);
-    const counts: Record<string, number> = { all: pool.length };
-    filterCategories.forEach(c => {
-      if (c.id !== 'all') counts[c.id] = pool.filter(t => t.category === c.id).length;
-    });
-    return counts;
-  }, [tasks, searchQuery]);
 
   const filteredTasks = useMemo(() => {
     const filtered = tasks.filter(task => {
@@ -1680,16 +1638,15 @@ export const Approvals = () => {
       <main className={styles.main}>
         {/* Hero Header */}
         <div className={styles.heroHeader}>
-          <img src={approvalsHeroArt} alt="" className={styles.heroArt} />
+          <div className={styles.heroDecor1} />
+          <div className={styles.heroDecor2} />
+          <div className={styles.heroDecor3} />
           <div className={styles.heroContent}>
             {activeView === 'inbox' ? (
               <>
                 <div className={styles.heroTitle}>Доброго дня, Тарасе! 👋</div>
                 <div className={styles.heroSubtitle}>
-                  <span style={{ fontWeight: 700, color: '#0B63C4' }}>
-                    {tasks.length + teamRequests.length} {tasksWord(tasks.length + teamRequests.length)} чекають на вашу увагу
-                  </span>
-                  {' — '}затвердьте все в одному місці, швидко й без пошуку по пошті.
+                  У вас {tasks.length + teamRequests.length} {(tasks.length + teamRequests.length) === 1 ? 'завдання' : 'завдань'} на затвердження
                 </div>
               </>
             ) : (
@@ -1726,34 +1683,17 @@ export const Approvals = () => {
             )}
             {filterCategories.map(cat => {
               const IconComponent = cat.icon;
-              const isActive = activeFilter === cat.id;
-              /* Кількість у поточному наборі (без урахування фільтра категорії) */
-              const count = categoryCounts[cat.id] ?? 0;
               return (
                 <ToggleButton
                   key={cat.id}
-                  checked={isActive}
+                  checked={activeFilter === cat.id}
                   onClick={() => setActiveFilter(cat.id)}
                   appearance="subtle"
                   size="small"
                   icon={<IconComponent size={14} />}
-                  className={mergeClasses(styles.filterChip, isActive ? styles.filterChipActive : undefined)}
+                  className={mergeClasses(styles.filterChip, activeFilter === cat.id ? styles.filterChipActive : undefined)}
                 >
                   {cat.label}
-                  <span
-                    style={{
-                      marginLeft: 7,
-                      padding: '1px 7px',
-                      borderRadius: 999,
-                      fontSize: 11,
-                      fontWeight: 800,
-                      lineHeight: '16px',
-                      backgroundColor: isActive ? 'rgba(255,255,255,.22)' : '#eef2f7',
-                      color: isActive ? '#fff' : '#6b7a90',
-                    }}
-                  >
-                    {count}
-                  </span>
                 </ToggleButton>
               );
             })}
