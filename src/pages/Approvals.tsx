@@ -1,5 +1,5 @@
 import { mockTasks, mockArchivedTasks, mockTeamRequests } from '../data/approvals';
-import { approvalsHeroArt } from '../assets/heroImages';
+import { approvalsHeroArt, approvalsHeroBg } from '../assets/heroImages';
 import type { Task, ArchivedTask, TeamRequest } from '../types';
 import { TopBar } from '../components/TopBar';
 import { useState, useCallback, useMemo, useEffect } from 'react';
@@ -352,8 +352,11 @@ const useStyles = makeStyles({
   // ============================================
   heroHeader: {
     /* Градієнт знятий із затвердженого макета + мʼякі світлові плями */
-    /* Світлий hero: фон-градієнт відтворює ліву частину затвердженого макета */
-    background: 'linear-gradient(100deg, #D9F3FE 0%, #E7F6FD 34%, #F4FBFE 62%, #FDFDFB 100%)',
+    /* Світлий hero: фонова смуга з макета, розтягнута на всю ширину блока */
+    backgroundImage: `url(${approvalsHeroBg})`,
+    backgroundSize: '100% 100%',
+    backgroundRepeat: 'no-repeat',
+    backgroundColor: '#EEF7FD',
     padding: `${spacing.xxxl} ${spacing.xxxl}`,
     margin: `${spacing.xl} ${spacing.xxl}`,
     color: '#002B5C',
