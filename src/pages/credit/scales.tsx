@@ -1,5 +1,11 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
+import standPng from '../../assets/credit/stand.png';
+import beamPng from '../../assets/credit/beam.png';
+import panPng from '../../assets/credit/pan.png';
+import coinsPng from '../../assets/credit/coins.png';
+import catSitPng from '../../assets/credit/cat-sit.png';
+import catJumpPng from '../../assets/credit/cat-jump.png';
 
 /**
  * Ваги прогресу погашення.
@@ -31,7 +37,6 @@ function geometry(ratio) {
 const move = (x, y) => ({ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`, transition: `transform ${EASE}` });
 
 /* ───────────── 3D (реальні ассети) ───────────── */
-const IMG = '/images/scales';
 const PAN = { w: 124, h: 124 * (483 / 360), rim: 0.7 };
 
 function Scales3D({ ratio, done }) {
@@ -40,27 +45,27 @@ function Scales3D({ ratio, done }) {
   const beam = { w: (2 * L) / 0.806, h: ((2 * L) / 0.806) * (143 / 640) };
   const coinsScale = 0.4 + 0.6 * (1 - ratio);
   const rim = PAN.h * PAN.rim;
-  const cat = done ? { w: 92, h: 92 * (497 / 420), src: `${IMG}/cat-jump.png` } : { w: 78, h: 78 * (563 / 420), src: `${IMG}/cat-sit.png` };
+  const cat = done ? { w: 92, h: 92 * (497 / 420), src: catJumpPng } : { w: 78, h: 78 * (563 / 420), src: catSitPng };
 
   return (
     <svg viewBox={`0 0 ${VB.w} ${VB.h}`} style={{ display: 'block', width: '100%', height: 'auto', overflow: 'visible' }} role="img" aria-label={`Ваги: сплачено ${Math.round(ratio * 100)}%`}>
       <ellipse cx={P.x} cy={VB.h - 14} rx={110} ry={10} fill="rgba(0,63,125,.08)" />
       <g style={{ transform: `rotate(${g.deg}deg)`, transformOrigin: `${P.x}px ${P.y}px`, transformBox: 'view-box', transition: `transform ${EASE}` }}>
-        <image href={`${IMG}/beam.png`} x={P.x - beam.w / 2} y={P.y - beam.h * 0.35} width={beam.w} height={beam.h} />
+        <image href={beamPng} x={P.x - beam.w / 2} y={P.y - beam.h * 0.35} width={beam.w} height={beam.h} />
       </g>
-      <image href={`${IMG}/stand.png`} x={P.x - stand.w / 2} y={P.y - stand.h * 0.115} width={stand.w} height={stand.h} />
+      <image href={standPng} x={P.x - stand.w / 2} y={P.y - stand.h * 0.115} width={stand.w} height={stand.h} />
       {/* ліва чаша — залишилось */}
       <g style={move(g.left.x, g.left.y)}>
-        <image href={`${IMG}/pan.png`} x={-PAN.w / 2} y={-8} width={PAN.w} height={PAN.h} />
+        <image href={panPng} x={-PAN.w / 2} y={-8} width={PAN.w} height={PAN.h} />
         <g style={{ transform: `translate(0px, ${rim - 2}px) scale(${coinsScale})`, opacity: ratio >= 1 ? 0 : 1, transition: `transform ${EASE}, opacity .8s ease` }}>
-          <image href={`${IMG}/coins.png`} x={-50} y={-72} width={100} height={72.5} />
+          <image href={coinsPng} x={-50} y={-72} width={100} height={72.5} />
         </g>
       </g>
       {/* права чаша — сплачено */}
       <g style={move(g.right.x, g.right.y)}>
-        <image href={`${IMG}/pan.png`} x={-PAN.w / 2} y={-8} width={PAN.w} height={PAN.h} />
+        <image href={panPng} x={-PAN.w / 2} y={-8} width={PAN.w} height={PAN.h} />
         <g style={{ transform: `translate(30px, ${rim - 4}px) scale(${0.15 + 0.35 * ratio})`, opacity: ratio > 0.05 ? 1 : 0, transition: `transform ${EASE}, opacity .8s ease` }}>
-          <image href={`${IMG}/coins.png`} x={-50} y={-72} width={100} height={72.5} />
+          <image href={coinsPng} x={-50} y={-72} width={100} height={72.5} />
         </g>
         <g className={done ? 'ks-cat-jump' : 'ks-cat-breathe'} style={{ transformOrigin: `0px ${rim}px`, transformBox: 'view-box' }}>
           <image href={cat.src} x={-cat.w * 0.58} y={rim + 6 - cat.h} width={cat.w} height={cat.h} />

@@ -8,8 +8,8 @@ export const T = {
   blue: '#00A0E3', blue600: '#0086c3', blue050: '#e6f6fd', blueText: '#0072a8',
   navy: '#003f7d', yellow: '#ffd100', yellow050: '#fff8dd', yellowText: '#8a6a00',
   mint: '#34d399', mint050: '#e7faf1', mintText: '#0f8f5f',
-  ink: '#17203a', muted: '#6b7a90', canvas: '#f6f9fc', line: '#e6edf4',
-  shadow: '0 6px 24px rgba(0,63,125,.06)', shadowLg: '0 14px 40px rgba(0,63,125,.1)',
+  ink: '#17203a', muted: '#6b7a90', canvas: '#ffffff', line: '#e6edf4', cardLine: '#b9d3f0', accent: '#2f6fde',
+  shadow: '0 1px 3px rgba(15,60,120,.06)', shadowLg: '0 14px 40px rgba(0,63,125,.1)',
 };
 
 export type Tone = 'mint' | 'yellow' | 'blue' | 'grey';
@@ -64,7 +64,7 @@ if (typeof document !== 'undefined' && !document.getElementById('ks-credit-css')
 
 /* ───────── Атоми ───────── */
 export const Card = ({ children, delay = 0, style, className = '' }) => (
-  <section className={`ks-in ${className}`} style={{ borderRadius: 20, background: '#fff', padding: 24, border: `1px solid ${T.line}`, boxShadow: T.shadow, animationDelay: `${delay}ms`, ...style }}>
+  <section className={`ks-in ${className}`} style={{ borderRadius: 12, background: '#fff', padding: 24, border: `1px solid ${T.cardLine}`, boxShadow: T.shadow, animationDelay: `${delay}ms`, ...style }}>
     {children}
   </section>
 );
@@ -72,8 +72,8 @@ export const Card = ({ children, delay = 0, style, className = '' }) => (
 export const CardTitle = ({ title, caption, aside }) => (
   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
     <div>
-      <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.navy }}>{title}</h2>
-      {caption && <p style={{ margin: '4px 0 0', fontSize: 13, color: T.muted }}>{caption}</p>}
+      <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1b1b1b', display: 'inline-block', borderBottom: `2px solid ${T.accent}`, paddingBottom: 3 }}>{title}</h2>
+      {caption && <p style={{ margin: '6px 0 0', fontSize: 13, color: T.muted }}>{caption}</p>}
     </div>
     {aside}
   </div>
@@ -95,13 +95,13 @@ export const Pill = ({ children, tone, bold = false }) => {
 
 export const PrimaryButton = ({ children, onClick, disabled = false, type = 'button', full = false }) => (
   <button type={type} onClick={onClick} disabled={disabled} style={{
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 999, padding: '10px 20px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, width: full ? '100%' : undefined,
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 10, padding: '10px 20px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.45 : 1, width: full ? '100%' : undefined,
     background: T.blue, boxShadow: disabled ? 'none' : '0 8px 20px rgba(0,160,227,.28)', transition: 'opacity .2s', fontFamily: 'inherit',
   }}>{children}</button>
 );
 
 export const GhostButton = ({ children, onClick, full = false }) => (
-  <button type="button" onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 999, background: '#fff', padding: '10px 16px', fontSize: 14, fontWeight: 700, border: `1px solid ${T.line}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit', width: full ? '100%' : undefined }}>{children}</button>
+  <button type="button" onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 10, background: '#fff', padding: '10px 16px', fontSize: 14, fontWeight: 700, border: `1px solid ${T.cardLine}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit', width: full ? '100%' : undefined }}>{children}</button>
 );
 
 export const Chip = ({ active, onClick, children }) => (
@@ -112,12 +112,12 @@ export const Chip = ({ active, onClick, children }) => (
 );
 
 export const Segmented = ({ options, value, onChange, render }) => (
-  <div style={{ display: 'grid', gap: 4, borderRadius: 999, padding: 4, background: '#f1f4f8', gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}>
+  <div style={{ display: 'grid', gap: 4, borderRadius: 10, padding: 4, background: '#f1f4f8', gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}>
     {options.map(o => {
       const active = o === value;
       return (
         <button key={String(o)} type="button" onClick={() => onChange(o)} aria-pressed={active} style={{
-          borderRadius: 999, padding: '8px 12px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
+          borderRadius: 8, padding: '8px 12px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
           ...(active ? { background: '#fff', color: T.navy, boxShadow: '0 3px 10px rgba(0,63,125,.1)' } : { background: 'transparent', color: T.muted }),
         }}>{render(o)}</button>
       );
@@ -126,7 +126,7 @@ export const Segmented = ({ options, value, onChange, render }) => (
 );
 
 export const StageSwitch = ({ stage, onChange }) => (
-  <div className="ks-in" style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, borderRadius: 16, background: 'rgba(255,255,255,.7)', padding: '12px 16px', border: '1px dashed #c9d6e4', animationDelay: '80ms' }}>
+  <div className="ks-in" style={{ marginTop: 20, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, borderRadius: 16, background: '#fff', padding: '12px 16px', border: '1px dashed #c9d6e4', animationDelay: '80ms' }}>
     <span style={{ marginRight: 4, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: T.muted }}><Sparkles size={14} /> Демо-стан</span>
     {STAGES.filter(s => !s.archive).map(s => <Chip key={s.key} active={stage === s.key} onClick={() => onChange(s.key)}>{s.label}</Chip>)}
     <span style={{ margin: '0 4px', height: 20, width: 1, background: '#d5dfea' }} aria-hidden />

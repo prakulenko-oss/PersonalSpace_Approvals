@@ -89,7 +89,7 @@ function RejectedStatus({ onNew }) {
             <IconBubble Icon={remind ? BellRing : Bell} tone={remind ? 'mint' : 'blue'} size={36} />
             <p style={{ margin: '12px 0 0', fontSize: 14.5, fontWeight: 700, color: T.ink }}>Подати знову з {fmtDate(DEMO.rejectAfter)}</p>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: T.muted }}>Тоді умова стажу буде виконана. Можемо нагадати.</p>
-            <button type="button" onClick={() => setRemind(v => !v)} style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', ...(remind ? { background: T.mint050, color: T.mintText, border: 'none' } : { background: '#fff', color: T.navy, border: `1px solid ${T.line}` }) }}>
+            <button type="button" onClick={() => setRemind(v => !v)} style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', ...(remind ? { background: T.mint050, color: T.mintText, border: 'none' } : { background: '#fff', color: T.navy, border: `1px solid ${T.line}` }) }}>
               {remind ? <><Check size={15} /> Нагадаємо {fmtDate(DEMO.rejectAfter)}</> : <><Bell size={15} /> Нагадати мені</>}
             </button>
           </div>
@@ -163,7 +163,7 @@ export function HistoryCard({ current }: { current?: CurrentApplication | null }
             </div>
             <span><Pill tone={closed ? 'mint' : 'grey'} bold>{item.statusLabel}</Pill></span>
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.4, color: T.muted }}>{item.note}</p>
-            <button type="button" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, justifySelf: 'end', borderRadius: 999, background: '#fff', padding: '8px 16px', fontSize: 13, fontWeight: 700, border: `1px solid ${T.line}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button type="button" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, justifySelf: 'end', borderRadius: 10, background: '#fff', padding: '8px 16px', fontSize: 13, fontWeight: 700, border: `1px solid ${T.cardLine}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit' }}>
               {closed ? <><Download size={15} /> Довідка</> : <><FileText size={15} /> Деталі</>}
             </button>
           </div>

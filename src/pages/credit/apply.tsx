@@ -59,7 +59,7 @@ function AmountField({ draft, onChange }) {
         {[20_000, 40_000, 60_000, LOAN_MAX].map(v => {
           const active = draft.amount === v;
           return (
-            <button key={v} type="button" onClick={() => onChange({ amount: v })} aria-pressed={active} style={{ borderRadius: 999, padding: '8px 4px', fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit', ...(active ? { background: T.blue050, color: T.blueText, border: '1px solid #b6e4f8' } : { background: '#fff', color: T.muted, border: `1px solid ${T.line}` }) }}>{v / 1000} тис.</button>
+            <button key={v} type="button" onClick={() => onChange({ amount: v })} aria-pressed={active} style={{ borderRadius: 8, padding: '8px 4px', fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer', fontFamily: 'inherit', ...(active ? { background: T.blue050, color: T.blueText, border: '1px solid #b6e4f8' } : { background: '#fff', color: T.muted, border: `1px solid ${T.line}` }) }}>{v / 1000} тис.</button>
           );
         })}
       </div>
@@ -132,14 +132,14 @@ export function ConditionsStrip() {
   return (
     <section className="ks-in" style={{ marginTop: 24, animationDelay: '90ms' }} aria-labelledby="loan-conditions">
       <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
-        <h2 id="loan-conditions" style={{ margin: 0, fontSize: 18, fontWeight: 800, color: T.navy }}>Що важливо знати</h2>
+        <h2 id="loan-conditions" style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#1b1b1b', display: 'inline-block', borderBottom: `2px solid ${T.accent}`, paddingBottom: 3 }}>Що важливо знати</h2>
         <p style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: T.muted }}><Lock size={13} /> Лист із заявкою отримують лише колеги з HR, які ведуть програму</p>
       </div>
       <ul className="ks-grid-4" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {CONDITIONS.map((item, i) => {
           const Icon = COND_ICONS[i];
           return (
-            <li key={item.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 18, background: '#fff', padding: 16, border: `1px solid ${T.line}`, boxShadow: T.shadow }}>
+            <li key={item.title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 12, background: '#fff', padding: 16, border: `1px solid ${T.cardLine}`, boxShadow: T.shadow }}>
               <IconBubble Icon={Icon} tone={i === 0 ? 'mint' : i === 2 ? 'yellow' : 'blue'} size={38} />
               <div style={{ minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.3, fontWeight: 800, color: T.ink }}>{item.title}</p>

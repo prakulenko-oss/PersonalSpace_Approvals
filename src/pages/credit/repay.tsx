@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState } from 'react';
+import heroLoanPng from '../../assets/credit/hero-loan.png';
 import { Bell, BellOff, CalendarCheck, CheckCircle2, ChevronDown, Download, PartyPopper, RotateCcw, Smartphone, Sparkles, Wallet } from 'lucide-react';
 import { LoanScales, type ScalesStyle } from './scales';
 import { Card, CardTitle, Chip, CopyValue, GhostButton, IconBubble, Pill, PrimaryButton, QrDemo, Segmented, T } from './ui';
@@ -211,7 +212,7 @@ export function RepayWaiting({ amount, months }) {
   return (
     <Card delay={0} style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(150deg,#f4fbff 0%,#ffffff 60%,#fffbea 100%)' }}>
       <div style={{ position: 'relative', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20 }}>
-        <img src="/images/hero-loan.png" alt="" className="ks-float" style={{ width: 120, flexShrink: 0, margin: '0 auto' }} />
+        <img src={heroLoanPng} alt="" className="ks-float" style={{ width: 120, flexShrink: 0, margin: '0 auto' }} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <h3 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: T.navy }}>Погашення почнеться після зарахування коштів</h3>
           <p style={{ margin: '6px 0 0', fontSize: 14, lineHeight: 1.5, color: '#4a5b71' }}>Щойно HR оформить документи й кошти надійдуть, тут з'являться ваш прогрес, графік і QR для оплати. Поки що нічого робити не треба.</p>

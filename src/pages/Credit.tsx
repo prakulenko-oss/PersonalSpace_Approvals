@@ -2,6 +2,7 @@
 /* Кредит від компанії — повна сторінка (перенесено з референсу kyivstar-poa-kep, адаптовано під наш стек).
    Процес: калькулятор → лист у HR з погодженням керівника → HR готує наказ і договір → кошти → погашення. */
 import { useRef, useState } from 'react';
+import heroLoanPng from '../assets/credit/hero-loan.png';
 import { BookOpen, CalendarCheck, ChevronDown, Heart, HeartHandshake, MessageCircle, Wallet } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { IconBubble, StageSwitch, T, TONE } from './credit/ui';
@@ -73,17 +74,17 @@ function Hero({ heading, subtext }) {
   const spots = [{ top: 4, left: 30, size: 36, anim: 'ks-float-b ks-d1' }, { top: 74, left: -8, size: 40, anim: 'ks-float-c ks-d2' }, { top: 96, right: 10, size: 34, anim: 'ks-float-b ks-d3' }];
   const onMove = e => { const b = ref.current?.getBoundingClientRect(); if (!b) return; setTilt({ x: (e.clientX - b.left) / b.width - 0.5, y: (e.clientY - b.top) / b.height - 0.5 }); };
   return (
-    <section ref={ref} onMouseMove={onMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })} className="ks-in" style={{ position: 'relative', overflow: 'hidden', borderRadius: 28, background: 'linear-gradient(100deg,#ffffff 0%,#f6faff 40%,#eaf4fd 75%,#e2f0fb 100%)', border: '1px solid #e9f1f9', boxShadow: '0 10px 30px rgba(0,63,125,.06)' }}>
+    <section ref={ref} onMouseMove={onMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })} className="ks-in" style={{ position: 'relative', overflow: 'hidden', borderRadius: 16, background: 'linear-gradient(100deg,#ffffff 0%,#f6faff 40%,#eaf4fd 75%,#e2f0fb 100%)', border: '1px solid #e3eefb', boxShadow: '0 1px 3px rgba(15,60,120,.06)' }}>
       <span aria-hidden className="ks-hero-art" style={{ pointerEvents: 'none', position: 'absolute', top: '50%', right: '10%', width: 420, height: 420, transform: 'translateY(-50%)', borderRadius: '50%', background: 'radial-gradient(circle,rgba(127,214,245,.28) 0%,transparent 65%)' }} />
       <span aria-hidden className="ks-float-c ks-d1 ks-hero-art" style={{ pointerEvents: 'none', position: 'absolute', top: 36, right: '40%', width: 12, height: 12, borderRadius: '50%', background: T.yellow, opacity: 0.85 }} />
       <span aria-hidden className="ks-float-b ks-d3 ks-hero-art" style={{ pointerEvents: 'none', position: 'absolute', bottom: 48, right: '48%', width: 8, height: 8, borderRadius: '50%', background: T.blue, opacity: 0.7 }} />
-      <div className="ks-hero-grid" style={{ position: 'relative', padding: '24px 48px' }}>
+      <div className="ks-hero-grid" style={{ position: 'relative', padding: '22px 48px' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 30, lineHeight: 1.15, fontWeight: 800, letterSpacing: '-.01em', color: T.navy }}>{heading[0]}<br />{heading[1]}</h1>
           <p style={{ margin: '8px 0 0', maxWidth: 440, fontSize: 15.5, lineHeight: 1.5, color: '#4a5b71' }}>{subtext}</p>
         </div>
-        <div className="ks-hero-art" style={{ position: 'relative', height: 140, width: '100%' }}>
-          <img src="/images/hero-loan.png" alt="Безвідсотковий кредит" className="ks-float" style={{ position: 'absolute', top: '50%', left: '50%', width: '100%', maxWidth: 190, transform: 'translate(-50%,-50%)', objectFit: 'contain', filter: 'drop-shadow(0 22px 34px rgba(0,63,125,.2))', marginLeft: tilt.x * 18, marginTop: tilt.y * 14, transition: 'margin .25s ease-out' }} />
+        <div className="ks-hero-art" style={{ position: 'relative', height: 150, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src={heroLoanPng} alt="Безвідсотковий кредит" className="ks-float" style={{ width: 170, height: 170, objectFit: 'contain', filter: 'drop-shadow(0 22px 34px rgba(0,63,125,.2))', marginLeft: tilt.x * 18, marginTop: tilt.y * 14, transition: 'margin .25s ease-out' }} />
           {sats.map(({ Icon, color }, i) => {
             const s = spots[i];
             return (
@@ -109,7 +110,7 @@ function SectionHead({ id, title, caption }) {
 
 function Collapsible({ id, title, caption, open, onToggle, children }) {
   const btn = (
-    <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={`${id}-body`} style={{ display: 'inline-flex', flexShrink: 0, alignItems: 'center', gap: 6, borderRadius: 999, background: '#fff', padding: '8px 16px', fontSize: 13, fontWeight: 700, border: `1px solid ${T.line}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit' }}>
+    <button type="button" onClick={onToggle} aria-expanded={open} aria-controls={`${id}-body`} style={{ display: 'inline-flex', flexShrink: 0, alignItems: 'center', gap: 6, borderRadius: 10, background: '#fff', padding: '8px 16px', fontSize: 13, fontWeight: 700, border: `1px solid ${T.cardLine}`, color: T.navy, cursor: 'pointer', fontFamily: 'inherit' }}>
       {open ? 'Згорнути' : 'Розгорнути'}<ChevronDown size={16} style={{ transition: 'transform .3s', transform: open ? 'rotate(180deg)' : undefined }} />
     </button>
   );
@@ -121,7 +122,7 @@ function Collapsible({ id, title, caption, open, onToggle, children }) {
           {btn}
         </div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 20, background: '#fff', padding: '16px 24px', border: `1px solid ${T.line}`, boxShadow: T.shadow }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 12, background: '#fff', padding: '16px 24px', border: `1px solid ${T.cardLine}`, boxShadow: T.shadow }}>
           <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: T.navy }}>{title}</h2>{btn}
         </div>
       )}
@@ -169,8 +170,8 @@ export const Credit = () => {
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopBar />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: T.canvas }}>
+        <div className="ks-credit" style={{ fontSize: 13.5, color: '#374151', padding: '12px 20px', borderBottom: '1px solid #f0f0f0' }}><span style={{ fontWeight: 600 }}>Головна</span><span style={{ color: '#9ca3af', margin: '0 7px' }}>›</span>Кредит від компанії</div>
         <div className="ks-credit" style={{ margin: '0 auto', width: '100%', maxWidth: 1180, padding: '20px 32px 64px' }}>
-          <div style={{ fontSize: 13.5, color: T.muted, marginBottom: 16 }}><span style={{ fontWeight: 600, color: T.ink }}>Головна</span><span style={{ margin: '0 8px' }}>›</span>Кредит від компанії</div>
 
           <div key={`hero-${stage}`}><Hero heading={hero.h} subtext={hero.sub} /></div>
 
@@ -198,7 +199,7 @@ export const Credit = () => {
             {HELP.map((c, i) => {
               const s = TONE[c.tone];
               return (
-                <a key={c.title} href="#" onClick={e => e.preventDefault()} className="ks-in" style={{ display: 'block', borderRadius: 18, padding: 20, textDecoration: 'none', background: s.soft, border: `1px solid ${s.bg}`, animationDelay: `${120 + i * 80}ms`, transition: 'transform .3s' }}
+                <a key={c.title} href="#" onClick={e => e.preventDefault()} className="ks-in" style={{ display: 'block', borderRadius: 12, padding: 20, textDecoration: 'none', background: s.soft, border: `1px solid ${s.bg}`, animationDelay: `${120 + i * 80}ms`, transition: 'transform .3s' }}
                   onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')} onMouseLeave={e => (e.currentTarget.style.transform = 'none')}>
                   <IconBubble Icon={c.Icon} tone={c.tone} size={36} />
                   <p style={{ margin: '14px 0 0', fontSize: 15, fontWeight: 700, color: T.ink }}>{c.title}</p>
