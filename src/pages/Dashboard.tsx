@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat, HandCoins
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -548,6 +548,22 @@ export const Dashboard = () => {
             <div style={styles.widgetBody}>
               <div style={{ fontSize: '14px', color: '#6b7280' }}>
                 Пам'ятка: як обрати банк для зарплатної картки та що зробити для переходу
+              </div>
+            </div>
+          </div>
+
+          {/* Credit shortcut */}
+          <div style={{ ...styles.widget, ...styles.widgetClickable }} onClick={() => navigate('/credit')}>
+            <div style={styles.widgetHeader}>
+              <div style={styles.widgetTitleWrap}>
+                <HandCoins size={18} color="#0078d4" />
+                <span style={styles.widgetTitle}>Кредит від компанії</span>
+              </div>
+              <a style={styles.allLink}>Відкрити →</a>
+            </div>
+            <div style={styles.widgetBody}>
+              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                Безвідсотковий кредит: заявка, статус рішення, погашення за QR-кодом
               </div>
             </div>
           </div>
