@@ -1,0 +1,445 @@
+import type { AppState } from './types';
+
+/**
+ * Анонімний стартовий набір: системи, ролі, виконавці — БЕЗ персональних даних.
+ * Реальні дані (люди, призначення) підключайте локальним файлом або імпортом JSON
+ * з експорту артефакт-версії кокпіта.
+ */
+export const SEED: AppState = {
+  "rev": 1,
+  "roles": [
+    {
+      "id": "po",
+      "name": "Product Owner",
+      "short": "PO",
+      "func": "fsup"
+    },
+    {
+      "id": "bf",
+      "name": "Бізнес-функція",
+      "short": "Бізнес",
+      "func": "fsup"
+    },
+    {
+      "id": "to",
+      "name": "Technical Owner",
+      "short": "TO",
+      "func": "fadm"
+    },
+    {
+      "id": "ba",
+      "name": "Аналітик",
+      "short": "Аналітик",
+      "func": "fsup"
+    },
+    {
+      "id": "dev",
+      "name": "Розробка",
+      "short": "Розробка",
+      "func": "fdev"
+    },
+    {
+      "id": "sup",
+      "name": "Підтримка L2/L3",
+      "short": "Підтримка",
+      "func": "fsup"
+    },
+    {
+      "id": "adm",
+      "name": "Адміністрування",
+      "short": "Адмін.",
+      "func": "fadm"
+    }
+  ],
+  "execs": [
+    {
+      "id": "x-itss",
+      "name": "ITSS",
+      "type": "itdom",
+      "note": "Суміжний ІТ-домен: адміністрування більшості систем"
+    },
+    {
+      "id": "x-biz",
+      "name": "Бізнес",
+      "type": "business",
+      "note": ""
+    },
+    {
+      "id": "x-adam",
+      "name": "ADAM",
+      "type": "partner",
+      "note": ""
+    }
+  ],
+  "people": [],
+  "systems": [
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-oebs",
+      "name": "ОЕБС / АСУП (Oracle EBS)",
+      "note": "Продовження життя до 2031; ревалідація 2028; Premier Support до 2037",
+      "ord": 0,
+      "partner": "",
+      "saas": false,
+      "sox": true,
+      "status": "active",
+      "stream": "s1",
+      "support": "it_full",
+      "unit": "fin",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-apex",
+      "name": "APEX-застосунки над ОЕБС",
+      "note": "База для Асистента бухгалтера (AP/invoice)",
+      "ord": 1,
+      "partner": "",
+      "saas": false,
+      "sox": true,
+      "status": "active",
+      "stream": "s1",
+      "support": "it_full",
+      "unit": "fin",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-fpna",
+      "name": "FP&A (Oracle Fusion EPM)",
+      "note": "AI-Powered FP&A — фронтранер",
+      "ord": 2,
+      "partner": "",
+      "saas": true,
+      "sox": false,
+      "status": "active",
+      "stream": "s1",
+      "support": "it_full",
+      "unit": "fin",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-mustang",
+      "name": "Mustang",
+      "note": "Реінжиніринг завершено, BAU",
+      "ord": 3,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s1",
+      "support": "it_full",
+      "unit": "fin",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-ulcimus",
+      "name": "Ulcimus (HR)",
+      "note": "Власна HR-платформа для внутрішнього використання",
+      "ord": 4,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s1",
+      "support": "it_full",
+      "unit": "auto",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-bpms",
+      "name": "BPMS Scriptum (UnityBase)",
+      "note": "AI-модуль (договори) — фронтранер; PDP-погодження отримано",
+      "ord": 5,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s3",
+      "support": "it_full",
+      "unit": "auto",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-edm",
+      "name": "EDM (DocNet / ELA)",
+      "note": "Розпізнавання та лінкування документів в ELA",
+      "ord": 6,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s3",
+      "support": "it_full",
+      "unit": "auto",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "2027-03-31",
+      "contractUrl": "",
+      "id": "sys-sp",
+      "name": "SharePoint",
+      "note": "~100 сервісів; SOX-портал; перегляд договору ADAM — Q1 2027",
+      "ord": 7,
+      "partner": "ADAM",
+      "saas": false,
+      "sox": true,
+      "status": "active",
+      "stream": "s2",
+      "support": "it_partner",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-jira",
+      "name": "Jira / Confluence",
+      "note": "Міграція в cloud (~70% one-time)",
+      "ord": 8,
+      "partner": "ADAM",
+      "saas": true,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "it_partner",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-ivanti",
+      "name": "Ivanti (ITSM / ITSD)",
+      "note": "",
+      "ord": 9,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "it_full",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-hpsm",
+      "name": "HPSM (legacy ITSM)",
+      "note": "Вивід з експлуатації — Q1 2027",
+      "ord": 10,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "sunset",
+      "stream": "s2",
+      "support": "sunset",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-liga",
+      "name": "Liga",
+      "note": "Opex-ліцензії",
+      "ord": 11,
+      "partner": "",
+      "saas": true,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "vendor",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-sfkgl",
+      "name": "ShareForce KGL",
+      "note": "Opex-ліцензії",
+      "ord": 12,
+      "partner": "",
+      "saas": true,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "vendor",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-uadz",
+      "name": "УАДЗ",
+      "note": "Реінжиніринг (вразливості безпеки)",
+      "ord": 13,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "it_full",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-tpms",
+      "name": "TPMS",
+      "note": "Програма внутрішньої розробки до 2030 (TPM 7/8/10)",
+      "ord": 14,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s7",
+      "support": "it_full",
+      "unit": "td",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-cms",
+      "name": "New CMS / WFM",
+      "note": "У межах затвердженого бізнес-кейсу",
+      "ord": 15,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s7",
+      "support": "it_full",
+      "unit": "td",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-snc",
+      "name": "SNC",
+      "note": "У межах затвердженого бізнес-кейсу",
+      "ord": 16,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s7",
+      "support": "it_full",
+      "unit": "td",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-oim",
+      "name": "OIM",
+      "note": "",
+      "ord": 17,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s7",
+      "support": "it_full",
+      "unit": "td",
+      "caseText": "",
+      "caseUrl": ""
+    },
+    {
+      "contractCap": "",
+      "contractEnd": "",
+      "contractUrl": "",
+      "id": "sys-dealroom",
+      "name": "Deal Room",
+      "note": "Бізнес повністю відповідає за систему",
+      "ord": 99,
+      "partner": "",
+      "saas": false,
+      "sox": false,
+      "status": "active",
+      "stream": "s2",
+      "support": "business",
+      "unit": "ops",
+      "caseText": "",
+      "caseUrl": ""
+    }
+  ],
+  "cells": {
+    "sys-dealroom|bf": {
+      "st": "norm",
+      "p": [],
+      "x": [
+        "x-biz"
+      ],
+      "n": ""
+    },
+    "sys-jira|sup": {
+      "st": "norm",
+      "p": [],
+      "x": [
+        "x-adam"
+      ],
+      "n": "Підтримка за договором; перегляд Q1 2027"
+    },
+    "sys-sp|sup": {
+      "st": "norm",
+      "p": [],
+      "x": [
+        "x-adam"
+      ],
+      "n": "Підтримка за договором; перегляд Q1 2027"
+    }
+  }
+} as AppState;

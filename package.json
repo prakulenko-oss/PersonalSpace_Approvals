@@ -1,27 +1,25 @@
 {
-  "name": "personal-space",
+  "name": "vite-react-typescript-starter",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fluentui/react-components": "^9.56.0",
-    "@fluentui/react-icons": "^2.0.258",
-    "lucide-react": "^0.454.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.6.2",
-    "xlsx-js-style": "^1.2.0"
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.4",
-    "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "@types/node": "^24.19.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.85.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.1"
   }
 }

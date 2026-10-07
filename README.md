@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# ERM-кокпіт
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Управлінський кокпіт ERM-домену. Модуль 1: карта систем і відповідальностей
+(функції × ролі × виконавці), паспорти систем, резерв і захищені кейси,
+аналітика прогалин і договорів.
 
-Currently, two official plugins are available:
+Дизайн-мова — за клікабельним UI/UX-прототипом: світлий простір, Manrope,
+великі картки, клікабельні сигнали на огляді (кожна цифра веде у відфільтровану
+матрицю). Темна тема домальована поверх тих самих токенів.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Запуск
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+У StackBlitz: просто відкрийте проєкт — dev-сервер стартує сам.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Дані та приватність
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+У коді проєкту **немає персональних даних**: сід містить лише системи, ролі та
+виконавців (ITSS, ADAM, Бізнес). Людей і призначення підключайте одним із способів:
+
+1. **Локальний файл даних (рекомендовано, Chrome/Edge).**
+   Налаштування → «Джерело даних» → «Відкрити файл даних…» і оберіть свій
+   `erm-cockpit-data.json`. Усі зміни автозберігаються прямо у файл на вашому
+   диску (зручно тримати його в OneDrive — бекап і версії безкоштовно).
+   Створити стартовий файл: в артефакт-версії кокпіта (claude.ai) натисніть
+   «Експорт JSON» і збережіть файл; або тут — «Створити файл даних…».
+   У StackBlitz відкривайте превʼю **в окремій вкладці** — у вбудованому iframe
+   браузер може блокувати доступ до файлів.
+
+2. **Імпорт/експорт JSON** — працює в будь-якому браузері; дані живуть у
+   localStorage, обмін файлом вручну.
+
+Формати обох версій кокпіта сумісні; старі експорти мігруються автоматично.
+
+## Структура
+
+- `src/types.ts` — типізована модель (контракт даних)
+- `src/model.ts` — словники, доменна логіка, normalize з міграціями
+- `src/storage.ts` — localStorage, імпорт/експорт, File System Access
+- `src/dnd.ts` — drag&drop (миша + тач): люди, виконавці, картки систем
+- `src/views/*` — Дашборд, Дошка, Матриця, довідники, Налаштування
+- `src/modals/*` — редактори клітинки/системи/людини/виконавця/ролі, масове заповнення
+
+## Фіди від агентів
+
+Окремі JSON-файли, які можуть формувати різні агенти (HR-вивантаження, BPMS, скрипти).
+Застосовуються в Налаштуваннях → «Фіди від агентів»; кокпіт показує звіт
+(додано / оновлено / не знайдено) і нічого не видаляє автоматично.
+
+### people-feed.json — люди
+```json
+{
+  "kind": "people-feed",
+  "people": [
+    { "id": "p01", "name": "Прізвище Імʼя", "unit": "fin|auto|ops|td",
+      "grade": "Senior", "type": "штат|ГІГ", "flag": "відпустка",
+      "title": "Senior Business Analyst", "lead": true }
+  ]
+}
 ```
+Збіг — за `id`, інакше за «Прізвище Імʼя». Приймаються й «сирі» рядки з українськими
+заголовками xlsx («Прізвище, ім'я, по-батькові», «Назва підрозділу», «Статус працівника»…) —
+статус на кшталт «Співробітник ГІГ (відпустка)» розбирається на тип і позначку.
+
+### contracts-feed.json — договори
+```json
+{
+  "kind": "contracts-feed",
+  "items": [
+    { "system": "Liga або sys-liga", "contractEnd": "2027-06-30",
+      "contractCap": "0,8 млн грн/рік", "contractUrl": "https://bpms…" }
+  ]
+}
+```
+Збіг системи — за id або точною назвою (без регістру). Оновлюються лише передані поля.
+
+## Що додано поверх прототипної моделі
+
+- **Огляд департаменту** — посадкова: банер, сигнали «Потребує уваги» (клік веде
+  в матрицю з фільтром проблеми), прогалини для обговорення, «наскільки картина
+  уточнена», входи по підрозділах.
+- **Паспорт системи** — окрема сторінка: команда та ролі з колонкою «Резерв»,
+  захищений кейс (опис погодженого складу + посилання), атрибути і договір.
+  Відкривається з карток, матриці та дошки.
+- **Резерв** — поле `b` клітинки: резервна людина на роль×систему. Сигнал
+  «Системи без резерву» і фільтр матриці «Без резерву».
+- **Захищений кейс** — поля системи `caseText` / `caseUrl`.
+
+Сумісність: експорти обох версій відкриваються як і раніше; старі файли без
+`b`/`caseText` мігруються автоматично. Увага: артефакт-версія в claude.ai ще не
+знає про резерв і кейс — імпорт туди ці поля відкине (решта даних неушкоджена).
