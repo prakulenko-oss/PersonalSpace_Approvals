@@ -48,6 +48,8 @@ const CSS = `
   @keyframes ks-cat-tail { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-16deg)} } .ks-cat-tail{animation:ks-cat-tail 2.4s ease-in-out infinite}
   @keyframes ks-sparkle { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
   .ks-sparkle{transform-box:fill-box;transform-origin:center;animation:ks-sparkle 1.6s ease-in-out infinite}
+  dialog.ks-credit::backdrop{background:rgba(0,43,92,.45);backdrop-filter:blur(3px)}
+  dialog.ks-credit{animation:ks-fade-up .25s cubic-bezier(.22,1,.36,1)}
   .ks-grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
   .ks-grid-2b{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start}
   .ks-grid-2c{display:grid;grid-template-columns:1fr 1.35fr;gap:20px;align-items:stretch}
