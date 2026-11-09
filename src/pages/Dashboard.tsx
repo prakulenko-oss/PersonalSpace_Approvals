@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat, HandCoins
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat, HandCoins, MessageSquareHeart
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -428,7 +428,7 @@ export const Dashboard = () => {
                 <span style={styles.widgetTitle}>Мої сервіси</span>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '14px 6px 10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', justifyItems: 'center', rowGap: '16px', padding: '14px 6px 12px' }}>
               {[
                 {
                   label: 'Центр\nЗатверджень', route: '/approvals',
@@ -455,6 +455,11 @@ export const Dashboard = () => {
                   label: 'Оцінка', route: '',
                   gradient: 'linear-gradient(135deg, #f59e0b, #ea580c)',
                   icon: <Star size={26} color="#fff" />,
+                },
+                {
+                  label: 'Exit-\nінтерв\u2019ю', route: '/exit-interview',
+                  gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
+                  icon: <MessageSquareHeart size={26} color="#fff" />,
                 },
               ].map(app => (
                 <div

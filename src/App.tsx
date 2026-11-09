@@ -7,6 +7,7 @@ import { ManagerSpace } from './pages/ManagerSpace';
 import { EmployeePoa } from './pages/EmployeePoa';
 import { EmployeeSafety } from './pages/EmployeeSafety';
 import { Credit } from './pages/Credit';
+import { ExitInterview } from './pages/ExitInterview';
 
 // ── Щоб додати нову сторінку:
 // 1. Створіть файл src/pages/MyNewPage.tsx
@@ -26,6 +27,7 @@ function App() {
           <Route path="/poa"           element={<EmployeePoa />} />
           <Route path="/safety"        element={<EmployeeSafety />} />
           <Route path="/credit"        element={<Credit />} />
+          <Route path="/exit-interview" element={<ExitInterview />} />
 
           {/* Заглушки — замініть на реальні сторінки згодом */}
           <Route path="/vacations"  element={<Navigate to="/" replace />} />
