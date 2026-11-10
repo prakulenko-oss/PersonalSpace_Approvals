@@ -48,8 +48,8 @@ const CSS = `
   @keyframes ks-cat-tail { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-16deg)} } .ks-cat-tail{animation:ks-cat-tail 2.4s ease-in-out infinite}
   @keyframes ks-sparkle { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
   .ks-sparkle{transform-box:fill-box;transform-origin:center;animation:ks-sparkle 1.6s ease-in-out infinite}
-  .ks-chip:not(.ks-chip-active):hover:not(:disabled){border-color:#95d9f5;background:#f4fbff;color:#0072a8}
-  .ks-chip-active:hover:not(:disabled){background:#d9f1fc}
+  .ks-chip:not(.ks-chip-active):hover:not(:disabled){border-color:#95d9f5!important;background:#f4fbff!important;color:#0072a8!important;box-shadow:0 2px 8px rgba(0,160,227,.15)}
+  .ks-chip-active:hover:not(:disabled){background:#d9f1fc!important;box-shadow:0 2px 8px rgba(0,160,227,.18)}
   .ks-chip:active:not(:disabled){transform:scale(.97)}
   .ks-chip:focus-visible{outline:2px solid #00A0E3;outline-offset:2px}
   .ks-chip:disabled{cursor:default}
