@@ -22,5 +22,10 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/views", "src/modals",
+    "src/types.ts", "src/model.ts", "src/seed.ts", "src/storage.ts", "src/dnd.ts",
+    "src/feeds.ts", "src/ui.tsx", "src/icons.tsx", "src/fs-types.d.ts"
+  ]
 }

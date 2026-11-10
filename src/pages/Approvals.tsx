@@ -1,6 +1,6 @@
 import { mockTasks, mockArchivedTasks, mockTeamRequests } from '../data/approvals';
 import { approvalsHeroArt, approvalsHeroBg } from '../assets/heroImages';
-import type { Task, ArchivedTask, TeamRequest } from '../types';
+import type { Task, ArchivedTask, TeamRequest } from '../types/index';
 import { TopBar } from '../components/TopBar';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {

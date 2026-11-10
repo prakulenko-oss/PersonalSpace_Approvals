@@ -1,4 +1,4 @@
-import type { Task, ArchivedTask, TeamRequest } from '../types';
+import type { Task, ArchivedTask, TeamRequest } from '../types/index';
 
 // ── INBOX TASKS ───────────────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import type { CalDay, CompanyEvent, Vacancy } from '../types';
+import type { CalDay, CompanyEvent, Vacancy } from '../types/index';
 
 // ── NAV TILES ─────────────────────────────────────────────────────────────
 // SVG іконки відповідають оригінальному дизайну
