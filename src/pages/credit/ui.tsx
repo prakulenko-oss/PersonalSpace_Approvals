@@ -48,6 +48,12 @@ const CSS = `
   @keyframes ks-cat-tail { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-16deg)} } .ks-cat-tail{animation:ks-cat-tail 2.4s ease-in-out infinite}
   @keyframes ks-sparkle { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
   .ks-sparkle{transform-box:fill-box;transform-origin:center;animation:ks-sparkle 1.6s ease-in-out infinite}
+  .ks-chip:not(.ks-chip-active):hover:not(:disabled){border-color:#95d9f5;background:#f4fbff;color:#0072a8}
+  .ks-chip-active:hover:not(:disabled){background:#d9f1fc}
+  .ks-chip:active:not(:disabled){transform:scale(.97)}
+  .ks-chip:focus-visible{outline:2px solid #00A0E3;outline-offset:2px}
+  .ks-chip:disabled{cursor:default}
+  .ks-select:hover:not(:disabled){border-color:#95d9f5!important;background:#f4fbff!important}
   dialog.ks-credit::backdrop{background:rgba(0,43,92,.45);backdrop-filter:blur(3px)}
   dialog.ks-credit{animation:ks-fade-up .25s cubic-bezier(.22,1,.36,1)}
   .ks-grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start}
@@ -107,7 +113,7 @@ export const GhostButton = ({ children, onClick, full = false }) => (
 );
 
 export const Chip = ({ active, onClick, children }) => (
-  <button type="button" onClick={onClick} aria-pressed={active} style={{
+  <button type="button" onClick={onClick} aria-pressed={active} className={active ? 'ks-chip ks-chip-active' : 'ks-chip'} style={{
     borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
     ...(active ? { background: T.blue050, color: T.blueText, border: '1px solid #b6e4f8' } : { background: '#fff', color: T.muted, border: `1px solid ${T.line}` }),
   }}>{children}</button>

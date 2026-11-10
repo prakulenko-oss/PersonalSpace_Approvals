@@ -4,7 +4,7 @@ import { CounterBadge } from '@fluentui/react-components';
 import {
   ListChecks, Video, ClipboardList, Newspaper,
   Bell, ChevronDown, ChevronUp, Heart, Users, RefreshCw,
-  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat, HandCoins, MessageSquareHeart
+  Briefcase, Instagram, Facebook, Twitter, Search, Landmark, LayoutGrid, FileText, Star, HardHat, HandCoins, MessageSquareHeart, CheckCircle2
 } from 'lucide-react';
 import { TopBar } from '../components/TopBar';
 import { navTiles, calDays, companyEvents, vacancies, footerColumns, currentUser } from '../data/dashboard';
@@ -362,6 +362,8 @@ export const Dashboard = () => {
   const [absOpen, setAbsOpen] = useState(false);
   const [chgOpen, setChgOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [offboarding, setOffboarding] = useState(true);   // демо: звільнення ініційоване
+  const exitDone = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('exit-interview-sent') === '1';
   const showToast = (msg: string) => {
     setToast(msg);
     window.setTimeout(() => setToast(null), 3000);
@@ -428,7 +430,7 @@ export const Dashboard = () => {
                 <span style={styles.widgetTitle}>Мої сервіси</span>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', justifyItems: 'center', rowGap: '16px', padding: '14px 6px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around', padding: '14px 6px 10px' }}>
               {[
                 {
                   label: 'Центр\nЗатверджень', route: '/approvals',
@@ -455,11 +457,6 @@ export const Dashboard = () => {
                   label: 'Оцінка', route: '',
                   gradient: 'linear-gradient(135deg, #f59e0b, #ea580c)',
                   icon: <Star size={26} color="#fff" />,
-                },
-                {
-                  label: 'Exit-\nінтерв\u2019ю', route: '/exit-interview',
-                  gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
-                  icon: <MessageSquareHeart size={26} color="#fff" />,
                 },
               ].map(app => (
                 <div
@@ -492,7 +489,44 @@ export const Dashboard = () => {
                 </div>
               ))}
             </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0 16px 10px', fontSize: '11.5px', color: '#9ca3af', cursor: 'pointer' }}>
+              <input type="checkbox" checked={offboarding} onChange={e => setOffboarding(e.target.checked)} style={{ accentColor: '#2563eb' }} />
+              Демо: звільнення ініційоване
+            </label>
           </div>
+
+          {/* Прощальне опитування — лише коли ініційоване звільнення */}
+          {offboarding && (
+            exitDone ? (
+              <div style={{ ...styles.widget, borderColor: '#bfeedd', background: 'linear-gradient(110deg, #e7faf1 0%, #ffffff 70%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px' }}>
+                  <CheckCircle2 size={20} color="#0f8f5f" />
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#1b1b1b' }}>Дякуємо, відповіді отримано</div>
+                    <div style={{ fontSize: '12.5px', color: '#6b7280' }}>Прощальне опитування заповнено</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ ...styles.widget, ...styles.widgetClickable, borderColor: '#f8d7a8', background: 'linear-gradient(110deg, #fff8e8 0%, #ffffff 65%)' }} onClick={() => navigate('/exit-interview')}>
+                <div style={styles.widgetHeader}>
+                  <div style={styles.widgetTitleWrap}>
+                    <MessageSquareHeart size={18} color="#d97706" />
+                    <span style={{ ...styles.widgetTitle, borderBottomColor: '#d97706' }}>Прощальне опитування</span>
+                  </div>
+                  <a style={{ ...styles.allLink, color: '#b45309' }}>Пройти →</a>
+                </div>
+                <div style={styles.widgetBody}>
+                  <div style={{ fontSize: '14px', color: '#374151', lineHeight: 1.5 }}>
+                    Ваш досвід важливий — розкажіть, що працювало, а що варто змінити.
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: '12.5px', color: '#6b7280' }}>
+                    <span>≈ 7 хвилин</span><span>·</span><span>до 24 листопада</span>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
 
           <div style={styles.widget}>
             <div style={styles.widgetHeader}>
