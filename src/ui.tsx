@@ -48,11 +48,13 @@ const CSS = `
   @keyframes ks-cat-tail { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-16deg)} } .ks-cat-tail{animation:ks-cat-tail 2.4s ease-in-out infinite}
   @keyframes ks-sparkle { 0%,100%{opacity:.2;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
   .ks-sparkle{transform-box:fill-box;transform-origin:center;animation:ks-sparkle 1.6s ease-in-out infinite}
-  .ks-chip:not(.ks-chip-active):hover:not(:disabled){border-color:#95d9f5!important;background:#f4fbff!important;color:#0072a8!important;box-shadow:0 2px 8px rgba(0,160,227,.15)}
-  .ks-chip-active:hover:not(:disabled){background:#d9f1fc!important;box-shadow:0 2px 8px rgba(0,160,227,.18)}
+  .ks-chip{border-radius:999px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;background:#fff;color:#6b7a90;border:1px solid #e6edf4;display:inline-flex;align-items:center}
+  .ks-chip-active{background:#e6f6fd;color:#0072a8;border-color:#b6e4f8}
+  .ks-chip:not(.ks-chip-active):hover:not(:disabled){border-color:#95d9f5;background:#f4fbff;color:#0072a8;box-shadow:0 2px 8px rgba(0,160,227,.15)}
+  .ks-chip-active:hover:not(:disabled){background:#d9f1fc;box-shadow:0 2px 8px rgba(0,160,227,.18)}
   .ks-chip:active:not(:disabled){transform:scale(.97)}
   .ks-chip:focus-visible{outline:2px solid #00A0E3;outline-offset:2px}
-  .ks-chip:disabled{cursor:default}
+  .ks-chip:disabled{cursor:default;opacity:.85}
   .ks-select:hover:not(:disabled){border-color:#95d9f5!important;background:#f4fbff!important}
   dialog.ks-credit::backdrop{background:rgba(0,43,92,.45);backdrop-filter:blur(3px)}
   dialog.ks-credit{animation:ks-fade-up .25s cubic-bezier(.22,1,.36,1)}
@@ -66,8 +68,10 @@ const CSS = `
   @media(max-width:960px){ .ks-grid-2,.ks-grid-2b,.ks-grid-2c,.ks-grid-3,.ks-hero-grid{grid-template-columns:1fr!important} .ks-grid-4{grid-template-columns:repeat(2,1fr)!important} .ks-hero-art{display:none!important} .ks-tl{grid-auto-flow:row} }
   @media(prefers-reduced-motion:reduce){ .ks-in{opacity:1;animation:none} .ks-float,.ks-float-b,.ks-float-c,.ks-cat-breathe,.ks-cat-jump,.ks-cat-tail,.ks-sparkle,.ks-pulse-ring,.ks-shimmer{animation:none!important} .ks-confetti{display:none} }
 `;
-if (typeof document !== 'undefined' && !document.getElementById('ks-credit-css')) {
-  const s = document.createElement('style'); s.id = 'ks-credit-css'; s.textContent = CSS; document.head.appendChild(s);
+if (typeof document !== 'undefined') {
+  let el = document.getElementById('ks-credit-css') as HTMLStyleElement | null;
+  if (!el) { el = document.createElement('style'); el.id = 'ks-credit-css'; document.head.appendChild(el); }
+  if (el.textContent !== CSS) el.textContent = CSS;
 }
 
 /* ───────── Атоми ───────── */
@@ -113,10 +117,7 @@ export const GhostButton = ({ children, onClick, full = false }) => (
 );
 
 export const Chip = ({ active, onClick, children }) => (
-  <button type="button" onClick={onClick} aria-pressed={active} className={active ? 'ks-chip ks-chip-active' : 'ks-chip'} style={{
-    borderRadius: 999, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
-    ...(active ? { background: T.blue050, color: T.blueText, border: '1px solid #b6e4f8' } : { background: '#fff', color: T.muted, border: `1px solid ${T.line}` }),
-  }}>{children}</button>
+  <button type="button" onClick={onClick} aria-pressed={active} className={active ? 'ks-chip ks-chip-active' : 'ks-chip'}>{children}</button>
 );
 
 export const Segmented = ({ options, value, onChange, render }) => (
