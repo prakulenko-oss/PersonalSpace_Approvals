@@ -12,15 +12,16 @@ import {
 } from './exitInterviewData';
 
 const STEPS = [
-  { key: 'decision', title: 'Про рішення', Icon: ClipboardList, caption: 'Два коротких питання — коли ви почали замислюватись і коли вирішили' },
+  { key: 'decision', title: 'Ваше рішення', Icon: ClipboardList, caption: 'Коли виникла думка про зміни та які ваші наступні кроки' },
   { key: 'reasons', title: 'Причини', Icon: MessageSquareHeart, caption: 'Що саме вплинуло на рішення. Можна обрати кілька або лише одне' },
-  { key: 'work', title: 'Робота', Icon: Heart, caption: 'Що подобалось — нам важливо знати, що варто зберегти' },
+  { key: 'work', title: 'Робота', Icon: Heart, caption: 'Що подобалось у роботі — нам важливо знати, що варто зберегти' },
   { key: 'manager', title: 'Керівник', Icon: User, caption: 'Ваш погляд допоможе керівнику рости. Відповіді побачить лише HR' },
   { key: 'nps', title: 'Рекомендації', Icon: Sparkles, caption: 'Наскільки ви готові радити Київстар іншим' },
   { key: 'compliance', title: 'Комплаєнс', Icon: ShieldCheck, caption: 'Кілька питань за Кодексом поведінки VEON — конфіденційно' },
 ];
 const GROUP_ICONS = { env: Building2, pay: Banknote, growth: TrendingUp, personal: HeartHandshake, manager: UserCog };
 const REQUIRED_TOTAL = 5;
+const REQ_NOTE = ['4 обов’язкові питання. Інші відповіді — за бажанням.', 'Усі відповіді — за бажанням.', 'Усі відповіді — за бажанням.', '1 обов’язкове питання. Інші — за бажанням.', 'Усі відповіді — за бажанням.', 'Усі відповіді — за бажанням.'];
 
 /* ───── атоми форми ───── */
 const Req = () => <span style={{ color: T.blue, marginLeft: 3, fontWeight: 800 }} aria-label="обов’язкове">*</span>;
@@ -45,6 +46,16 @@ const TextArea = ({ value, onChange, placeholder, rows = 3, locked }) => (
   <textarea value={value} onChange={e => onChange(e.target.value)} rows={rows} disabled={locked} placeholder={locked ? 'Відповідь не надано' : placeholder}
     style={{ width: '100%', resize: 'vertical', borderRadius: 12, background: '#fafcfe', padding: '12px 14px', fontSize: 14, outline: 'none', border: `1px solid ${T.line}`, color: T.ink, fontFamily: 'inherit', lineHeight: 1.5 }}
     onFocus={e => (e.currentTarget.style.borderColor = '#95d9f5')} onBlur={e => (e.currentTarget.style.borderColor = T.line)} />
+);
+const Select = ({ value, onChange, options, locked, error }) => (
+  <div style={{ position: 'relative' }}>
+    <select value={value} disabled={locked} onChange={e => onChange(e.target.value)} aria-invalid={Boolean(error)}
+      style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', borderRadius: 12, background: '#fafcfe', padding: '12px 42px 12px 14px', fontSize: 14, outline: 'none', fontFamily: 'inherit', cursor: locked ? 'default' : 'pointer', border: `1px solid ${error ? '#c8872d' : value ? '#95d9f5' : T.line}`, color: value ? T.ink : T.muted, boxShadow: value ? '0 0 0 3px rgba(0,160,227,.08)' : 'none', transition: 'all .15s' }}>
+      <option value="">{locked ? 'Відповідь не надано' : 'Оберіть відповідь'}</option>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+    <ChevronDown size={17} style={{ pointerEvents: 'none', position: 'absolute', top: '50%', right: 14, transform: 'translateY(-50%)', color: T.muted }} />
+  </div>
 );
 const YesNo = ({ value, onChange, locked }) => (
   <div style={{ display: 'inline-flex', gap: 8 }}>
@@ -137,16 +148,16 @@ const ReasonPicker = ({ reasons, onToggle, onRemove, locked }) => {
 };
 
 /* ───── степер (за референсом: смужки + номер + назва) ───── */
-const Stepper = ({ step, onJump, complete }) => (
+const Stepper = ({ step, onJump, complete, attention }) => (
   <nav aria-label="Кроки анкети" style={{ display: 'grid', gridTemplateColumns: `repeat(${STEPS.length}, 1fr)`, gap: 10 }}>
     {STEPS.map((s, i) => {
-      const cur = i === step, done = complete[i];
+      const cur = i === step, done = complete[i], warn = attention && !done && !cur && [0, 3].includes(i);
       return (
         <button key={s.key} type="button" onClick={() => onJump(i)} aria-current={cur ? 'step' : undefined} style={{ minWidth: 0, padding: 8, borderRadius: 10, textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', transition: 'background .15s' }}
           onMouseEnter={e => (e.currentTarget.style.background = '#f4faff')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-          <span style={{ display: 'block', height: 4, borderRadius: 99, marginBottom: 8, background: cur ? T.blue : done ? T.mint : T.line, transition: 'background .3s' }} />
+          <span style={{ display: 'block', height: 4, borderRadius: 99, marginBottom: 8, background: cur ? T.blue : done ? T.mint : warn ? '#f5b81f' : T.line, transition: 'background .3s' }} />
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ display: 'grid', placeItems: 'center', width: 26, height: 26, flexShrink: 0, borderRadius: '50%', fontSize: 12, fontWeight: 800, background: cur ? T.blue : done ? T.mint050 : '#f1f5f9', color: cur ? '#fff' : done ? T.mintText : T.muted }}>{done && !cur ? <Check size={14} /> : i + 1}</span>
+            <span style={{ display: 'grid', placeItems: 'center', width: 26, height: 26, flexShrink: 0, borderRadius: '50%', fontSize: 12, fontWeight: 800, background: cur ? T.blue : done ? T.mint050 : warn ? T.yellow050 : '#f1f5f9', color: cur ? '#fff' : done ? T.mintText : warn ? '#98601d' : T.muted }}>{done && !cur ? <Check size={14} /> : warn ? '!' : i + 1}</span>
             <span style={{ fontSize: 12, fontWeight: 700, lineHeight: 1.2, color: cur ? T.navy : T.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</span>
           </span>
         </button>
@@ -162,6 +173,7 @@ export const ExitInterview = () => {
   const [sentAt, setSentAt] = useState<Date | null>(null);
   const [review, setReview] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [attention, setAttention] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const locked = Boolean(sentAt);
   const patch = (next: Partial<Answers>) => { if (locked) return; setA(c => ({ ...c, ...next })); setErrors([]); };
@@ -173,17 +185,17 @@ export const ExitInterview = () => {
 
   // обов'язкові (5 зі зірочкою) по кроках
   const missingByStep = useMemo(() => ({
-    0: [!a.think && 'think', !a.decide && 'decide'].filter(Boolean),
-    1: [], 2: [!a.offer && 'offer', !a.search && 'search'].filter(Boolean),
+    0: [!a.think && 'think', !a.decide && 'decide', !a.offer && 'offer', !a.search && 'search'].filter(Boolean),
+    1: [], 2: [],
     3: [!a.contact && 'contact'].filter(Boolean), 4: [], 5: [],
   }), [a]);
   const requiredDone = REQUIRED_TOTAL - Object.values(missingByStep).flat().length;
-  const complete = STEPS.map((_, i) => missingByStep[i].length === 0 && (i !== 0 || (a.think && a.decide)) && (i !== 2 || (a.offer && a.search)) && (i !== 3 || a.contact));
+  const complete = STEPS.map((_, i) => missingByStep[i].length === 0 && (i !== 0 || (a.think && a.decide && a.offer && a.search)) && (i !== 3 || a.contact));
   const last = step === STEPS.length - 1;
 
   const focusTop = () => window.setTimeout(() => document.getElementById('step-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
-  const go = (target) => { if (target === step) return; if (target > step && !locked) { const m = missingByStep[step]; if (m.length) { setErrors(m); return; } } setStep(target); setErrors([]); focusTop(); };
-  const tryFinish = () => { const all = Object.entries(missingByStep).find(([, m]) => m.length); if (all) { const [s, m] = all; setStep(Number(s)); setErrors(m); focusTop(); return; } dialog.current?.showModal(); };
+  const go = (target) => { if (target === step || target < 0 || target >= STEPS.length) return; setStep(target); setErrors([]); focusTop(); };
+  const tryFinish = () => { const all = Object.entries(missingByStep).find(([, m]) => m.length); if (all) { const [s, m] = all; setAttention(true); setStep(Number(s)); setErrors(m); focusTop(); return; } dialog.current?.showModal(); };
   const submit = () => { dialog.current?.close(); setSentAt(new Date()); setReview(false); try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* noop */ } window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   const S = STEPS[step];
@@ -254,19 +266,21 @@ export const ExitInterview = () => {
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: T.blue }}>Крок {step + 1} із {STEPS.length}</p>
                       <p style={{ margin: 0, fontSize: 12, color: T.muted }}>{locked ? 'Перегляд відповідей' : `Обов’язкові питання: ${requiredDone} із ${REQUIRED_TOTAL}`}</p>
                     </div>
-                    <Stepper step={step} onJump={go} complete={complete} />
+                    <Stepper step={step} onJump={go} complete={complete} attention={attention} />
                   </div>
 
                   <div style={{ padding: '22px 24px' }}>
-                    <CardTitle title={S.title} caption={S.caption} aside={<IconBubble Icon={S.Icon} tone={step === 5 ? 'yellow' : step === 2 ? 'mint' : 'blue'} />} />
-                    {errors.length > 0 && <p role="alert" style={{ margin: '16px 0 0', display: 'flex', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: '10px 12px', fontSize: 13, background: T.yellow050, color: '#98601d' }}><Info size={16} style={{ flexShrink: 0, marginTop: 1 }} /> Дайте відповідь на обов’язкові питання, щоб продовжити. Без відповіді: {errors.length}.</p>}
+                    <CardTitle title={S.title} caption={`${REQ_NOTE[step]} ${S.caption}`} aside={<IconBubble Icon={S.Icon} tone={step === 5 ? 'yellow' : step === 2 ? 'mint' : 'blue'} />} />
+                    {errors.length > 0 && <p role="alert" style={{ margin: '16px 0 0', display: 'flex', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: '10px 12px', fontSize: 13, background: T.yellow050, color: '#98601d' }}><Info size={16} style={{ flexShrink: 0, marginTop: 1 }} /> Щоб надіслати анкету, дайте відповідь на обов’язкові питання цього кроку. Без відповіді: {errors.length}.</p>}
 
                     <div key={step} className="ks-in" style={{ marginTop: 22 }}>
                       {/* 1 */}
                       {step === 0 && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 26 }}>
-                          <div><QLabel required>Як давно Ви почали думати про те, щоб покинути Компанію?</QLabel><ChipGroup options={THINK_OPTIONS} value={a.think} onChange={v => patch({ think: v })} locked={locked} /><ErrLine id="think" /></div>
-                          <div><QLabel required>Як давно Ви прийняли рішення покинути Компанію?</QLabel><ChipGroup options={DECIDE_OPTIONS} value={a.decide} onChange={v => patch({ decide: v })} locked={locked} /><ErrLine id="decide" /></div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '26px 28px' }}>
+                          <div><QLabel required>Як давно Ви почали думати про те, щоб покинути Компанію?</QLabel><Select options={THINK_OPTIONS} value={a.think} onChange={v => patch({ think: v })} locked={locked} error={err('think')} /><ErrLine id="think" /></div>
+                          <div><QLabel required>Як давно Ви прийняли рішення покинути Компанію?</QLabel><Select options={DECIDE_OPTIONS} value={a.decide} onChange={v => patch({ decide: v })} locked={locked} error={err('decide')} /><ErrLine id="decide" /></div>
+                          <div><QLabel required>Чи Ви наразі маєте пропозицію про роботу, яку прийняли/готові прийняти?</QLabel><YesNo value={a.offer} onChange={v => patch({ offer: v })} locked={locked} /><ErrLine id="offer" /></div>
+                          <div><QLabel required>Ви здійснювали активний пошук роботи?</QLabel><YesNo value={a.search} onChange={v => patch({ search: v })} locked={locked} /><ErrLine id="search" /></div>
                         </div>
                       )}
                       {/* 2 */}
@@ -278,15 +292,9 @@ export const ExitInterview = () => {
                       )}
                       {/* 3 */}
                       {step === 2 && (
-                        <div style={{ display: 'grid', gap: 26 }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
-                            <div><QLabel required>Чи Ви наразі маєте пропозицію про роботу, яку прийняли/готові прийняти?</QLabel><YesNo value={a.offer} onChange={v => patch({ offer: v })} locked={locked} /><ErrLine id="offer" /></div>
-                            <div><QLabel required>Ви здійснювали активний пошук роботи?</QLabel><YesNo value={a.search} onChange={v => patch({ search: v })} locked={locked} /><ErrLine id="search" /></div>
-                          </div>
-                          <div>
-                            <QLabel hint="Оберіть з нижче вказаних факторів — можна кілька">Що Вам подобалось у Вашій роботі?</QLabel>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 8 }}>{LIKED_OPTIONS.map(o => <CheckRow key={o} checked={a.liked.includes(o)} onChange={() => patch({ liked: toggleIn(a.liked, o) })} label={o} locked={locked} />)}</div>
-                          </div>
+                        <div>
+                          <QLabel hint="Оберіть з нижче вказаних факторів — можна кілька">Що Вам подобалось у Вашій роботі?</QLabel>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 8 }}>{LIKED_OPTIONS.map(o => <CheckRow key={o} checked={a.liked.includes(o)} onChange={() => patch({ liked: toggleIn(a.liked, o) })} label={o} locked={locked} />)}</div>
                         </div>
                       )}
                       {/* 4 */}
@@ -345,7 +353,6 @@ export const ExitInterview = () => {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                       <div>{step > 0 && <GhostButton onClick={() => go(step - 1)}><ArrowLeft size={15} /> Назад</GhostButton>}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                        {!locked && !missingByStep[step].length && !last && [1, 4, 5].includes(step) && <button type="button" onClick={() => go(step + 1)} style={{ fontSize: 12.5, fontWeight: 700, color: T.blueText, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '8px 4px' }}>Пропустити крок</button>}
                         {!last && <PrimaryButton onClick={() => go(step + 1)}>Далі <ArrowRight size={15} /></PrimaryButton>}
                         {last && !locked && <PrimaryButton onClick={tryFinish}><Send size={15} /> Надіслати анкету</PrimaryButton>}
                         {last && locked && <GhostButton onClick={() => { setReview(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Завершити перегляд</GhostButton>}
