@@ -178,14 +178,24 @@
        alignItems: 'center',
        justifyContent: 'space-between',
      },
-     hero: {
-       position: 'relative',
-       background:
-         'linear-gradient(125deg, #3B3DAD 0%, #4466CC 35%, #3BA3E8 70%, #50C0F0 100%)',
-       paddingTop: '28px',
-       paddingBottom: '0',
+     heroWrap: {
+       maxWidth: '1120px',
+       marginLeft: 'auto',
+       marginRight: 'auto',
+       paddingTop: '20px',
        paddingLeft: '24px',
        paddingRight: '24px',
+     },
+     hero: {
+       position: 'relative',
+       background: 'linear-gradient(100deg, #ffffff 0%, #f6faff 40%, #eaf4fd 75%, #e2f0fb 100%)',
+       border: '1px solid #e3eefb',
+       borderRadius: '16px',
+       boxShadow: '0 1px 3px rgba(15,60,120,.06)',
+       paddingTop: '24px',
+       paddingBottom: '0',
+       paddingLeft: '32px',
+       paddingRight: '32px',
        overflow: 'hidden',
        display: 'flex',
        flexDirection: 'column',
@@ -193,9 +203,9 @@
      },
      heroBgShape: { position: 'absolute', borderRadius: '50%' },
      heroTitle: {
-       fontSize: '32px',
+       fontSize: '28px',
        fontWeight: 800,
-       color: '#FFFFFF',
+       color: '#003f7d',
        lineHeight: 1.15,
        marginTop: '0',
        marginBottom: '12px',
@@ -203,7 +213,7 @@
      },
      heroSubtitle: {
        fontSize: '15px',
-       color: 'rgba(255,255,255,0.85)',
+       color: '#4a5b71',
        lineHeight: 1.6,
        marginTop: '0',
        marginBottom: '0',
@@ -394,15 +404,15 @@
                    gap: 10,
                    backgroundColor: filled
                      ? isFinal
-                       ? 'rgba(255,209,0,0.2)'
-                       : 'rgba(255,255,255,0.18)'
-                     : 'rgba(255,255,255,0.08)',
+                       ? 'rgba(255,209,0,0.22)'
+                       : 'rgba(0,160,227,0.10)'
+                     : 'rgba(255,255,255,0.7)',
                    border: `1px solid ${
                      filled
                        ? isFinal
-                         ? 'rgba(255,209,0,0.5)'
-                         : 'rgba(255,255,255,0.4)'
-                       : 'rgba(255,255,255,0.15)'
+                         ? 'rgba(200,160,0,0.6)'
+                         : 'rgba(0,160,227,0.45)'
+                       : '#dbe8f6'
                    }`,
                    borderRadius: 100,
                    padding: '10px 18px 10px 16px',
@@ -418,13 +428,13 @@
                        filled
                          ? isFinal
                            ? ks.gold
-                           : 'rgba(255,255,255,0.9)'
-                         : 'rgba(255,255,255,0.35)'
+                           : '#00A0E3'
+                         : '#c9d8ea'
                      }`,
                      backgroundColor: filled
                        ? isFinal
                          ? ks.gold
-                         : 'rgba(255,255,255,0.9)'
+                         : '#00A0E3'
                        : 'transparent',
                      display: 'flex',
                      alignItems: 'center',
@@ -437,7 +447,7 @@
                      <WalletCreditCard24Regular
                        style={{
                          fontSize: 14,
-                         color: filled ? ks.navy : 'rgba(255,255,255,0.4)',
+                         color: filled ? (isFinal ? ks.navy : '#fff') : '#c9d8ea',
                          transition: 'color 0.5s',
                        }}
                      />
@@ -446,7 +456,7 @@
                        style={{
                          fontSize: 12,
                          fontWeight: 800,
-                         color: filled ? ks.navy : 'rgba(255,255,255,0.4)',
+                         color: filled ? (isFinal ? ks.navy : '#fff') : '#c9d8ea',
                          transition: 'color 0.5s',
                          lineHeight: 1,
                        }}
@@ -459,7 +469,7 @@
                    style={{
                      fontSize: 13,
                      fontWeight: 600,
-                     color: filled ? '#fff' : 'rgba(255,255,255,0.4)',
+                     color: filled ? '#003f7d' : '#8a9bb2',
                      whiteSpace: 'nowrap',
                      transition: 'color 0.5s',
                    }}
@@ -472,8 +482,8 @@
                    style={{
                      color:
                        activeIndex > i
-                         ? 'rgba(255,255,255,0.5)'
-                         : 'rgba(255,255,255,0.2)',
+                         ? '#00A0E3'
+                         : '#c9d8ea',
                      transition: 'color 0.5s',
                      flexShrink: 0,
                    }}
@@ -745,40 +755,10 @@
              </div>
            </header>
    
-           <section className={`${classes.hero} hero-dot-grid`}>
-             <div
-               className={classes.heroBgShape}
-               style={{
-                 width: 650,
-                 height: 650,
-                 background: '#fff',
-                 opacity: 0.06,
-                 top: -280,
-                 right: -120,
-               }}
-             />
-             <div
-               className={classes.heroBgShape}
-               style={{
-                 width: 420,
-                 height: 420,
-                 background: '#fff',
-                 opacity: 0.08,
-                 bottom: -220,
-                 right: 40,
-               }}
-             />
-             <div
-               className={classes.heroBgShape}
-               style={{
-                 width: 280,
-                 height: 280,
-                 background: '#fff',
-                 opacity: 0.05,
-                 top: 30,
-                 left: -100,
-               }}
-             />
+           <div className={classes.heroWrap}><section className={classes.hero}>
+             <span aria-hidden className="hero-floats" style={{ pointerEvents: 'none', position: 'absolute', top: '50%', right: '8%', width: 380, height: 380, transform: 'translateY(-50%)', borderRadius: '50%', background: 'radial-gradient(circle, rgba(127,214,245,.28) 0%, transparent 65%)' }} />
+             <span aria-hidden className="hero-floats float-2" style={{ pointerEvents: 'none', position: 'absolute', top: 28, right: '36%', width: 12, height: 12, borderRadius: '50%', background: '#FFD100', opacity: .85 }} />
+             <span aria-hidden className="hero-floats float-3" style={{ pointerEvents: 'none', position: 'absolute', bottom: 70, right: '44%', width: 8, height: 8, borderRadius: '50%', background: '#00A0E3', opacity: .7 }} />
              <div
                className="hero-content-row"
                style={{
@@ -799,7 +779,7 @@
                  >
                    Вибір банку для
                    <br />
-                   <span style={{ color: ks.gold }}>зарплатного проєкту</span>
+                   <span style={{ color: '#00A0E3' }}>зарплатного проєкту</span>
                  </h1>
                </div>
                <div
@@ -815,61 +795,61 @@
                    className="float-1"
                    style={{
                      position: 'absolute',
-                     width: 76,
-                     height: 76,
-                     borderRadius: 16,
+                     width: 72,
+                     height: 72,
+                     borderRadius: '50%',
                      top: 0,
                      left: 20,
-                     background: 'rgba(255,255,255,0.18)',
-                     backdropFilter: 'blur(16px)',
-                     border: '1px solid rgba(255,255,255,0.35)',
-                     boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                     background: 'rgba(255,255,255,0.85)',
+                     backdropFilter: 'blur(8px)',
+                     border: '1px solid rgba(255,255,255,0.95)',
+                     boxShadow: '0 10px 24px rgba(0,63,125,0.12)',
                      display: 'flex',
                      alignItems: 'center',
                      justifyContent: 'center',
                    }}
                  >
-                   <RaiffeisenLogo size={46} />
+                   <RaiffeisenLogo size={40} />
                  </div>
                  <div
                    className="float-2"
                    style={{
                      position: 'absolute',
-                     width: 76,
-                     height: 76,
-                     borderRadius: 16,
+                     width: 72,
+                     height: 72,
+                     borderRadius: '50%',
                      top: 48,
                      right: 0,
-                     background: 'rgba(255,255,255,0.18)',
-                     backdropFilter: 'blur(16px)',
-                     border: '1px solid rgba(255,255,255,0.35)',
-                     boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                     background: 'rgba(255,255,255,0.85)',
+                     backdropFilter: 'blur(8px)',
+                     border: '1px solid rgba(255,255,255,0.95)',
+                     boxShadow: '0 10px 24px rgba(0,63,125,0.12)',
                      display: 'flex',
                      alignItems: 'center',
                      justifyContent: 'center',
                    }}
                  >
-                   <UkrsibLogo size={46} />
+                   <UkrsibLogo size={40} />
                  </div>
                  <div
                    className="float-3"
                    style={{
                      position: 'absolute',
-                     width: 64,
-                     height: 64,
-                     borderRadius: 16,
+                     width: 60,
+                     height: 60,
+                     borderRadius: '50%',
                      bottom: 0,
                      left: 48,
-                     background: 'rgba(255,255,255,0.18)',
-                     backdropFilter: 'blur(16px)',
-                     border: '1px solid rgba(255,255,255,0.35)',
-                     boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                     background: 'rgba(255,255,255,0.85)',
+                     backdropFilter: 'blur(8px)',
+                     border: '1px solid rgba(255,255,255,0.95)',
+                     boxShadow: '0 10px 24px rgba(0,63,125,0.12)',
                      display: 'flex',
                      alignItems: 'center',
                      justifyContent: 'center',
                    }}
                  >
-                   <Globe24Regular style={{ fontSize: 34, color: '#fff' }} />
+                   <Globe24Regular style={{ fontSize: 30, color: '#00A0E3' }} />
                  </div>
                </div>
              </div>
@@ -879,14 +859,14 @@
                  zIndex: 2,
                  width: '100%',
                  maxWidth: 900,
-                 borderTop: '1px solid rgba(255,255,255,0.15)',
-                 paddingTop: 20,
-                 paddingBottom: 20,
+                 borderTop: '1px solid #dbe8f6',
+                 paddingTop: 18,
+                 paddingBottom: 18,
                }}
              >
                <AnimatedChecklist />
              </div>
-           </section>
+           </section></div>
    
            <section className={`${classes.stepsSection} steps-section`}>
              <div className={classes.stepsContainer}>
